@@ -1,11 +1,14 @@
 import express,{Request,Response} from "express"
 import dotenv  from "dotenv"
-import { AuthRoute } from "./Routes/Auth.Routes";
 dotenv.config();
+import { AuthRoute } from "./Routes/Auth.Routes";
+import { errorHandler, notFoundHandler } from "./Middlewares/errorMiddleware";
+import { supabase } from "./Config/supabaseClient";
 
 
  // call the function of express
 const app = express();
+
 
 // Port 
 
@@ -23,10 +26,16 @@ app.use ("/api/auth",AuthRoute)
 
 
 
+
 app.get("/" , (req :Request , res : Response)=>{
     return res.send("hello sever is running")
 })
 
+// 404 handler (must be after all other routes)
+app.use(notFoundHandler);
+
+// Error handler (must be last middleware)
+app.use(errorHandler);
 
 
 
