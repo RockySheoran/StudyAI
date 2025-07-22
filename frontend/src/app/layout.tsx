@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Ai personal tutor",
-  description: "Ai personal tutor for students . It is help in understand the concept and take the Quiz on the base of concept and take the interview of topic",
+  description: "Ai personal tutor for students . It helps tounderstand the concept and take the Quiz on the base of concept and take the interview of topic",
 };
 
 export default function RootLayout({
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
