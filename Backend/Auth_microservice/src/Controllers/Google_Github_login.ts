@@ -16,7 +16,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: provider as 'google' | 'github',
             options: {
-                redirectTo: 'http://localhost:3000/api/auth/login/callback',
+                redirectTo: `${process.env.BACKEND_URL}/api/auth/callback`,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -31,7 +31,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
                 message: error?.message || 'Failed to initiate OAuth login',
             });
         }
-
+        // res.redirect(data.url);
         return res.status(200).json({
             success: true,
             url: data.url,
@@ -51,7 +51,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
 
 export const Login_callback = async (req: Request, res: Response): Promise<any> => {
     const { code, error: oauthError, error_description } = req.query;
-    console.log(code, oauthError, error_description);
+    // console.log(code, oauthError, error_description);
     if (oauthError) {
         console.error('OAuth callback error:', { oauthError, error_description });
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
