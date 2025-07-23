@@ -1,7 +1,7 @@
 
 
 import { Request, Response } from "express";
-import { supabase } from "../../Config/supabaseClient";
+import { supabase } from "../Config/supabaseClient";
 
 export const SignUp = async(req:Request,res:Response): Promise<any> =>{
     const {name,email,password} = req.body;

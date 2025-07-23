@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { supabase } from "../../Config/supabaseClient";
-import { generateToken } from "../../Utils/generateToken";
+import { supabase } from "../Config/supabaseClient";
+import { generateToken } from "../Utils/generateToken";
 
 export const Login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
