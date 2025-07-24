@@ -5,6 +5,7 @@ import { supabase } from "../Config/supabaseClient";
 
 export const SignUp = async(req:Request,res:Response): Promise<any> =>{
     const {name,email,password} = req.body;
+    // console.log(req.body)
     try {
         const { data, error } = await supabase.auth.signUp({
             email: email,

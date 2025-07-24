@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { supabase } from "../Config/supabaseClient";
 
-export const Forget_Password = async (req: Request, res: Response): Promise<any> => {
+export const Forgot_Password = async (req: Request, res: Response): Promise<any> => {
     const { email } = req.body;
     
     if (!email) {
