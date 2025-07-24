@@ -112,8 +112,14 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
             sameSite: 'lax',
         });
-
-        return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        let user_Login_Data = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata.full_name,
+            accessToken: token
+        }
+        res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        return res.status(200).json({ message: "Login successful", user_Login_Data });
     } catch (error: any) {
         console.error('OAuth callback error:', error);
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);

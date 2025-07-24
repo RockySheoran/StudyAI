@@ -4,11 +4,13 @@ import { generateToken } from "../Utils/generateToken";
 
 export const Login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
+    console.log(email, password)
     try {
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password,
         })
+        console.log(data)
         if (error) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
@@ -19,9 +21,15 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
             maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
             sameSite: 'lax',
         });
+        const userData = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata.full_name,
+            accessToken: token
+        }
 
 
-        return res.status(200).json({ message: "Login successful", data });
+        return res.status(200).json({ message: "Login successful", userData });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error", error });
     }
