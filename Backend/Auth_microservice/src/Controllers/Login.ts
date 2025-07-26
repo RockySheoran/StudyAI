@@ -21,6 +21,12 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
             maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
             sameSite: 'lax',
         });
+        res.cookie('auth-token', token, {
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax',
+            path: '/',
+        });
         const userData = {
             id: data.user.id,
             email: data.user.email,

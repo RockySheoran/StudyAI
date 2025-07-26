@@ -11,7 +11,7 @@ export const SignUp = async(req:Request,res:Response): Promise<any> =>{
             email: email,
             password: password,
             options: {
-              emailRedirectTo: 'http://localhost:3000/auth/signin',
+              emailRedirectTo: 'http://localhost:3000/login',
             },
           })
           console.log("data",data)
