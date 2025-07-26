@@ -111,7 +111,7 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             name: data.user.user_metadata.full_name,
             accessToken: token
         }
-      return res.redirect(`${process.env.CLIENT_URL}/dashboard?token=${token}`);
+      return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
         // return res.status(200).json({ message: "Login successful", user_Login_Data });
     } catch (error: any) {
         console.error('OAuth callback error:', error);

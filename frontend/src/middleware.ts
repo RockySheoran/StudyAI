@@ -7,14 +7,15 @@ export async function middleware(request: NextRequest) {
 
   // Check for token in cookies (from backend)
   const tokenFromCookie = request.cookies.get('token')?.value || '';
-  console.log(tokenFromCookie,"dffgfgrfg")
-
+ 
+console.log(tokenFromCookie,"fghrthrt")
   // Also check for NextAuth token
   const nextAuthToken = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET
   });
-  console.log(nextAuthToken,"nextAuthToken")
+console.log(nextAuthToken,"nextAuthToken")
+
 
   const hasToken = tokenFromCookie || nextAuthToken?.accessToken;
 
