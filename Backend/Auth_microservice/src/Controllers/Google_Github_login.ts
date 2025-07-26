@@ -31,7 +31,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
                 message: error?.message || 'Failed to initiate OAuth login',
             });
         }
-        // console.log(data.url)
+        console.log(data.url)
         // res.redirect(data.url);
         return res.status(200).json({
             success: true,

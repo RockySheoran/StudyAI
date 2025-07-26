@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { ThemeToggle } from '../comman-Components/theme-toggle';
 import { SignUp_Actions } from '@/Actions/Auth/SignUp';
+import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
 
 interface FormState {
     errors: Record<string, string>;
@@ -66,7 +67,22 @@ export default function SignupPage() {
       router.push('/signup');
     }
   }, [state]);
+ const handleGoogleLogin = async ({provider}: {provider: string}) => {
+    try {
+      const result  = await Google_Login_Action({provider})
+      console.log(result)
 
+      if (result?.success) {
+        // router.push("/dashboard");
+        window.location.href = result.data.url;
+       
+      }
+    } catch (error) {
+      console.error("Provider login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a12] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">
       <div className="container mx-auto px-4 py-12 flex items-center justify-center">
@@ -299,7 +315,7 @@ export default function SignupPage() {
               ].map(({ provider, icon }) => (
                 <button
                   key={provider}
-                  onClick={() => signIn(provider)}
+                  onClick={() => handleGoogleLogin({provider})}
                   disabled={isLoading}
                   className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] hover:bg-gray-50 dark:hover:bg-[#2a2a3a] p-3 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
                   aria-label={`Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`}
