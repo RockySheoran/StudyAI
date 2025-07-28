@@ -1,0 +1,31 @@
+{
+  "name": "files_based_microservice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "dev": "nodemon src/server.ts",
+    "build": "tsc",
+    "serve": "node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "^0.3.49",
+    "@langchain/core": "^0.3.66",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "langchain": "^0.3.30",
+    "mongoose": "^8.16.5",
+    "multer": "^2.0.2",
+    "pdf-parse": "^1.1.1",
+    "winston": "^3.17.0"
+  }
+}
