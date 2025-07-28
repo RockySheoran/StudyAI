@@ -31,6 +31,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
                 message: error?.message || 'Failed to initiate OAuth login',
             });
         }
+        console.log(data.url)
         // res.redirect(data.url);
         return res.status(200).json({
             success: true,
@@ -76,41 +77,33 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         }
         let user = userData.user;
 
-        // if (!user) {
-        //     // Create new user directly in Auth system
-        //     const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
-        //         id: userData.user.id,
-        //         email: userData.user.email || `${userData.user.id}@${userData.user.app_metadata?.provider || 'oauth'}.com`,
-        //         user_metadata: {
-        //             name: userData.user.user_metadata?.name ||
-        //                 userData.user.user_metadata?.full_name ||
-        //                 userData.user.email?.split('@')[0] ||
-        //                 'User',
-        //             avatar_url: userData.user.user_metadata?.avatar_url ||
-        //                 userData.user.user_metadata?.picture ||
-        //                 null
-        //         },
-        //         app_metadata: {
-        //             provider: userData.user.app_metadata?.provider || 'oauth'
-        //         },
-        //         email_confirm: true // Mark email as confirmed if coming from OAuth
-        //     });
+      
 
-        //     if (createError || !createdUser) {
-        //         console.error('Failed to create user in Auth system:', createError);
-        //         return res.redirect(`${process.env.CLIENT_URL}/login?error=user_creation_failed`);
-        //     }
-
-        //     // user = createdUser.user;
-        //     console.log(createdUser)
-        // }
-
-        const token = generateToken({ email: data.user.email || "", id: data.user.id });
+        const token = generateToken({ email: data.user.email || "", id: data.user.id
+            
+         });
+         console.log(token)
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
+        //     sameSite: 'lax',
+        // });
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             sameSite: 'lax',
+            // domain: process.env.COOKIE_DOMAIN, // Set if using cross-subdomain cookies
+            path: '/',
+        });
+
+        // Set additional cookie for Next.js middleware if needed
+        res.cookie('auth-token', token, {
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax',
+            path: '/',
         });
         let user_Login_Data = {
             id: data.user.id,
@@ -118,8 +111,8 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             name: data.user.user_metadata.full_name,
             accessToken: token
         }
-        res.redirect(`${process.env.CLIENT_URL}/dashboard`);
-        return res.status(200).json({ message: "Login successful", user_Login_Data });
+      return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        // return res.status(200).json({ message: "Login successful", user_Login_Data });
     } catch (error: any) {
         console.error('OAuth callback error:', error);
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);

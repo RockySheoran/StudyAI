@@ -67,7 +67,7 @@ export const authOptions: NextAuthOptions = {
             if(!credentials){
                 throw new Error("Credentials not found");
             }
-            console.log(api_Login_url)
+            
             const response = await axios.post(api_Login_url, credentials);
             console.log(response.data)
 
@@ -86,35 +86,7 @@ export const authOptions: NextAuthOptions = {
           }
         }
       }),
-      CredentialsProvider({
-        name:"google",
-        credentials:{
-          email:{label:"Email",type:"text"},
-          password:{label:"Password",type:"password"}
-          
-        } ,
-        async authorize(credentials){
-          try {
-            console.log(api_Google_url)
-           console.log("first",credentials)
-            const response = await axios.get(api_Google_url);
-            console.log(response.data)
-
-            if (!response) throw new Error("Login failed");
-            
-            const data = await response.data.userData;
-            return {
-              id: data.id,
-              email: data.email,
-              name: data.name,
-              accessToken: data.accessToken
-            };
-          } catch (error) {
-            console.error("Authorization error:", error);
-            return null;
-          }
-        }
-      })
+      
     ],
   
     callbacks: {
