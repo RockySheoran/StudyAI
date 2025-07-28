@@ -6,11 +6,15 @@ import path from 'path';
 import { errorHandler } from '../utils/error-handler';
 
 // Configure multer storage
-const storage = multer.diskStorage({
+const storage = multer.diskStorage(
+
+  {
+
   destination: (req, file, cb) => {
     cb(null, config.uploadDir);
   },
   filename: (req, file, cb) => {
+    console.log(file)
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
@@ -36,17 +40,21 @@ export const upload = multer({
 
 class FileController {
   async uploadFile(req: Request, res: Response, next: NextFunction) {
+    console.log("Uploading file...");
     try {
+      console.log("sdfdfsddfghfghfghfghghghgfgh")
       if (!req.file) {
         throw new Error('No file uploaded');
       }
 
       const savedFile = await FileService.saveFile(req.file);
+      console.log(savedFile,"savedFile")
       res.status(201).json({
         success: true,
         data: savedFile
       });
     } catch (error) {
+      console.log(error,"error")
       errorHandler(error as Error, req, res, next);
     }
   }

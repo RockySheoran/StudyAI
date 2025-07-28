@@ -10,6 +10,7 @@ class SummaryService {
     if (!file) {
       throw new Error('File not found');
     }
+    console.log(file, "file")
 
     // Read file content
     const fileContent = fs.readFileSync(file.path);
@@ -18,6 +19,7 @@ class SummaryService {
     const text = await LLMService.extractTextFromPDF(fileContent);
 
     // Generate summary
+    console.log("skgehruierhituoertuh45t9 ")
     const summary = await LLMService.generateSummary(text);
 
     // Save summary to database

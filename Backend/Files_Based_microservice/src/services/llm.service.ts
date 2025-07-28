@@ -12,7 +12,7 @@ class LLMService {
 
   constructor() {
     this.genAI = initGemini();
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     this.embeddings = new GoogleGenerativeAIEmbeddings({
       modelName: 'embedding-001',
       apiKey: process.env.GEMINI_API_KEY
@@ -60,6 +60,7 @@ class LLMService {
     try {
       const { default: pdf } = await import('pdf-parse');
       const data = await pdf(pdfBuffer);
+      console.log(data.text, "Extracted text from PDF");
       return data.text;
     } catch (error) {
       throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);

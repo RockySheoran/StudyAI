@@ -2,17 +2,18 @@
   "name": "files_based_microservice",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "ts-node src/server.ts",
-    "dev": "nodemon src/server.ts",
     "build": "tsc",
-    "serve": "node dist/server.js"
+    "build:watch": "tsc -w",
+    "start": "node dist/server.js",
+    "start:watch": "nodemon dist/server.js",
+    "dev": "npm-run-all --parallel build:watch start:watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@langchain/community": "^0.3.49",
@@ -27,6 +28,7 @@
     "langchain": "^0.3.30",
     "mongoose": "^8.16.5",
     "multer": "^2.0.2",
+    "npm-run-all": "^4.1.5",
     "pdf-parse": "^1.1.1",
     "winston": "^3.17.0"
   },

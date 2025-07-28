@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+  port: process.env.PORT ? parseInt(process.env.PORT) : 8001  ,
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/pdf-summary',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   uploadDir: process.env.UPLOAD_DIR || './uploads',

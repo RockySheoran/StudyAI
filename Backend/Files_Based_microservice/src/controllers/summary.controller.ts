@@ -4,6 +4,7 @@ import { errorHandler } from '../utils/error-handler';
 
 class SummaryController {
   async createSummary(req: Request, res: Response, next: NextFunction) {
+    console.log("dfklgjdfgjdkgibngkdgnhmsdgkldkldsjgdsgjkgher")
     try {
       const summary = await SummaryService.createSummary(req.params.fileId);
       res.status(201).json({
