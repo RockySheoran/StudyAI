@@ -4,6 +4,7 @@ import { createUploadDir } from '../utils/file-utils';
 import { IFile } from '../models/file.model';
 import fs from 'fs';
 import path from 'path';
+import express from 'express';
 
 class FileService {
   constructor() {

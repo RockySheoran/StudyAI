@@ -62,7 +62,7 @@ class LLMService {
       const data = await pdf(pdfBuffer);
       return data.text;
     } catch (error) {
-      throw new Error(`Failed to extract text from PDF: ${error.message}`);
+      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
