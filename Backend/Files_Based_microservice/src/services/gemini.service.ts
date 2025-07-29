@@ -13,7 +13,7 @@ export const generateSummary = async (pdfUrl: string): Promise<{ summary: string
     const enhancedPrompt = enhancePromptWithRAG(pdfText);
     
     // Generate content
-    const result = await model.generateContent(enhancedPrompt);
+    const result = await model.generateContent(await enhancedPrompt);
     const response = await result.response;
     const text = response.text();
     

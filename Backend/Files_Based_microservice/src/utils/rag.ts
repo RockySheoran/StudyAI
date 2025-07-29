@@ -1,4 +1,4 @@
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
@@ -20,7 +20,7 @@ export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
 };
 
 // Enhance prompt with RAG
-export const enhancePromptWithRAG = (text: string): string => {
+export const enhancePromptWithRAG = async (text: string): Promise<string> => {
   // Split text into chunks
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
@@ -35,7 +35,7 @@ export const enhancePromptWithRAG = (text: string): string => {
   
   // Create documents and add to vector store
   const docs = textSplitter.createDocuments([text]);
-  vectorStore.addDocuments(docs);
+  await vectorStore.addDocuments(await docs);
   
   // Create enhanced prompt with context
   const prompt = `

@@ -1,8 +1,10 @@
+import dotenv from 'dotenv';
+dotenv.config();  
 import app from './app';
 import logger from './utils/logger';
 import { deleteExpiredFiles } from './services/file.service';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8001;
 
 // Start the server
 const server = app.listen(PORT, () => {
@@ -18,7 +20,7 @@ deleteExpiredFiles().catch(err => {
 process.on('unhandledRejection', (err: Error) => {
   logger.error(`Unhandled Rejection: ${err.message}`);
   server.close(() => process.exit(1));
-});
+});console.log("server run on the port http://localhost:8001")
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err: Error) => {
