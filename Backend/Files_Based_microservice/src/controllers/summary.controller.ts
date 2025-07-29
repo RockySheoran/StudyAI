@@ -1,63 +1,59 @@
 import { Request, Response, NextFunction } from 'express';
-import SummaryService from '../services/summary.service';
-import { errorHandler } from '../utils/error-handler';
+import { generateSummary } from '../services/gemini.service';
+import { createSummary, getSummaryByFileId } from '../services/summary.service';
+import { getFileById } from '../services/file.service';
+import logger from '../utils/logger';
 
-class SummaryController {
-  async createSummary(req: Request, res: Response, next: NextFunction) {
-    console.log("dfklgjdfgjdkgibngkdgnhmsdgkldkldsjgdsgjkgher")
-    try {
-      const summary = await SummaryService.createSummary(req.params.fileId);
-      res.status(201).json({
-        success: true,
-        data: summary
-      });
-    } catch (error) {
-      errorHandler(error as Error, req, res , next);
+// Generate summary for a PDF
+export const generatePdfSummary = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const fileId = req.params.id;
+    
+    // Get file from database
+    const file = await getFileById(fileId);
+    if (!file) {
+      return res.status(404).json({ success: false, error: 'File not found' });
     }
-  }
-
-  async getSummary(req: Request, res: Response, next: NextFunction) {
-    try {
-      const summary = await SummaryService.getSummaryById(req.params.id);
-      if (!summary) {
-        return res.status(404).json({
-          success: false,
-          message: 'Summary not found'
-        });
-      }
-
-      res.status(200).json({
+    
+    // Check if summary already exists
+    const existingSummary = await getSummaryByFileId(fileId);
+    if (existingSummary) {
+      return res.status(200).json({
         success: true,
-        data: summary
+        data: existingSummary,
+        message: 'Summary already exists',
       });
-    } catch (error) {
-      errorHandler(error as Error, req, res , next);
     }
+    
+    // Generate summary using Gemini
+    const { summary, keywords } = await generateSummary(file.cloudinaryUrl);
+    
+    // Save summary to database
+    const newSummary = await createSummary(fileId, summary, keywords);
+    
+    res.status(201).json({
+      success: true,
+      data: newSummary,
+    });
+  } catch (error) {
+    logger.error(`Error in generatePdfSummary: ${error}`);
+    next(error);
   }
+};
 
-  async getSummaries(req: Request, res: Response, next: NextFunction) {
-    try {
-      const summaries = await SummaryService.getSummaries();
-      res.status(200).json({
-        success: true,
-        data: summaries
-      });
-    } catch (error) {
-      errorHandler(error as Error, req, res , next);
+// Get summary by file ID
+export const getPdfSummary = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const summary = await getSummaryByFileId(req.params.id);
+    if (!summary) {
+      return res.status(404).json({ success: false, error: 'Summary not found' });
     }
+    res.status(200).json({
+      success: true,
+      data: summary,
+    });
+  } catch (error) {
+    logger.error(`Error in getPdfSummary: ${error}`);
+    next(error);
   }
-
-  async deleteSummary(req: Request, res: Response, next: NextFunction) {
-    try {
-      await SummaryService.deleteSummary(req.params.id);
-      res.status(200).json({
-        success: true,
-        message: 'Summary deleted successfully'
-      });
-    } catch (error) {
-      errorHandler(error as Error, req, res , next);
-    }
-  }
-}
-
-export default new SummaryController();
+};

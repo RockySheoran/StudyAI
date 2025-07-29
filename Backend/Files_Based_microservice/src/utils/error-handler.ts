@@ -1,13 +1,35 @@
 import { Request, Response, NextFunction } from 'express';
-import { Logger } from './logger';
+import createHttpError from 'http-errors';
+import logger from './logger';
 
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
-  Logger.error(err.message, { stack: err.stack });
+// Error handler middleware
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  logger.error(`Error: ${err.message}`);
+  
+  if (err instanceof createHttpError.HttpError) {
+    return res.status(err.statusCode).json({
+      error: {
+        message: err.message,
+        status: err.statusCode,
+      },
+    });
+  }
 
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
+  // Default to 500 server error
+  return res.status(500).json({
+    error: {
+      message: 'Internal Server Error',
+      status: 500,
+    },
   });
+};
+
+// 404 Not Found handler
+export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+  next(createHttpError(404, 'Resource not found'));
 };

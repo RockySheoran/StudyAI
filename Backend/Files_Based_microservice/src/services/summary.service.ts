@@ -1,48 +1,40 @@
-import Summary from '../models/summary.model';
-import FileService from './file.service';
-import LLMService from './llm.service';
-import fs from 'fs';
-import { ISummary } from '../models/summary.model';
+import Summary, { ISummary } from '../models/summary.model';
+import File from '../models/file.model';
+import logger from '../utils/logger';
 
-class SummaryService {
-  async createSummary(fileId: string): Promise<ISummary> {
-    const file = await FileService.getFileById(fileId);
-    if (!file) {
-      throw new Error('File not found');
-    }
-    console.log(file, "file")
-
-    // Read file content
-    const fileContent = fs.readFileSync(file.path);
-
-    // Extract text from PDF
-    const text = await LLMService.extractTextFromPDF(fileContent);
-
-    // Generate summary
-    console.log("skgehruierhituoertuh45t9 ")
-    const summary = await LLMService.generateSummary(text);
-
-    // Save summary to database
+// Create a new summary
+export const createSummary = async (
+  fileId: string,
+  summaryText: string,
+  keywords: string[]
+): Promise<ISummary> => {
+  try {
     const newSummary = new Summary({
-      file: file._id,
-      content: text,
-      summary
+      fileId,
+      summary: summaryText,
+      keywords,
+      summaryLength: summaryText.length,
     });
 
-    return await newSummary.save();
+    await newSummary.save();
+    
+    // Update file with page count if available
+    await File.findByIdAndUpdate(fileId, { $set: { processed: true } });
+    
+    logger.info(`Summary created successfully for file: ${fileId}`);
+    return newSummary;
+  } catch (error) {
+    logger.error(`Error creating summary: ${error}`);
+    throw error;
   }
+};
 
-  async getSummaryById(id: string): Promise<ISummary | null> {
-    return await Summary.findById(id).populate('file');
+// Get summary by file ID
+export const getSummaryByFileId = async (fileId: string): Promise<ISummary | null> => {
+  try {
+    return await Summary.findOne({ fileId }).populate('fileId');
+  } catch (error) {
+    logger.error(`Error getting summary by file ID: ${error}`);
+    throw error;
   }
-
-  async getSummaries(): Promise<ISummary[]> {
-    return await Summary.find().populate('file').sort({ createdAt: -1 });
-  }
-
-  async deleteSummary(id: string): Promise<void> {
-    await Summary.findByIdAndDelete(id);
-  }
-}
-
-export default new SummaryService();
+};

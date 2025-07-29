@@ -1,25 +1,24 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { IFile } from './file.model';
+import mongoose, { Document } from 'mongoose';
 
 export interface ISummary extends Document {
-  file: IFile['_id'];
-  content: string;
+  fileId: mongoose.Schema.Types.ObjectId;
   summary: string;
+  keywords: string[];
   createdAt: Date;
   updatedAt: Date;
+  modelUsed: string;
+  summaryLength: number;
 }
 
-const SummarySchema: Schema = new Schema({
-  file: { type: Schema.Types.ObjectId, ref: 'File', required: true },
-  content: { type: String, required: true },
-  summary: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
+const SummarySchema = new mongoose.Schema<ISummary>(
+  {
+    fileId: { type: mongoose.Schema.Types.ObjectId, ref: 'File', required: true },
+    summary: { type: String, required: true },
+    keywords: { type: [String], default: [] },
+    modelUsed: { type: String, default: 'gemini-pro' },
+    summaryLength: { type: Number, required: true },
+  },
+  { timestamps: true }
+);
 
-SummarySchema.pre<ISummary>('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
-
-export default mongoose.model<ISummary>('Summary', SummarySchema);``
+export default mongoose.model<ISummary>('Summary', SummarySchema);

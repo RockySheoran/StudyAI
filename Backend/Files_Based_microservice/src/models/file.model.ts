@@ -1,21 +1,23 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 export interface IFile extends Document {
-  filename: string;
-  originalname: string;
-  mimetype: string;
-  size: number;
-  path: string;
+  originalName: string;
+  cloudinaryId: string;
+  cloudinaryUrl: string;
   uploadDate: Date;
+  deleteDate: Date;
+  size: number;
+  pages?: number;
 }
 
-const FileSchema: Schema = new Schema({
-  filename: { type: String, required: true },
-  originalname: { type: String, required: true },
-  mimetype: { type: String, required: true },
+const FileSchema = new mongoose.Schema<IFile>({
+  originalName: { type: String, required: true },
+  cloudinaryId: { type: String, required: true },
+  cloudinaryUrl: { type: String, required: true },
+  uploadDate: { type: Date, default: Date.now },
+  deleteDate: { type: Date, required: true },
   size: { type: Number, required: true },
-  path: { type: String, required: true },
-  uploadDate: { type: Date, default: Date.now }
+  pages: { type: Number },
 });
 
 export default mongoose.model<IFile>('File', FileSchema);
