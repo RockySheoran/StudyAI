@@ -16,7 +16,11 @@ export const generateSummary = async (pdfUrl: string): Promise<{ summary: string
 
     // Enhance prompt with RAG
     const enhancedPrompt = enhancePromptWithRAG(pdfText);
-    
+    console.log(enhancedPrompt, "enhancedPrompt");
+    if (!enhancedPrompt) {
+      throw new Error('Failed to enhance prompt with RAG');
+    }
+    console.log("11111111111111111111111111111111111111111111111111111111111111111111111111")
     // Generate content
     const result = await model.generateContent(await enhancedPrompt);
     const response = await result.response;

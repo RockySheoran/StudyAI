@@ -5,6 +5,7 @@ import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import axios from 'axios';
 import { Readable } from 'stream';
 import logger from './logger';
+import { embeddings } from '../config/gemini';
 
 export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
   try {
@@ -67,11 +68,11 @@ export const enhancePromptWithRAG = async (text: string): Promise<string> => {
     chunkSize: 1000,
     chunkOverlap: 200,
   });
-  
+  console.log(textSplitter, "text for RAG");
   // For simplicity, we're using MemoryVectorStore here
   // In production, you might want to use a persistent vector store
   const vectorStore = new MemoryVectorStore(
-    new GoogleGenerativeAIEmbeddings()
+   embeddings
   );
   
   // Create documents and add to vector store
@@ -95,6 +96,7 @@ export const enhancePromptWithRAG = async (text: string): Promise<string> => {
   
   Keywords: [comma-separated keywords]
   `;
+  console.log(prompt,"promt")
   
   return prompt;
 };
