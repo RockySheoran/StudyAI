@@ -61,6 +61,7 @@ export const generateFileSummary = async (req: Request, res: Response) => {
 
     res.json({ summary, fromCache: false });
   } catch (error) {
+    console.log("second")
     console.error('Error generating summary:', error);
     res.status(500).json({ error: 'Failed to generate summary' });
   }
