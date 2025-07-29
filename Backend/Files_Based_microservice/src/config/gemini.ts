@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 
 // Get the generative model
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-pro",
+  model: "gemini-1.5-flash",
   generationConfig: {
     maxOutputTokens: 2048,
     temperature: 0.7,

@@ -2,22 +2,63 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
+import axios from 'axios';
+import { Readable } from 'stream';
 import logger from './logger';
 
-// Extract text from PDF
 export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
   try {
-    const loader = new PDFLoader(pdfUrl);
-    const docs = await loader.load();
+    // 1. Download the PDF from Cloudinary
+    logger.debug(`Downloading PDF from: ${pdfUrl}`);
+    const response = await axios.get(pdfUrl, {
+      responseType: 'arraybuffer',
+      timeout: 30000 // 30 seconds timeout
+    });
+
+    // 2. Verify the response is a PDF
+    const contentType = response.headers['content-type'];
+    if (!contentType?.includes('application/pdf')) {
+      throw new Error('URL does not point to a valid PDF file');
+    }
+
+    // 3. Save the PDF buffer to a temporary file
+    const pdfBuffer = Buffer.from(response.data, 'binary');
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const os = await import('os');
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pdf-'));
+    const tempFilePath = path.join(tempDir, 'temp.pdf');
+    await fs.writeFile(tempFilePath, pdfBuffer);
+
+    // 4. Load with PDFLoader using the file path
+    const loader = new PDFLoader(tempFilePath);
+    logger.debug('PDF loader created, loading document...');
     
-    // Combine all pages text
+    const docs = await loader.load();
+    logger.debug(`Loaded ${docs.length} document pages`);
+
+    // 5. Clean up the temporary file
+    await fs.unlink(tempFilePath);
+    await fs.rmdir(tempDir);
+
+    if (docs.length === 0) {
+      throw new Error('No text found in the PDF document');
+    }
+
+    // 5. Combine all pages text
     const fullText = docs.map(doc => doc.pageContent).join('\n\n');
+    logger.debug(`Extracted text length: ${fullText.length} characters`);
+    
     return fullText;
   } catch (error) {
-    logger.error(`Error extracting text from PDF: ${error}`);
+    logger.error('Error extracting text from PDF:', {
+      error: error instanceof Error ? error.message : error,
+      url: pdfUrl
+    });
     throw error;
   }
 };
+
 
 // Enhance prompt with RAG
 export const enhancePromptWithRAG = async (text: string): Promise<string> => {

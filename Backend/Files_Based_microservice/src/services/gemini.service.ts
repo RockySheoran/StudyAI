@@ -7,8 +7,13 @@ import { enhancePromptWithRAG } from '../utils/rag';
 export const generateSummary = async (pdfUrl: string): Promise<{ summary: string; keywords: string[] }> => {
   try {
     // Extract text from PDF
+    console.log(pdfUrl, "pdfUrl");
+    if (!pdfUrl) {
+      throw new Error('PDF URL is required');
+    }
     const pdfText = await extractTextFromPdf(pdfUrl);
-    
+    console.log(pdfText, "pdfText");
+
     // Enhance prompt with RAG
     const enhancedPrompt = enhancePromptWithRAG(pdfText);
     

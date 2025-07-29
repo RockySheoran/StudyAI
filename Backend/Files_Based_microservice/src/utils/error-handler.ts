@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import e, { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import logger from './logger';
 
@@ -9,6 +9,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(err)
   logger.error(`Error: ${err.message}`);
   
   if (err instanceof createHttpError.HttpError) {
