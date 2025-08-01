@@ -11,12 +11,14 @@ import logger from './utils/logger';
 import fileRoutes from './routes/file.routes';
 import summaryRoutes from './routes/summary.routes';
 import { errorHandler, notFoundHandler } from './utils/error-handler';
+import redisClient from './config/redis';
 
 // Initialize express app
 const app = express();
 
 // Connect to database
 connectDB();
+redisClient; // Initialize Redis connection
 
 // Middleware
 app.use(cors());
