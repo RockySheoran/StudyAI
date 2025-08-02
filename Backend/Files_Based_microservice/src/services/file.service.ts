@@ -1,76 +1,71 @@
-import { Request } from 'express';
-import File, { IFile } from '../models/file.model';
-import cloudinary from '../config/cloudinary';
-import logger from '../utils/logger';
+import { File } from '../models/file.model';
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
+import fs from 'fs';
+import { promisify } from 'util';
+import { Summary } from '../models/summary.model';
+const unlinkAsync = promisify(fs.unlink);
 
-// Upload file to Cloudinary and save to database
-export const uploadFile = async (req: Request): Promise<IFile> => {
-  if (!req.file) {
-    throw new Error('No file uploaded');
-  }
-
-  const { originalname, size, path } = req.file;
-
+export const uploadFile = async (file: Express.Multer.File, userId?: string) => {
   try {
     // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(path, {
-      resource_type: 'raw',
-      folder: 'pdf-summaries',
-      public_id: `${Date.now()}-${originalname.split('.')[0]}`,
-      expiration: Date.now() + 4 * 24 * 60 * 60 * 1000, // 4 days expiration
-    });
+    const result = await uploadToCloudinary(file.path);
+    
+    // Set deletion time (4 days from now)
+    const deleteAt = new Date();
+    deleteAt.setDate(deleteAt.getDate() + 4);
 
-    // Calculate delete date (4 days from now)
-    const deleteDate = new Date();
-    deleteDate.setDate(deleteDate.getDate() + 4);
-
-    // Save file info to database
+    // Save to database
     const newFile = new File({
-      originalName: originalname,
+      originalName: file.originalname,
       cloudinaryId: result.public_id,
       cloudinaryUrl: result.secure_url,
-      uploadDate: new Date(),
-      deleteDate,
-      size,
+      size: file.size,
+      mimetype: file.mimetype,
+      deleteAt,
+      userId,
     });
 
     await newFile.save();
 
-    logger.info(`File uploaded successfully: ${newFile._id}`);
+
+    console.log(file.path,"file path")
+    // Delete local file
+    const a  =await unlinkAsync(file.path);
+    console.log(a,"delete local file")
+
     return newFile;
   } catch (error) {
-    logger.error(`Error uploading file: ${error}`);
+    console.error('File upload service error:', error);
     throw error;
   }
 };
 
-// Delete expired files
-export const deleteExpiredFiles = async (): Promise<void> => {
+export const getFileById = async (fileId: string) => {
+  return await File.findById(fileId);
+};
+
+export const deleteExpiredFiles = async () => {
   try {
     const now = new Date();
-    const expiredFiles = await File.find({ deleteDate: { $lte: now } });
+    const expiredFiles = await File.find({ deleteAt: { $lte: now } });
 
     for (const file of expiredFiles) {
-      // Delete from Cloudinary
-      await cloudinary.uploader.destroy(file.cloudinaryId, { resource_type: 'raw' });
-      
-      // Delete from database
-      await File.findByIdAndDelete(file._id);
-      
-      logger.info(`Deleted expired file: ${file._id}`);
+      try {
+        await deleteFromCloudinary(file.cloudinaryId);
+        // await File.findByIdAndDelete(file._id);
+        // await Summary.deleteMany({ fileId: file._id });
+      } catch (err) {
+        console.error(`Error deleting file ${file._id}:`, err);
+      }
     }
+
+    return { deletedCount: expiredFiles.length };
   } catch (error) {
-    logger.error(`Error deleting expired files: ${error}`);
+    console.error('Error in deleteExpiredFiles:', error);
     throw error;
   }
 };
 
-// Get file by ID
-export const getFileById = async (fileId: string): Promise<IFile | null> => {
-  try {
-    return await File.findById(fileId);
-  } catch (error) {
-    logger.error(`Error getting file by ID: ${error}`);
-    throw error;
-  }
-};
+
+
+

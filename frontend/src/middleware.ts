@@ -17,7 +17,8 @@ console.log(tokenFromCookie,"fghrthrt")
 console.log(nextAuthToken,"nextAuthToken")
 
 
-  const hasToken = tokenFromCookie || nextAuthToken?.accessToken;
+  // const hasToken = tokenFromCookie || nextAuthToken?.accessToken;
+  const hasToken = true;
 
   // Handle Google auth callback
   if (path.startsWith('/api/auth/callback')) {

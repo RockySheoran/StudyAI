@@ -1,40 +1,107 @@
-import Summary, { ISummary } from '../models/summary.model';
-import File from '../models/file.model';
-import logger from '../utils/logger';
+import { Summary } from '../models/summary.model';
+import { File } from '../models/file.model';
+import { generateSummary } from '../config/gemini';
 
-// Create a new summary
-export const createSummary = async (
-  fileId: string,
-  summaryText: string,
-  keywords: string[]
-): Promise<ISummary> => {
+import { redisClient } from '../config/redis';
+import { extractTextFromPdf } from '../utils/file.utils';
+
+export const createSummaryJob = async (fileId: string, userId?: string) => {
   try {
-    const newSummary = new Summary({
+    // Create initial summary record
+    const summary = new Summary({
       fileId,
-      summary: summaryText,
-      keywords,
-      summaryLength: summaryText.length,
+      status: 'pending',
+      userId,
     });
+    await summary.save();
+    console.log(summary,"summary")
 
-    await newSummary.save();
-    
-    // Update file with page count if available
-    await File.findByIdAndUpdate(fileId, { $set: { processed: true } });
-    
-    logger.info(`Summary created successfully for file: ${fileId}`);
-    return newSummary;
+    // Cache the initial state
+    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+      status: 'pending',
+      summaryId: summary._id.toString(),
+    }));
+
+    return summary;
   } catch (error) {
-    logger.error(`Error creating summary: ${error}`);
+    console.error('Error creating summary job:', error);
     throw error;
   }
 };
 
-// Get summary by file ID
-export const getSummaryByFileId = async (fileId: string): Promise<ISummary | null> => {
+export const generateFileSummary = async (fileId: string) => {
   try {
-    return await Summary.findOne({ fileId }).populate('fileId');
+    const file = await File.findById(fileId);
+    if (!file) throw new Error('File not found');
+
+    let summary = await Summary.findOne({ fileId });
+    if (!summary) {
+      summary = new Summary({ fileId, status: 'pending' });
+      await summary.save();
+    }
+
+    // Extract text from PDF (implementation in utils/file.utils.ts)
+    const text = await extractTextFromPdf(file.cloudinaryUrl);
+
+    // Generate summary using Gemini
+    const summaryContent = await generateSummary(text);
+
+    // Update summary record
+    summary.content = summaryContent;
+    summary.status = 'completed';
+    summary.generatedAt = new Date();
+    await summary.save();
+
+    // Update cache
+    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+      status: 'completed',
+      content: summaryContent,
+      summaryId: summary._id.toString(),
+    }));
+
+    return summary;
   } catch (error) {
-    logger.error(`Error getting summary by file ID: ${error}`);
+    console.error('Error generating summary:', error);
+
+    // Update status to failed if something went wrong
+    await Summary.findOneAndUpdate(
+      { fileId },
+      { status: 'failed' },
+      { upsert: true }
+    );
+
+    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+      status: 'failed',
+    }));
+
+    throw error;
+  }
+};
+
+export const getSummaryStatus = async (fileId: string) => {
+  try {
+    // First check Redis cache
+    const cachedSummary = await redisClient.get(`summary:${fileId}`);
+    if (cachedSummary) {
+      return JSON.parse(cachedSummary);
+    }
+
+    // Fallback to database
+    const summary = await Summary.findOne({ fileId });
+    if (!summary) return { status: 'not_found' };
+
+    const result = {
+      status: summary.status,
+      content: summary.content,
+      summaryId: summary._id.toString(),
+    };
+
+    // Cache the result
+    await redisClient.set(`summary:${fileId}`, JSON.stringify(result));
+
+    return result;
+  } catch (error) {
+    console.error('Error getting summary status:', error);
     throw error;
   }
 };
