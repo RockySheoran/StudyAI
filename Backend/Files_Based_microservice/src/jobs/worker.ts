@@ -8,6 +8,7 @@ import logger from '../utils/logger';
 const worker = new Worker('pdf-summary', async job => {
   try {
     const { fileId, pdfUrl } = job.data;
+    console.log(fileId, pdfUrl);
     logger.info(`Processing job ${job.id} for file ${fileId}`);
     
     // Check if file still exists
@@ -15,6 +16,7 @@ const worker = new Worker('pdf-summary', async job => {
     if (!file) {
       throw new Error(`File ${fileId} not found`);
     }
+    console.log("fjkffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
     
     // Process summary
     const { summary, keywords } = await generateSummary(pdfUrl);

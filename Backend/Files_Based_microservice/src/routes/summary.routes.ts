@@ -5,5 +5,6 @@ const router = Router();
 
 router.post('/:id', generatePdfSummary);
 router.get('/:id', getPdfSummary);
+// router.get('/job/:id', getJobStatus);
 
 export default router;
