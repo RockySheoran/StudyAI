@@ -1,49 +1,42 @@
+import dotenv from 'dotenv';
+dotenv.config();  
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import morgan from 'morgan';
-import { storage } from './config/cloudinary';
-import multer from 'multer';
+import apiRoutes from './routes/api.routes';
+import { connectDB } from './config/database';
+import { configureCloudinary } from './config/cloudinary';
+import { connectRedis } from './config/redis';
+import { initializeSummaryWorker } from './jobs/summary.job';
+import { startCleanupJob } from './utils/cleanup.utils';
 
-import connectDB from './config/database';
-import logger from './utils/logger';
+export const createApp = () => {
+  const app = express();
 
-// Import routes
-import fileRoutes from './routes/file.routes';
-import summaryRoutes from './routes/summary.routes';
-import { errorHandler, notFoundHandler } from './utils/error-handler';
-import redisClient from './config/redis';
+  // Middleware
+  app.use(cors());
+  app.use(helmet());
+  app.use(morgan('dev'));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-// Initialize express app
-const app = express();
+  // Routes
+  app.use('/api', apiRoutes);
 
-// Connect to database
-connectDB();
-redisClient; // Initialize Redis connection
+  // Health check
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(morgan('dev', { stream: { write: (message :any) => logger.http(message.trim()) } }));
+  // Initialize services
+  const initializeServices = async () => {
+    await connectDB();
+    configureCloudinary();
+    await connectRedis();
+    initializeSummaryWorker();
+    startCleanupJob();
+  };
 
-// Configure multer for file uploads
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'));
-    }
-  },
-});
-
-// Routes
-app.use('/api/files', upload.single('file'), fileRoutes);
-app.use('/api/summaries', summaryRoutes);
-
-// Error handlers
-app.use(notFoundHandler);
-app.use(errorHandler);
-
-export default app;
+  return { app, initializeServices };
+};

@@ -1,24 +1,20 @@
-import mongoose, { Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 
-export interface ISummary extends Document {
-  fileId: mongoose.Schema.Types.ObjectId;
-  summary: string;
-  keywords: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  modelUsed: string;
-  summaryLength: number;
+interface ISummary extends Document {
+  _id:string;
+  fileId: Schema.Types.ObjectId;
+  content: string;
+  generatedAt: Date;
+  status: 'pending' | 'completed' | 'failed';
+  userId?: string;
 }
 
-const SummarySchema = new mongoose.Schema<ISummary>(
-  {
-    fileId: { type: mongoose.Schema.Types.ObjectId, ref: 'File', required: true },
-    summary: { type: String, required: true },
-    keywords: { type: [String], default: [] },
-    modelUsed: { type: String, default: 'gemini-pro' },
-    summaryLength: { type: Number, required: true },
-  },
-  { timestamps: true }
-);
+const SummarySchema = new Schema<ISummary>({
+  fileId: { type: Schema.Types.ObjectId, ref: 'File', required: true },
+  content: { type: String },
+  generatedAt: { type: Date, default: Date.now },
+  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+  userId: { type: String },
+});
 
-export default mongoose.model<ISummary>('Summary', SummarySchema);
+export const Summary = model<ISummary>('Summary', SummarySchema);

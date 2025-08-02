@@ -1,24 +1,15 @@
-import { Queue } from 'bullmq';
-import redisClient from '../config/redis';
-import logger from '../utils/logger';
+import { createSummaryWorker } from '../services/queue.service';
 
-export const summaryQueue = new Queue('pdf-summary', {
-  connection: redisClient,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
-    removeOnComplete: true,
-    removeOnFail: 100, // Keep last 100 failed jobs
-  },
-});
+export const initializeSummaryWorker = () => {
+  const worker = createSummaryWorker();
 
-// Utility to add job to queue
-export const enqueueSummaryJob = async (fileId: string, pdfUrl: string) => {
-  return summaryQueue.add('process-pdf', { fileId, pdfUrl }, {
-    jobId: fileId, // Use fileId as jobId for idempotency
-    priority: 1, // Higher priority = processed sooner
+  worker.on('completed', (job) => {
+    console.log(`Summary job completed for file ${job.data.fileId}`);
   });
+
+  worker.on('failed', (job, err) => {
+    console.error(`Summary job failed for file ${job?.data.fileId}:`, err);
+  });
+
+  return worker;
 };

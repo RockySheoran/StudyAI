@@ -1,49 +1,52 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { uploadFile, getFileById } from '../services/file.service';
-import { deleteExpiredFiles } from '../services/file.service';
-import logger from '../utils/logger';
+import { createSummaryJob, getSummaryStatus } from '../services/summary.service';
+import { summaryQueue } from '../services/queue.service';
 
-// Upload PDF file
-export const uploadPdf = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const file = await uploadFile(req);
-    res.status(201).json({
-      success: true,
-      data: file,
-    });
-  } catch (error) {
-    logger.error(`Error in uploadPdf: ${error}`);
-    next(error);
-  }
-};
 
-// Get file by ID
-export const getFile = async (req: Request, res: Response, next: NextFunction) => {
+export const uploadFileController = async (req: Request, res: Response) => {
   try {
-    const file = await getFileById(req.params.id);
-    if (!file) {
-      return res.status(404).json({ success: false, error: 'File not found' });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
-    res.status(200).json({
-      success: true,
-      data: file,
+
+    // const userId = req.user?.id; // Assuming you have authentication middleware
+    const userId = "JFGD"
+    const file : any = await uploadFile(req.file, userId);
+    console.log(file)
+    
+    // Create summary job
+    const summary = await createSummaryJob(file._id.toString(), userId);
+    console.log(summary,"djkgdsijhdsfieuo")
+
+    // Add to processing queue
+    await summaryQueue.add('processSummary', {
+      fileId: file._id.toString(),
+    });
+
+    res.status(201).json({
+      message: 'File uploaded successfully',
+      fileId: file._id,
+      summaryId: summary._id,
     });
   } catch (error) {
-    logger.error(`Error in getFile: ${error}`);
-    next(error);
+    console.error('File upload error:', error);
+    res.status(500).json({ error: 'Failed to upload file' });
   }
 };
 
-// Cleanup expired files (can be called via cron job)
-export const cleanupFiles = async (req: Request, res: Response, next: NextFunction) => {
+export const checkSummaryStatus = async (req: Request, res: Response) => {
   try {
-    await deleteExpiredFiles();
-    res.status(200).json({
-      success: true,
-      message: 'Expired files cleanup completed',
-    });
+    const { fileId } = req.params;
+    const status = await getSummaryStatus(fileId);
+
+    if (status.status === 'not_found') {
+      return res.status(404).json({ error: 'File or summary not found' });
+    }
+
+    res.json(status);
   } catch (error) {
-    logger.error(`Error in cleanupFiles: ${error}`);
-    next(error);
+    console.error('Check summary status error:', error);
+    res.status(500).json({ error: 'Failed to check summary status' });
   }
 };
