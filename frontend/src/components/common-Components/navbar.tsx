@@ -348,15 +348,9 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                   )}
                 </div>
                 {isOpen && (
-                  <motion.button
-                    className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    {/* <FaSignOutAlt className="text-gray-600 dark:text-gray-300" />
-                     */}
-                    <LogoutButton />{" "}
-                  </motion.button>
+                  <div className="">
+                    <LogoutButton />
+                  </div>
                 )}
               </div>
             </div>

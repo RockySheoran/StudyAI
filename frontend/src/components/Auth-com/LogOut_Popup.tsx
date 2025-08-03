@@ -13,13 +13,15 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Logout_Action } from '@/Actions/Auth/Logout_Action';
+import { useUserStore } from '@/lib/Store/userStore';
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const {token} = useUserStore(); 
 
   const handleLogout = async () => {
     // Your logout logic here
-    const res  = await Logout_Action({token});
+    const res  = await Logout_Action({token: token || ''});
     if(res.status === 200){
         setIsOpen(false);
         toast.success("Logout successfully");
@@ -34,8 +36,8 @@ const LogoutButton = () => {
 
   return (
     <>
-      {/* Logout Button */}
-      <motion.button
+      <div className="">
+        <motion.button
         className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -80,6 +82,7 @@ const LogoutButton = () => {
           </motion.div>
         </DialogContent>
       </Dialog>
+      </div>
     </>
   );
 };

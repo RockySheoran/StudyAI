@@ -26,9 +26,14 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<any> 
     }
     console.log("data:", data);
     console.log("user:", data.user);
+    const userData = {
+      name : data.user.user_metadata.full_name,
+      email : data.user.email,
+      avatar : data.user.user_metadata,
+    }
     return res.status(200).json({
       success: true,
-      user: data.user,
+      user: userData,
     });
 
   } catch (err) {

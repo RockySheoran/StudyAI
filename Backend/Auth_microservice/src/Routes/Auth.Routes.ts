@@ -13,7 +13,7 @@ AuthRoute.post("/signUp", SignUp)
 AuthRoute.post("/login", Login)
 AuthRoute.get('/login/:provider', Google_Github_login);
 AuthRoute.get('/callback', Login_callback);
-AuthRoute.get("me",middleware,getProfile)
+AuthRoute.get("/me",middleware,getProfile)
 AuthRoute.post("/forgot-password", Forgot_Password);   
 AuthRoute.post("/reset-password", Reset_Password);   
 AuthRoute.post("/logout",middleware,Logout);

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { ThemeToggle } from '../comman-Components/theme-toggle';
+import { ThemeToggle } from '../common-Components/theme-toggle';
 import { SignUp_Actions } from '@/Actions/Auth/SignUp';
 import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
 import { toast } from 'sonner';
