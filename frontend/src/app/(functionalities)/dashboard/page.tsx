@@ -24,8 +24,7 @@ export default async function Page() {
   const Google_token = cookieStore.get('token')?.value;
   // console.log(Google_token,"Google_token")
   const token  = Google_token || nextAuthToken?.accessToken;
- 
-  
+
   return (
     <div>
       {token ? (
