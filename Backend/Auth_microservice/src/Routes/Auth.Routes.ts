@@ -16,7 +16,7 @@ AuthRoute.get('/callback', Login_callback);
 AuthRoute.get("/me",middleware,getProfile)
 AuthRoute.post("/forgot-password", Forgot_Password);   
 AuthRoute.post("/reset-password", Reset_Password);   
-AuthRoute.post("/logout",middleware,Logout);
+AuthRoute.get("/logout",middleware,Logout);
 
 
 

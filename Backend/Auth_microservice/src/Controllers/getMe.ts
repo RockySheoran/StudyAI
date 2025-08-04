@@ -13,7 +13,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<any> 
       message: 'Not authenticated',
     });
   }
-  console.log("req.user:", req.user);
+
 
   try {
        const { data, error } = await supabase.auth.admin.getUserById(req.user.id);
@@ -24,12 +24,12 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<any> 
         message: 'User not found',
       });
     }
-    console.log("data:", data);
-    console.log("user:", data.user);
+    
+    console.log("user:", data.user.user_metadata);
     const userData = {
       name : data.user.user_metadata.full_name,
       email : data.user.email,
-      avatar : data.user.user_metadata,
+      avatar : data.user.user_metadata.avatar_url,
     }
     return res.status(200).json({
       success: true,

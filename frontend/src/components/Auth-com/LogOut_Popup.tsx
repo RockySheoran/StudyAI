@@ -14,21 +14,31 @@ import {
 import { toast } from 'sonner';
 import { Logout_Action } from '@/Actions/Auth/Logout_Action';
 import { useUserStore } from '@/lib/Store/userStore';
+import { useRouter } from 'next/navigation';
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const {token} = useUserStore(); 
+  const {token} = useUserStore();
+  const {clearUser,clearToken} = useUserStore(); 
+  const [isLoading, setIsLoading] = useState(false);
+
 
   const handleLogout = async () => {
     // Your logout logic here
+    setIsLoading(true);
     const res  = await Logout_Action({token: token || ''});
+    console.log("res:", res);
     if(res.status === 200){
         setIsOpen(false);
+        clearUser();
+        clearToken();
+        const router = useRouter();
         toast.success("Logout successfully");
+        router.push('/login');
     }else{
         toast.error("Logout failed");
     }
-
+    setIsLoading(false);
    
     setIsOpen(false);
     // router.push('/login'); // If using Next.js navigation
@@ -61,7 +71,7 @@ const LogoutButton = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="mt-4">
+            <DialogFooter className="mt-4 flex gap-3 justify-center items-center   ">
               <div className="flex gap-3">
                 <Button
                   variant="outline"
@@ -73,9 +83,10 @@ const LogoutButton = () => {
                 <Button
                   variant="destructive"
                   onClick={handleLogout}
-                  className="px-4 dark:text-white cursor-pointer"
+                  disabled={isLoading}
+                  className={`px-4 dark:text-white cursor-pointer ${isLoading ? 'opacity-50 cursor-not-allowed disabled' : ''}`}
                 >
-                  Logout
+                  {isLoading ? 'Logging out...' : 'Logout'}
                 </Button>
               </div>
             </DialogFooter>

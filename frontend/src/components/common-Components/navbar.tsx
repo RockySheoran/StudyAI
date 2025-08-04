@@ -16,12 +16,13 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import LogoutButton from "../Auth-com/LogOut_Popup";
+import { useUserStore } from "@/lib/Store/userStore";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NavItem {
   name: string;
   icon: JSX.Element;
   route: string;
-  isActive?: boolean;
 }
 
 interface NavbarProps {
@@ -35,6 +36,9 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window?.innerWidth : 1024
   );
+  const { name, email, avatar } = useUserStore();
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Nav items data
   const navItems: NavItem[] = [
@@ -42,37 +46,31 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
       name: "Dashboard",
       icon: <FaHome className="text-lg" />,
       route: "/dashboard",
-      isActive: true,
     },
     {
       name: "Summary",
       icon: <FaFileAlt className="text-lg" />,
       route: "/summary",
-      isActive: false,
     },
     {
       name: "Interview",
       icon: <FaUserTie className="text-lg" />,
       route: "/interview",
-      isActive: false,
     },
     {
       name: "Quiz/QnA",
       icon: <FaQuestionCircle className="text-lg" />,
       route: "/quiz",
-      isActive: false,
     },
     {
       name: "English Conversation",
       icon: <FaComments className="text-lg" />,
       route: "/english-conversation",
-      isActive: false,
     },
     {
       name: "Topics",
       icon: <FaLightbulb className="text-lg" />,
       route: "/topics",
-      isActive: false,
     },
   ];
 
@@ -107,10 +105,18 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     setIsOpen(!isOpen);
   };
 
+  const handleLogout = () => {
+    setMobileMenuOpen(false);
+  };
+
+  const isActive = (route: string) => {
+    return pathname === route;
+  };
+
   return (
     <>
       {/* Mobile Top Header - Always visible on mobile */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex justify-between items-center">
+      <header className="md:hidden  fixed top-0 left-0 right-0 z-90 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex justify-between items-center">
         <motion.h1
           className="text-xl font-bold text-indigo-600 dark:text-indigo-400"
           initial={{ opacity: 0 }}
@@ -148,7 +154,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 left-0 z-50 w-64  bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 pt-16"
+              className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 pt-16"
             >
               <div className="flex flex-col h-full overflow-y-auto">
                 <nav className="flex-1 flex flex-col justify-between">
@@ -158,7 +164,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                         key={item.name}
                         href={item.route}
                         className={`flex items-center p-3 rounded-lg transition-colors ${
-                          item.isActive
+                          isActive(item.route)
                             ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
                             : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                         }`}
@@ -169,7 +175,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                           {item.icon}
                         </span>
                         <span className="ml-3">{item.name}</span>
-                        {item.isActive && (
+                        {isActive(item.route) && (
                           <span className="ml-auto">
                             <FaChevronRight className="text-gray-500" />
                           </span>
@@ -203,24 +209,28 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                           className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white"
                           whileHover={{ scale: 1.1 }}
                         >
-                          U
+                          {avatar ? (
+                            <img
+                              src={avatar}
+                              alt="User"
+                              className="w-full h-full rounded-full"
+                            />
+                          ) : (
+                            "U"
+                          )}
                         </motion.div>
                         <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                            User
+                          <p className="text-sm truncate   font-medium text-gray-700 dark:text-gray-200">
+                            {name || "User"}
                           </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            user@example.com
+                          <p className="text-xs truncate text-gray-500 dark:text-gray-400">
+                            {email || "user@example.com"}
                           </p>
                         </div>
                       </div>
-                      <motion.button
-                        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        <FaSignOutAlt className="text-gray-600 dark:text-gray-300" />
-                      </motion.button>
+                      <div >
+                        <LogoutButton />
+                      </div>
                     </div>
                   </div>
                 </nav>
@@ -264,7 +274,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                   key={item.name}
                   href={item.route}
                   className={`flex items-center p-3 rounded-lg transition-colors ${
-                    item.isActive
+                    isActive(item.route)
                       ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
                       : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                   }`}
@@ -282,7 +292,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                       {item.name}
                     </motion.span>
                   )}
-                  {item.isActive && isOpen && (
+                  {isActive(item.route) && isOpen && (
                     <motion.span
                       className="ml-auto"
                       initial={{ opacity: 0 }}
@@ -295,18 +305,18 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between mb-4">
+            <div className="p-4 border-t  border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-4 mx-auto ">
                 <motion.button
                   onClick={() => setDarkMode(!darkMode)}
-                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                  className={`p-2 rounded-full   hover:bg-gray-200 dark:hover:bg-gray-700 ${!isOpen ? "ml-1 " : ""}`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   {darkMode ? (
-                    <FaSun className="text-yellow-400" />
+                    <FaSun className="text-yellow-400 h-5 w-5" />
                   ) : (
-                    <FaMoon className="text-gray-600" />
+                    <FaMoon className="text-gray-600 h-5 w-5" />
                   )}
                 </motion.button>
                 {isOpen && (
@@ -330,7 +340,15 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                     className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white"
                     whileHover={{ scale: 1.1 }}
                   >
-                    U
+                    {avatar ? (
+                      <img
+                        src={avatar}
+                        alt="User"
+                        className="w-full h-full rounded-full"
+                      />
+                    ) : (
+                      "U"
+                    )}
                   </motion.div>
                   {isOpen && (
                     <motion.div
@@ -338,17 +356,17 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                     >
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                        User
+                      <p className="text-sm  truncate font-medium text-gray-700 dark:text-gray-200">
+                        {name || "User"}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        user@example.com
+                      <p className="text-xs truncate text-gray-500 dark:text-gray-400">
+                        {email || "user@example.com"}
                       </p>
                     </motion.div>
                   )}
                 </div>
                 {isOpen && (
-                  <div className="">
+                  <div >
                     <LogoutButton />
                   </div>
                 )}
