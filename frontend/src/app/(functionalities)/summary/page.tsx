@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { FaUpload, FaSpinner, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api_file_upload_url } from '@/lib/apiEnd_Point_Call';
 
 const FileUploader = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -15,6 +16,7 @@ const FileUploader = () => {
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [click, setClick] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -39,7 +41,8 @@ const FileUploader = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://localhost:8001/api/upload', formData, {
+      setClick(true);
+      const response = await axios.post(`${api_file_upload_url}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -50,6 +53,7 @@ const FileUploader = () => {
           }
         },
       });
+    
 
       setFileId(response.data.fileId);
       setSummaryId(response.data.summaryId);
@@ -66,26 +70,32 @@ const FileUploader = () => {
   };
 
   const startPolling = (fileId: string) => {
+    
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
 
     pollingIntervalRef.current = setInterval(async () => {
       try {
-        const response = await axios.get(`http://localhost:8001/api/file/${fileId}/status`);
+       
+        const response = await axios.get(`${api_file_upload_url}/file/${fileId}/status`);
         const { status, content } = response.data;
 
         if (status === 'completed') {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
           }
+          setClick(false);
           setSummaryContent(content);
           setStatus('completed');
           setProgress(100);
+         
         } else if (status === 'failed') {
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
           }
+          setClick(false);
+         
           setError('Failed to generate summary. Please try again.');
           setStatus('failed');
         }
@@ -96,8 +106,9 @@ const FileUploader = () => {
         }
         setError('Error checking summary status.');
         setStatus('failed');
-      }
-    }, 3000);
+      } 
+    }, 7000);
+
   };
 
   const resetForm = () => {
@@ -230,16 +241,16 @@ const FileUploader = () => {
               <button
                 onClick={resetForm}
                 disabled={!file || uploading}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors duration-200 ${!file || uploading ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
+                className={`flex-1 py-3 px-4 cursor-pointer rounded-lg font-medium transition-colors duration-200 ${!file || uploading ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`}
               >
                 Cancel
               </button>
               <button
                 onClick={uploadFile}
-                disabled={!file || uploading}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium text-white transition-colors duration-200 flex items-center justify-center ${!file || uploading ? 'bg-indigo-400 dark:bg-indigo-800 cursor-not-allowed' : 'bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-800'}`}
+                disabled={!file || uploading || click == true}
+                className={`flex-1 py-3 px-4 rounded-lg font-medium  text-white transition-colors duration-200 flex items-center justify-center ${!file || uploading || click == true ? 'bg-indigo-400 dark:bg-indigo-800 cursor-not-allowed disabled' : 'bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 cursor-pointer dark:hover:bg-indigo-800'}`}
               >
-                {uploading ? (
+                { click == true ? (
                   <>
                     <FaSpinner className="animate-spin mr-2" />
                     {status === 'uploading' ? 'Uploading' : 'Processing'}

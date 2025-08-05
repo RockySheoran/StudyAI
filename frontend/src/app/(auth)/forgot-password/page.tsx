@@ -1,16 +1,24 @@
 'use client';
 
+import { Forgot_pass_action } from '@/Actions/Auth/Forgot-pass';
 import Link from 'next/link';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically send a reset password email
     console.log('Reset password requested for:', email);
+     const res  = await   Forgot_pass_action({email})
+     if(res.status == 200){
+      toast.success(res.message)
+     }else{
+      toast.error(res.message)
+     }
     setIsSubmitted(true);
   };
 

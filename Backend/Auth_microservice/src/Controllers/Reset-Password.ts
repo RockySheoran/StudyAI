@@ -2,29 +2,41 @@ import { Request, Response } from "express";
 import { supabase } from "../Config/supabaseClient";
 
 export const Reset_Password = async (req: Request, res: Response): Promise<any> => {
-    const { password, access_token } = req.body;
+    const { password, code } = req.body;
+    console.log("code",code)
+    console.log("password",password)
     
-    if (!password || !access_token) {
-        return res.status(400).json({ message: "Password and access token are required" });
+    if (!password || !code) {
+        return res.status(400).json({ message: "Password and code are required" });
     }
 
     try {
         // First set the session with the access token
-        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-            access_token,
-            refresh_token: "" // Refresh token might not be available
-        });
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        console.log("sessionData",data)
+        console.log("sessionError",error)
+        if (!error) {
+            console.error("Code verification error:", error?.message);
+            return res.status(400).json({ 
+                message: "Invalid or expired reset code. Please request a new password reset link." 
+            });
+        }
 
-        if (sessionError) throw sessionError;
-
-        // Then update the password
-        const { data, error } = await supabase.auth.updateUser({
+        // Now update the password
+        const { data: updateData, error: updateError } = await supabase.auth.updateUser({
             password
         });
 
-        if (error) throw error;
+        if (updateError) {
+            return res.status(400).json({ 
+                message: updateError.message || "Failed to update password" 
+            });
+        }
 
-        return res.status(200).json({ message: "Password reset successfully" });
+        return res.status(200).json({ 
+            message: "Password reset successfully",
+            
+        });
     } catch (error) {
         console.error("Reset password error:", error);
         return res.status(400).json({ 

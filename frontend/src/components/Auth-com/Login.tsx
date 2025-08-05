@@ -352,7 +352,7 @@ export default function LoginPage() {
                   key={provider}
                   onClick={() => handleProviderLogin({provider})}
                   disabled={isLoading}
-                  className={`inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
+                  className={`inline-flex ${isLoading ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
                   aria-label={`Sign in with ${name}`}
                 >
                   <span className="flex items-center justify-center">
