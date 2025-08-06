@@ -3,11 +3,19 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Reset_pass_action } from '@/Actions/Auth/Reset-pass';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+
 
 export default function ResetPassword() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
-  const token = searchParams.get('token');
+  const code = searchParams.get('code');
+  const router = useRouter();
+  if(!code){
+    router.push('/login')
+  }
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,6 +28,7 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+   
     
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -33,15 +42,17 @@ export default function ResetPassword() {
 
     setIsLoading(true);
     
-    try {
-      // API call simulation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setIsSuccess(true);
-    } catch (err) {
-      setError('Failed to reset password. The link may have expired.');
-    } finally {
+   
+      const res = await Reset_pass_action({code : code!, password});
+      console.log(res)
+      if(res.status == 200){
+        toast.success(res.message)
+        setIsSuccess(true);
+      }else{
+        toast.error(res.message)
+      }
       setIsLoading(false);
-    }
+   
   };
 
   return (

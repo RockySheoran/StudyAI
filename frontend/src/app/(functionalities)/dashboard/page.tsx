@@ -1,38 +1,32 @@
 // app/page.tsx
-
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
+import Page1 from '../../../components/common-Components/page1';
 
 export default async function Page() {
-  const cookieStore = await cookies();
+  const cookieStore = cookies();
   const headersList = await headers();
   
-  // Create a mock request object for getToken
   const req = {
     headers: Object.fromEntries(headersList.entries()),
     cookies: Object.fromEntries(
-      Array.from(cookieStore.getAll().map(cookie => [cookie.name, cookie.value]))
+      (await cookieStore).getAll()?.map((cookie: any) => [cookie.name, cookie.value])
     )
   };
   
   const nextAuthToken = await getToken({
     req: req as any,
-    secret: process.env.NEXTAUTH_SECRET
+    secret: process.env.NEXTAUTH_SECRET!
   });
-  // console.log(nextAuthToken?.accessToken,"nextAuthToken")
-  const Google_token = cookieStore.get('token')?.value;
-  // console.log(Google_token,"Google_token")
-  const token  = Google_token || nextAuthToken?.accessToken;
- 
   
+  const Google_token = (await cookieStore).get('token')?.value;
+  const token = Google_token || nextAuthToken?.accessToken;
+
   return (
     <div>
-      {token ? (
-        <p>Authenticated</p>
-      ) : (
-        <p>Not authenticated</p>
-      )}
+      {/* Pass token as prop and initialize store in Page1 */}
+      <Page1 initialToken={token} />
     </div>
   );
 }
