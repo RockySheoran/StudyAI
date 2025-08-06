@@ -1,6 +1,7 @@
 import { Request , Response , NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+
 const JWT_SECRET = process.env.JWT_SECRET || "my_secret_key"
 
 export interface JwtPayload {

@@ -19,6 +19,7 @@
     "@langchain/core": "^0.3.66",
     "@langchain/google-genai": "^0.2.16",
     "@nestjs/bullmq": "^11.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.11.0",
     "bullmq": "^5.56.9",
     "cloudinary": "^2.7.0",
