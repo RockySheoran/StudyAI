@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../types/custom-types';
 export class ResumeController {
   async uploadResume(req: AuthenticatedRequest, res: Response) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id  || 'user';
       const file = req.file;
 
       if (!file) {

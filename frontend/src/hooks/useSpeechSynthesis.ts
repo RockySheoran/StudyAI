@@ -18,20 +18,10 @@ export const useSpeechSynthesis = () => {
   }, []);
 
   const speak = (text: string) => {
-    if (!window.speechSynthesis) {
-      console.error('Speech synthesis not supported');
-      return;
-    }
+    if (!window.speechSynthesis) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
-    const englishVoice = voices.find(voice => 
-      voice.lang.includes('en') && voice.name.includes('Female')
-    );
-
-    if (englishVoice) {
-      utterance.voice = englishVoice;
-    }
-
+    utterance.voice = voices.find(v => v.lang.includes('en')) || null;
     utterance.rate = 0.9;
     utterance.pitch = 1;
 
@@ -47,10 +37,5 @@ export const useSpeechSynthesis = () => {
     setIsSpeaking(false);
   };
 
-  return {
-    isSpeaking,
-    speak,
-    stopSpeaking,
-    voices,
-  };
+  return { isSpeaking, speak, stopSpeaking, voices };
 };

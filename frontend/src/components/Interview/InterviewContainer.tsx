@@ -1,13 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
-import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
-
-
-import { Loading } from '../ui/Loading';
-import { Rating } from '../ui/Rating';
-import styles from './InterviewContainer.module.css';
-import { Button } from '../ui/button';
 import { IInterview } from '@/types/interview';
+import { Button } from '../ui/button';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useAutoSubmit } from '@/hooks/useAutoSubmit';
 
 interface InterviewContainerProps {
   interview: IInterview;
@@ -15,10 +11,14 @@ interface InterviewContainerProps {
   onComplete: () => void;
 }
 
-const InterviewContainer = ({ interview, onSendMessage, onComplete }: InterviewContainerProps) => {
+export const InterviewContainer = ({
+  interview,
+  onSendMessage,
+  onComplete,
+}: InterviewContainerProps) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const {
     text: speechText,
@@ -31,18 +31,27 @@ const InterviewContainer = ({ interview, onSendMessage, onComplete }: InterviewC
   
   const { isSpeaking, speak, stopSpeaking } = useSpeechSynthesis();
 
-  useEffect(() => {
-    if (speechText) {
-      setInputText(speechText);
+  // Auto-submit when speech stops
+  const handleSubmit = async () => {
+    if (!speechText.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await onSendMessage(speechText);
+      setSpeechText('');
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [speechText]);
+  };
 
+  useAutoSubmit(speechText, isListening, handleSubmit);
+
+  // Scroll to bottom when messages change
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [interview.messages]);
 
+  // Speak the last AI message
   useEffect(() => {
-    // Speak the last AI message when it changes
     if (interview.messages.length > 0) {
       const lastMessage = interview.messages[interview.messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
@@ -50,24 +59,6 @@ const InterviewContainer = ({ interview, onSendMessage, onComplete }: InterviewC
       }
     }
   }, [interview.messages, isSpeaking, speak]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputText.trim() || isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      await onSendMessage(inputText);
-      setInputText('');
-      setSpeechText('');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const toggleListening = () => {
     if (isListening) {
@@ -78,80 +69,78 @@ const InterviewContainer = ({ interview, onSendMessage, onComplete }: InterviewC
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h2>{interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}</h2>
-        {interview.completedAt && (
-          <div className={styles.feedback}>
-            <h3>Interview Feedback</h3>
-            <Rating value={interview.feedback?.rating || 0} max={5} />
-            <div>
-              <h4>Strengths:</h4>
-              <ul>
-                {interview.feedback?.strengths.map((strength, i) => (
-                  <li key={i}>{strength}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4>Suggestions:</h4>
-              <ul>
-                {interview.feedback?.suggestions.map((suggestion, i) => (
-                  <li key={i}>{suggestion}</li>
-                ))}
-              </ul>
-            </div>
-            <Button onClick={onComplete}>Finish Interview</Button>
-          </div>
-        )}
+    <div className="flex flex-col h-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+      {/* Header */}
+      <div className="p-4 border-b bg-gray-50">
+        <h2 className="text-xl font-semibold">
+          {interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
+        </h2>
       </div>
 
-      <div className={styles.messages}>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {interview.messages.map((message, index) => (
-          <div
-            key={index}
-            className={`${styles.message} ${
-              message.role === 'user' ? styles.userMessage : styles.aiMessage
-            }`}
-          >
-            <div className={styles.messageContent}>
-              <p>{message.content}</p>
+          <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[80%] rounded-lg px-4 py-2 ${
+              message.role === 'user' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              <p className="whitespace-pre-wrap">{message.content}</p>
             </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Input Area */}
       {!interview.completedAt && (
-        <form onSubmit={handleSubmit} className={styles.inputArea}>
-          <div className={styles.inputContainer}>
+        <div className="p-4 border-t bg-gray-50">
+          <div className="relative">
             <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type your response or use voice input..."
+              value={speechText || inputText}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                setSpeechText(e.target.value);
+              }}
+              placeholder="Type or speak your response..."
+              className="w-full p-3 pr-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows={3}
               disabled={isSubmitting}
             />
             <button
               type="button"
               onClick={toggleListening}
-              className={`${styles.voiceButton} ${isListening ? styles.listening : ''}`}
+              className={`absolute right-3 bottom-3 p-2 rounded-full ${
+                isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-200 hover:bg-gray-300'
+              }`}
               disabled={isSubmitting}
             >
-              {isListening ? '🛑' : '🎤'}
+              {isListening ? (
+                <span className="flex items-center">
+                  <span className="relative flex h-3 w-3 mr-1">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  Listening...
+                </span>
+              ) : (
+                '🎤 Speak'
+              )}
             </button>
           </div>
-          {speechError && <p className={styles.error}>{speechError}</p>}
+          {speechError && (
+            <p className="mt-1 text-sm text-red-500">{speechError}</p>
+          )}
           <Button
-            type="submit"
-            disabled={!inputText.trim() || isSubmitting}
-            className={styles.submitButton}
+            onClick={() => handleSubmit()}
+            disabled={!inputText.trim() || isSubmitting || isListening}
+            className="w-full mt-2"
           >
-            {isSubmitting ? <Loading size="sm" /> : 'Send'}
+            {isSubmitting ? 'Sending...' : 'Send Message'}
           </Button>
-        </form>
+        </div>
       )}
     </div>
   );
 };
-
-export default InterviewContainer;

@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { Loading } from '../ui/Loading';
+
 
 interface ResumeUploaderProps {
   onUpload: (file: File) => Promise<void>;
   isLoading: boolean;
+  onSkip: () => void;
 }
 
-const ResumeUploader = ({ onUpload, isLoading }: ResumeUploaderProps) => {
+export const ResumeUploader = ({ 
+  onUpload, 
+  isLoading,
+  onSkip
+}: ResumeUploaderProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,17 +43,20 @@ const ResumeUploader = ({ onUpload, isLoading }: ResumeUploaderProps) => {
 
     try {
       await onUpload(file);
-      setFile(null);
     } catch (err) {
       setError('Failed to upload resume');
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Your Resume</h2>
-      <p className="text-gray-600 mb-6">Please upload your resume to start the interview process</p>
-      
+    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Upload Your Resume</h2>
+        <p className="text-gray-600 mt-2">
+          (Optional) Upload your resume for personalized interview questions
+        </p>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="relative">
           <input
@@ -61,11 +69,11 @@ const ResumeUploader = ({ onUpload, isLoading }: ResumeUploaderProps) => {
           />
           <label 
             htmlFor="resume-upload"
-            className={`block w-full px-4 py-12 border-2 border-dashed rounded-lg text-center ${
+            className={`block w-full px-4 py-12 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${
               file 
                 ? 'border-green-500 bg-green-50 text-green-700' 
                 : 'border-gray-300 hover:border-gray-400 text-gray-500'
-            } transition-colors cursor-pointer`}
+            }`}
           >
             {file ? (
               <span className="font-medium">{file.name}</span>
@@ -79,26 +87,28 @@ const ResumeUploader = ({ onUpload, isLoading }: ResumeUploaderProps) => {
         </div>
         
         {error && (
-          <p className="text-red-500 text-sm mt-1">{error}</p>
+          <p className="text-red-500 text-sm">{error}</p>
         )}
-        
-        <Button
-          type="submit"
-          disabled={!file || isLoading}
-          className="w-full py-6 text-lg"
-        >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <Loading size="sm" className="text-white" />
-              Uploading...
-            </span>
-          ) : (
-            'Upload Resume'
-          )}
-        </Button>
+
+        <div className="flex gap-3">
+          <Button
+            type="submit"
+            disabled={!file || isLoading}
+            className="flex-1 py-3"
+          >
+            {isLoading ? 'Uploading...' : 'Upload & Continue'}
+          </Button>
+          <Button
+            type="button"
+            onClick={onSkip}
+            variant="outline"
+            className="flex-1 py-3"
+            disabled={isLoading}
+          >
+            Skip
+          </Button>
+        </div>
       </form>
     </div>
   );
 };
-
-export default ResumeUploader;

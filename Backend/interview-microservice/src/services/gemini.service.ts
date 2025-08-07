@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
-import { IInterview, IInterviewMessage } from '../models/interview.model';
+import { IInterviewMessage } from '../models/interview.model';
 
 dotenv.config();
 
@@ -19,62 +19,69 @@ const interviewSystemPrompts = {
   provide detailed feedback including a rating (1-5), technical strengths, and areas needing improvement.`
 };
 
-export class GeminiService {
-  private model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  async generateInterviewResponse(
-    interviewType: 'personal' | 'technical',
-    conversationHistory: IInterviewMessage[],
-    resumeText: string
-  ): Promise<{ response: string; feedback?: any }> {
-    try {
-      const chat = this.model.startChat({
-        history: [
-          {
-            role: "user",
-            parts: [{ text: interviewSystemPrompts[interviewType] }],
-          },
-          {
-            role: "user",
-            parts: [{ text: `Here is the candidate's resume: ${resumeText}` }],
-          },
-          ...conversationHistory.map(msg => ({
-            role: msg.role === 'user' ? 'user' as const : 'model' as const,
-            parts: [{ text: msg.content }],
-          })),
-        ],
-      });
+export const generateInterviewResponse = async (
+  interviewType: 'personal' | 'technical',
+  conversationHistory: IInterviewMessage[],
+  resumeText: string
+): Promise<{ response: string; feedback?: any }> => {
+  try {
+    // Prepare the initial prompt that combines system instructions and resume
+    const systemPrompt = `
+      ${interviewSystemPrompts[interviewType]}
+      
+      Candidate's Resume:
+      ${resumeText}
+    `;
 
-      const result = await chat.sendMessage(conversationHistory[conversationHistory.length - 1].content);
-      const response = await result.response;
-      const text = response.text();
+    // Convert conversation history to Gemini format with proper role alternation
+    const chatHistory = conversationHistory.map((msg, index) => ({
+      role: msg.role === 'user' ? 'user' as const : 'model' as const,
+      parts: [{ text: msg.content }],
+    }));
 
-      // Check if the response contains feedback (end of interview)
-      if (text.includes('Rating:') || text.includes('Feedback:')) {
-        const feedback = this.parseFeedback(text);
-        return { response: text, feedback };
-      }
+    // Start chat with the system prompt as the first message
+    const chat = model.startChat({
+      history: [
+        {
+          role: 'user',
+          parts: [{ text: systemPrompt }],
+        },
+        ...chatHistory.slice(0, -1) // Include all but the last message
+      ]
+    });
 
-      return { response: text };
-    } catch (error) {
-      console.error('Error generating Gemini response:', error);
-      throw new Error('Failed to generate interview response');
+    // Send the last message in the conversation
+    const lastMessage = conversationHistory[conversationHistory.length - 1];
+    const result = await chat.sendMessage(lastMessage.content);
+    const response = await result.response;
+    const text = response.text();
+
+    // Check if the response contains feedback (end of interview)
+    if (text.includes('Rating:') || text.includes('Feedback:')) {
+      const feedback = parseFeedback(text);
+      return { response: text, feedback };
     }
-  }
 
-  private parseFeedback(text: string) {
-    const ratingMatch = text.match(/Rating:\s*(\d)/);
-    const strengthsMatch = text.match(/Strengths:\s*([\s\S]*?)(?=Areas for Improvement|Suggestions:|$)/);
-    const improvementsMatch = text.match(/(Areas for Improvement|Suggestions):\s*([\s\S]*?)(?=$)/);
-
-    return {
-      rating: ratingMatch ? parseInt(ratingMatch[1]) : 3,
-      strengths: strengthsMatch 
-        ? strengthsMatch[1].split('\n').filter(line => line.trim()).map(line => line.replace(/^- /, '').trim())
-        : [],
-      suggestions: improvementsMatch 
-        ? improvementsMatch[2].split('\n').filter(line => line.trim()).map(line => line.replace(/^- /, '').trim())
-        : [],
-    };
+    return { response: text };
+  } catch (error) {
+    console.error('Error generating Gemini response:', error);
+    throw new Error('Failed to generate interview response');
   }
-}
+};
+const parseFeedback = (text: string) => {
+  const ratingMatch = text.match(/Rating:\s*(\d)/);
+  const strengthsMatch = text.match(/Strengths:\s*([\s\S]*?)(?=Areas for Improvement|Suggestions:|$)/);
+  const improvementsMatch = text.match(/(Areas for Improvement|Suggestions):\s*([\s\S]*?)(?=$)/);
+
+  return {
+    rating: ratingMatch ? parseInt(ratingMatch[1]) : 3,
+    strengths: strengthsMatch 
+      ? strengthsMatch[1].split('\n').filter(line => line.trim()).map(line => line.replace(/^- /, '').trim())
+      : [],
+    suggestions: improvementsMatch 
+      ? improvementsMatch[2].split('\n').filter(line => line.trim()).map(line => line.replace(/^- /, '').trim())
+      : [],
+  };
+};

@@ -1,13 +1,17 @@
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import InterviewContainer from '../../../components/Interview/InterviewContainer';
-import Layout from '../../../components/Layout/Layout';
-import { IInterview } from '../../../types/interview';
-import { fetchInterview, sendInterviewMessage } from '../../../services/interviewService';
+'use client';
 
-const InterviewPage = () => {
+import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Layout } from '@/components/Layout/Layout';
+import { InterviewContainer } from '@/components/Interview/InterviewContainer';
+import { IInterview } from '@/types/interview';
+import { InterviewService } from '@/services/interviewService';
+import { Loading } from '@/components/ui/Loading';
+
+export default function InterviewPage() {
   const router = useRouter();
-  const { id } = router.query;
+  const params = useParams();
+  const id = params.id as string;
   const [interview, setInterview] = useState<IInterview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +21,7 @@ const InterviewPage = () => {
 
     const loadInterview = async () => {
       try {
-        const data = await fetchInterview(id as string);
+        const data = await InterviewService.getInterview(id);
         setInterview(data);
       } catch (err) {
         setError('Failed to load interview');
@@ -34,7 +38,7 @@ const InterviewPage = () => {
     if (!interview) return;
 
     try {
-      const updatedInterview = await sendInterviewMessage(interview._id, message);
+      const updatedInterview = await InterviewService.sendMessage(interview._id, message);
       setInterview(updatedInterview);
     } catch (err) {
       setError('Failed to send message');
@@ -49,7 +53,7 @@ const InterviewPage = () => {
   if (loading) {
     return (
       <Layout>
-        <div>Loading interview...</div>
+        <Loading />
       </Layout>
     );
   }
@@ -57,7 +61,9 @@ const InterviewPage = () => {
   if (error || !interview) {
     return (
       <Layout>
-        <div>{error || 'Interview not found'}</div>
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg max-w-md mx-auto mt-8 text-center">
+          {error || 'Interview not found'}
+        </div>
       </Layout>
     );
   }
@@ -71,6 +77,4 @@ const InterviewPage = () => {
       />
     </Layout>
   );
-};
-
-export default InterviewPage;
+}

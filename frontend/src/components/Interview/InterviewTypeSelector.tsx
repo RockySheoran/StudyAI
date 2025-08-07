@@ -1,54 +1,69 @@
 import { useState } from 'react';
 import { Button } from '../ui/button';
 
+
 interface InterviewTypeSelectorProps {
   onSelect: (type: 'personal' | 'technical') => void;
   loading: boolean;
 }
 
-const InterviewTypeSelector = ({ onSelect, loading }: InterviewTypeSelectorProps) => {
+export const InterviewTypeSelector = ({ 
+  onSelect, 
+  loading 
+}: InterviewTypeSelectorProps) => {
   const [selectedType, setSelectedType] = useState<'personal' | 'technical'>();
 
   return (
-    <div className="flex flex-col items-center gap-6 p-6 rounded-lg bg-white shadow-md max-w-md mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800">Select Interview Type</h2>
-      <div className="flex gap-4 w-full">
-        <Button
-          variant={selectedType === 'personal' ? 'default' : 'outline'}
-          onClick={() => setSelectedType('personal')}
-          className="flex-1 py-6 text-lg"
-        >
-          Personal Interview
-        </Button>
-        <Button
-          variant={selectedType === 'technical' ? 'default' : 'outline'}
-          onClick={() => setSelectedType('technical')}
-          className="flex-1 py-6 text-lg"
-        >
-          Technical Interview
-        </Button>
+    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">Select Interview Type</h2>
+        <p className="text-gray-600 mt-2">
+          Choose the type of interview you want to practice
+        </p>
       </div>
-      {selectedType && (
-        <Button
-          onClick={() => onSelect(selectedType)}
-          className="w-full py-6 text-lg"
-          disabled={loading}
+
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <button
+          onClick={() => setSelectedType('personal')}
+          className={`p-6 rounded-lg border-2 transition-all ${
+            selectedType === 'personal'
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200 hover:border-blue-300'
+          }`}
         >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Starting...
-            </span>
-          ) : (
-            'Start Interview'
-          )}
-        </Button>
-      )}
+          <div className="text-left">
+            <h3 className="font-semibold text-lg">Personal Interview</h3>
+            <p className="text-gray-600 mt-1">
+              Practice behavioral and situational questions
+            </p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setSelectedType('technical')}
+          className={`p-6 rounded-lg border-2 transition-all ${
+            selectedType === 'technical'
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200 hover:border-blue-300'
+          }`}
+        >
+          <div className="text-left">
+            <h3 className="font-semibold text-lg">Technical Interview</h3>
+            <p className="text-gray-600 mt-1">
+              Practice coding and technical questions
+            </p>
+          </div>
+        </button>
+      </div>
+
+      <Button
+        onClick={() => selectedType && onSelect(selectedType)}
+        className="w-full py-3"
+        disabled={!selectedType || loading}
+    
+      >
+        {loading ? 'Starting...' : 'Continue'}
+      </Button>
     </div>
   );
 };
-
-export default InterviewTypeSelector;

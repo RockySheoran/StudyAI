@@ -1,18 +1,9 @@
 import { useState, useEffect } from 'react';
 
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
-}
-
+// Extend the Window interface to include webkitSpeechRecognition
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
+    webkitSpeechRecognition: typeof useSpeechRecognition;
   }
 }
 
@@ -22,41 +13,35 @@ export const useSpeechRecognition = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      setError('Speech recognition is not supported in your browser');
+    if (!('webkitSpeechRecognition' in window)) {
+      setError('Speech recognition not supported');
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new (window as any).webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       const transcript = Array.from(event.results)
-        .map(result => result[0])
-        .map(result => result.transcript)
+        .map((result: any) => result[0])
+        .map((result: any) => result.transcript)
         .join('');
       setText(transcript);
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      setError(`Speech recognition error: ${event.error}`);
+    recognition.onerror = (event: any) => {
+      setError(`Recognition error: ${event.error}`);
       setIsListening(false);
     };
 
     recognition.onend = () => {
-      if (isListening) {
-        recognition.start();
-      }
+      if (isListening) recognition.start();
     };
 
     if (isListening) {
       recognition.start();
-    } else {
-      recognition.stop();
     }
 
     return () => {

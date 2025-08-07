@@ -1,12 +1,16 @@
 import { IInterview, Interview, IInterviewMessage } from '../models/interview.model';
 import { Resume } from '../models/resume.model';
-import { GeminiService } from './gemini.service';
+import {  generateInterviewResponse } from './gemini.service';
 
-export class InterviewService {
-  private geminiService = new GeminiService();
 
-  async startInterview(userId: string, type: 'personal' | 'technical'): Promise<IInterview> {
+ 
+
+  export const startInterviewService = async(userId: string , type: 'personal' | 'technical'): Promise<IInterview> =>{
+    console.log(userId ,"iytiuyt");
+    console.log(type);
+
     const latestResume = await Resume.findOne({ userId }).sort({ uploadDate: -1 });
+    console.log(latestResume);
     if (!latestResume) {
       throw new Error('No resume found for the user');
     }
@@ -29,11 +33,11 @@ export class InterviewService {
     return await interview.save();
   }
 
-  async continueInterview(
+  export const continueInterviewService = async(
     interviewId: string,
     userId: string,
     userMessage: string
-  ): Promise<{ interview: IInterview; isComplete: boolean }> {
+  ): Promise<{ interview: IInterview; isComplete: boolean }> =>{
     const interview = await Interview.findOne({ _id: interviewId, userId });
     if (!interview) {
       throw new Error('Interview not found');
@@ -57,7 +61,7 @@ export class InterviewService {
     const resumeText = resume ? `Resume for user ${userId}` : 'No resume available';
 
     // Get AI response
-    const { response, feedback } = await this.geminiService.generateInterviewResponse(
+    const { response, feedback } = await generateInterviewResponse(
       interview.type,
       interview.messages,
       resumeText
@@ -86,7 +90,6 @@ export class InterviewService {
     };
   }
 
-  async getInterviewHistory(userId: string): Promise<IInterview[]> {
+  export const getInterviewHistoryService = async(userId: string): Promise<IInterview[]> =>{
     return await Interview.find({ userId }).sort({ createdAt: -1 });
   }
-}

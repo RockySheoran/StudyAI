@@ -1,53 +1,47 @@
-import { IInterview } from "@/types/interview";
+import apiClient from '@/lib/api';
+import { IInterview } from '@/types/interview';
 
+export const InterviewService = {
+  async createInterview(type: 'personal' | 'technical', resume?: File): Promise<IInterview> {
+    const formData = new FormData();
+    formData.append('type', type);
+    if (resume) formData.append('resume', resume);
 
-export const fetchInterview = async (id: string): Promise<IInterview> => {
-  const response = await fetch(`/api/interview/${id}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch interview');
-  }
-  return response.json();
-};
+    const response = await apiClient.post('/interviews', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
 
-export const startInterview = async (type: 'personal' | 'technical'): Promise<IInterview> => {
-  const response = await fetch('/api/interview/start', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ type }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to start interview');
-  }
-  
-  return response.json();
-};
+  async getInterview(id: string): Promise<IInterview> {
+    const response = await apiClient.get(`/interviews/${id}`);
+    return response.data;
+  },
 
-export const sendInterviewMessage = async (
-  interviewId: string,
-  message: string
-): Promise<IInterview> => {
-  const response = await fetch('/api/interview/continue', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ interviewId, message }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to send message');
-  }
-  
-  return response.json();
-};
+  async sendMessage(interviewId: string, message: string): Promise<IInterview> {
+    const response = await apiClient.post(`/interviews/${interviewId}/messages`, { content: message });
+    return response.data;
+  },
 
-export const getInterviewHistory = async (): Promise<IInterview[]> => {
-  const response = await fetch('/api/interview/history');
-  if (!response.ok) {
-    throw new Error('Failed to fetch interview history');
-  }
-  return response.json();
+  async completeInterview(interviewId: string): Promise<IInterview> {
+    const response = await apiClient.post(`/interviews/${interviewId}/complete`);
+    return response.data;
+  },
+
+  async getInterviewHistory(): Promise<IInterview[]> {
+    const response = await apiClient.get('/interviews/history');
+    return response.data;
+  },
+
+  async uploadResume(file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('resume', file);
+    await apiClient.post('/resume', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };

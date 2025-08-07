@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { InterviewController } from '../controllers/interview.controller';
-import { middleware     } from '../Middlewares/auth.middleware';
-
+import { startInterview, continueInterview, getInterviewHistory,fetchInterview } from '../controllers/interview.controller';
+import { middleware } from '../Middlewares/auth.middleware';
 const router = Router();
-const interviewController = new InterviewController();
 
-router.post('/start', interviewController.startInterview);
-router.post('/continue', interviewController.continueInterview);
-router.get('/history', interviewController.getInterviewHistory);
+router.post('/start', startInterview);
+    router.get("/:id",fetchInterview)
+router.post('/continue', continueInterview);
+router.get('/history', getInterviewHistory);
 
 export default router;
