@@ -48,17 +48,17 @@ export const InterviewContainer = ({
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [interview.messages]);
+  }, [interview?.messages]);
 
   // Speak the last AI message
   useEffect(() => {
-    if (interview.messages.length > 0) {
-      const lastMessage = interview.messages[interview.messages.length - 1];
+    if (interview?.messages?.length > 0) {
+      const lastMessage = interview?.messages[interview?.messages?.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
         speak(lastMessage.content);
       }
     }
-  }, [interview.messages, isSpeaking, speak]);
+  }, [interview?.messages, isSpeaking, speak]);
 
   const toggleListening = () => {
     if (isListening) {
@@ -73,13 +73,13 @@ export const InterviewContainer = ({
       {/* Header */}
       <div className="p-4 border-b bg-gray-50">
         <h2 className="text-xl font-semibold">
-          {interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
+          {interview?.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
         </h2>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {interview.messages.map((message, index) => (
+        {interview?.messages?.map((message, index) => (
           <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[80%] rounded-lg px-4 py-2 ${
               message.role === 'user' 
@@ -94,7 +94,7 @@ export const InterviewContainer = ({
       </div>
 
       {/* Input Area */}
-      {!interview.completedAt && (
+      {!interview?.completedAt && (
         <div className="p-4 border-t bg-gray-50">
           <div className="relative">
             <textarea

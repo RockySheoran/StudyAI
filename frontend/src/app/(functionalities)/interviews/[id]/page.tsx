@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout/Layout';
 import { InterviewContainer } from '@/components/Interview/InterviewContainer';
 import { IInterview } from '@/types/interview';
-import { InterviewService } from '@/services/interviewService';
+import { fetchInterview,sendInterviewMessage } from '@/services/interviewService';
 import { Loading } from '@/components/ui/Loading';
 
 export default function InterviewPage() {
@@ -21,7 +21,7 @@ export default function InterviewPage() {
 
     const loadInterview = async () => {
       try {
-        const data = await InterviewService.getInterview(id);
+        const data = await fetchInterview(id);
         setInterview(data);
       } catch (err) {
         setError('Failed to load interview');
@@ -38,7 +38,7 @@ export default function InterviewPage() {
     if (!interview) return;
 
     try {
-      const updatedInterview = await InterviewService.sendMessage(interview._id, message);
+      const updatedInterview = await sendInterviewMessage(interview._id, message);
       setInterview(updatedInterview);
     } catch (err) {
       setError('Failed to send message');

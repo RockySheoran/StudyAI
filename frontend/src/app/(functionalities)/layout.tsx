@@ -12,7 +12,7 @@ export default function Layout({
   return (
     <div className="flex min-h-screen">
       {/* Navbar container - fixed width */}
-      <div className={`${isOpen ? 'sm:w-64' : 'sm:w-20'} transition-all duration-300`}>
+      <div className={`${isOpen ? 'md:w-64' : 'md:w-20'} transition-all duration-300`}>
         <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
       
