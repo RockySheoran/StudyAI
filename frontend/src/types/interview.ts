@@ -1,23 +1,17 @@
-interface IMessage {
+export interface IInterviewMessage {
   role: 'user' | 'assistant';
   content: string;
-  timestamp?: Date;
-}
-
-interface IFeedback {
-  rating: number;
-  strengths: string[];
-  suggestions: string[];
-  summary: string;
+  timestamp: Date;
 }
 
 export interface IInterview {
   _id: string;
-  type: 'personal' | 'technical';
   userId: string;
-  messages: IMessage[];
-  feedback?: IFeedback;
-  createdAt: Date;
+  type: 'personal' | 'technical';
+  resumeId: string;
+  messages: IInterviewMessage[];
+  feedback?: string;
   completedAt?: Date;
-  resumeUsed?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }

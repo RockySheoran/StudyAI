@@ -71,7 +71,9 @@ import { Interview } from '../models/interview.model';
   export const getInterviewHistory = async (req: AuthenticatedRequest, res: Response) :Promise<any> =>{
     try {
       const userId = req.user?.id || "user";
+      console.log(userId)
       const interviews = await  getInterviewHistoryService(userId || '');
+      console.log(interviews)
       res.status(200).json(interviews);
     } catch (error) {
       console.error('Error fetching interview history:', error);

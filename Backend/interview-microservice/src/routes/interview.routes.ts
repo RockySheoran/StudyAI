@@ -3,9 +3,9 @@ import { startInterview, continueInterview, getInterviewHistory,fetchInterview }
 import { middleware } from '../Middlewares/auth.middleware';
 const router = Router();
 
-router.post('/start', startInterview);
-    router.get("/:id",fetchInterview)
-router.post('/continue', continueInterview);
-router.get('/history', getInterviewHistory);
+router.post('/start', middleware, startInterview);
+    router.get("/:id",middleware,fetchInterview)
+router.post('/continue', middleware, continueInterview);
+router.get('/history', middleware,getInterviewHistory);
 
 export default router;

@@ -2,11 +2,10 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Layout } from '@/components/Layout/Layout';
 import { InterviewContainer } from '@/components/Interview/InterviewContainer';
-import { IInterview } from '@/types/interview';
-import { fetchInterview,sendInterviewMessage } from '@/services/interviewService';
+import { fetchInterview, sendInterviewMessage } from '@/services/interviewService';
 import { Loading } from '@/components/ui/Loading';
+import { IInterview } from '@/types/interview';
 
 export default function InterviewPage() {
   const router = useRouter();
@@ -38,11 +37,13 @@ export default function InterviewPage() {
     if (!interview) return;
 
     try {
-      const updatedInterview = await sendInterviewMessage(interview._id, message);
-      setInterview(updatedInterview);
+      const updatedInterview: any = await sendInterviewMessage(interview._id, message);
+      console.log(updatedInterview);
+      setInterview(updatedInterview.interview);
     } catch (err) {
       setError('Failed to send message');
       console.error(err);
+      throw err; // Re-throw to be caught by InterviewContainer
     }
   };
 
@@ -52,29 +53,29 @@ export default function InterviewPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <div className="flex items-center justify-center h-screen">
         <Loading />
-      </Layout>
+      </div>
     );
   }
 
   if (error || !interview) {
     return (
-      <Layout>
-        <div className="p-4 bg-red-50 text-red-600 rounded-lg max-w-md mx-auto mt-8 text-center">
+      <div className="flex items-center justify-center h-screen">
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg max-w-md mx-auto text-center">
           {error || 'Interview not found'}
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <InterviewContainer
-        interview={interview}
-        onSendMessage={handleSendMessage}
-        onComplete={handleComplete}
-      />
-    </Layout>
+    <InterviewContainer
+      interview={interview}
+      onSendMessage={handleSendMessage}
+      onComplete={handleComplete}
+      error={error}
+      isLoading={loading}
+    />
   );
 }

@@ -64,7 +64,8 @@ export default function NewInterviewPage() {
 
   const handleSkipResume = async () => {
     setResume(null); // Clear any selected resume file
-    await handleStartInterview(false); // Start interview without resume
+    console.log("first")
+    // await handleStartInterview(false); // Start interview without resume
   };
 
   if (step === 'type') {

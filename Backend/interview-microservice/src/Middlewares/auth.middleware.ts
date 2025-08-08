@@ -40,6 +40,7 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
       message: 'Not authorized to access this route',
     });
   }
+  console.log("token:", token);
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
@@ -47,8 +48,10 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
       id: decoded.id,
       email: decoded.email,
     };
+    console.log("req.user:", req.user);
     next();
   } catch (err) {
+    console.log("err:", err);
     return res.status(401).json({
       success: false,
       message: 'Not authorized to access this route',

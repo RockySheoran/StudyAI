@@ -126,7 +126,7 @@ export default function SignupPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   state.errors.name
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -148,7 +148,7 @@ export default function SignupPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   state.errors.email
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -170,7 +170,7 @@ export default function SignupPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   state.errors.password
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -237,7 +237,7 @@ export default function SignupPage() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   state.errors.confirmPassword
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -297,7 +297,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full py-3 px-4 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] hover:from-[#4338ca] hover:to-[#6d28d9] dark:hover:from-[#5a52e0] dark:hover:to-[#3a32d0] rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30"
+              className="w-full py-2 md:py-3 px-4 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] hover:from-[#4338ca] hover:to-[#6d28d9] dark:hover:from-[#5a52e0] dark:hover:to-[#3a32d0] rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30"
             >
               {isPending ? (
                 <span className="flex items-center justify-center">
@@ -391,7 +391,7 @@ export default function SignupPage() {
                   key={provider}
                   onClick={() => handleProviderLogin({provider})}
                   disabled={isLoading || isPending}
-                  className={`inline-flex ${isLoading || isPending ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
+                  className={`inline-flex ${isLoading || isPending ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-2 md:p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
                   aria-label={`Sign in with ${name}`}
                 >
                   <span className="flex items-center justify-center">

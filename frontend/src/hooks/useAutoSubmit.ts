@@ -1,18 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export const useAutoSubmit = (
-  text: string,
+  finalTranscript: string,
   isListening: boolean,
-  onSubmit: () => void,
-  delay = 1500
+  handleSubmit: (message?: string) => Promise<void>
 ) => {
-  useEffect(() => {
-    if (!isListening && text.trim()) {
-      const timer = setTimeout(() => {
-        onSubmit();
-      }, delay);
+  const [prevFinalTranscript, setPrevFinalTranscript] = useState('');
 
-      return () => clearTimeout(timer);
+  useEffect(() => {
+    if (finalTranscript && finalTranscript !== prevFinalTranscript && isListening) {
+      setPrevFinalTranscript(finalTranscript);
+      handleSubmit();
     }
-  }, [isListening, text, onSubmit, delay]);
+  }, [finalTranscript, isListening, handleSubmit, prevFinalTranscript]);
 };

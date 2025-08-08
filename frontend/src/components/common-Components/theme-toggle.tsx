@@ -23,14 +23,17 @@ export function ThemeToggle() {
   // Render a placeholder while mounting to avoid hydration mismatch
   if (!mounted) {
     return (
+      <>
       <Button 
         variant="outline" 
         size="icon" 
         aria-label="Toggle theme"
         className="cursor-pointer opacity-0" // Make invisible but maintain layout
-      >
+        >
         <Sun className="h-[1.2rem] w-[1.2rem]" />
       </Button>
+
+        </>
     )
   }
 
@@ -38,6 +41,7 @@ export function ThemeToggle() {
   const Icon = resolvedTheme === "light" ? Moon : Sun
 
   return (
+    <>
     <Button
       variant="outline"
       size="icon"
@@ -48,5 +52,7 @@ export function ThemeToggle() {
     >
       <Icon className="h-[1.2rem] w-[1.2rem] transition-all" />
     </Button>
+    
+    </>
   )
 }

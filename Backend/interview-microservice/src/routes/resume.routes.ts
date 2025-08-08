@@ -8,8 +8,8 @@ const router = Router();
 const resumeController = new ResumeController(); // Make sure to instantiate the controller
 
 // Correct routes with proper controller methods
-router.post('/upload', upload.single('resume'), resumeController.uploadResume.bind(resumeController));
-router.delete('/', resumeController.deleteResume.bind(resumeController));
-router.get('/', resumeController.getResume.bind(resumeController));
+router.post('/upload', upload.single('resume'), middleware,resumeController.uploadResume.bind(resumeController));
+router.delete('/', middleware,resumeController.deleteResume.bind(resumeController));
+router.get('/', middleware,resumeController.getResume.bind(resumeController));
 
 export default router;
