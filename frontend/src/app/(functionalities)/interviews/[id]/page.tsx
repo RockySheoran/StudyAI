@@ -133,7 +133,7 @@ export default function InterviewPage() {
   }
 
   return (
-    <div className="interview-page overflow-y-hidden">
+    <div className="">
     <InterviewContainer
       interview={interview}
       onSendMessage={handleSendMessage}
