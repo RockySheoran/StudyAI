@@ -18,6 +18,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import LogoutButton from "../Auth-com/LogOut_Popup";
 import { useUserStore } from "@/lib/Store/userStore";
 import { usePathname, useRouter } from "next/navigation";
+import { ThemeToggle } from "./theme-toggle";
+import { div } from "framer-motion/client";
+import { useTheme } from "next-themes";
 
 interface NavItem {
   name: string;
@@ -31,7 +34,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
-  const [darkMode, setDarkMode] = useState(true);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window?.innerWidth : 1024
@@ -39,6 +42,8 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
   const { name, email, avatar } = useUserStore();
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  
 
   // Nav items data
   const navItems: NavItem[] = [
@@ -55,7 +60,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     {
       name: "Interview",
       icon: <FaUserTie className="text-lg" />,
-      route: "/interview",
+      route: "/interviews/new ",
     },
     {
       name: "Quiz/QnA",
@@ -89,13 +94,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -186,20 +185,9 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
 
                   <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                      <motion.button
-                        onClick={() => setDarkMode(!darkMode)}
-                        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      >
-                        {darkMode ? (
-                          <FaSun className="text-yellow-400" />
-                        ) : (
-                          <FaMoon className="text-gray-600" />
-                        )}
-                      </motion.button>
+                    <ThemeToggle/>
                       <span className="text-sm text-gray-600 dark:text-gray-300">
-                        {darkMode ? "Light Mode" : "Dark Mode"}
+                        {theme === "light" ? "Light Mode" : "Dark Mode"}
                       </span>
                     </div>
 
@@ -307,25 +295,14 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
 
             <div className="p-4 border-t  border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-4 mx-auto ">
-                <motion.button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`p-2 rounded-full   hover:bg-gray-200 dark:hover:bg-gray-700 ${!isOpen ? "ml-1 " : ""}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {darkMode ? (
-                    <FaSun className="text-yellow-400 h-5 w-5" />
-                  ) : (
-                    <FaMoon className="text-gray-600 h-5 w-5" />
-                  )}
-                </motion.button>
+                <ThemeToggle/>
                 {isOpen && (
                   <motion.span
                     className="text-sm text-gray-600 dark:text-gray-300"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
-                    {darkMode ? "Light Mode" : "Dark Mode"}
+                    {theme === "light" ? "Light Mode" : "Dark Mode"}
                   </motion.span>
                 )}
               </div>

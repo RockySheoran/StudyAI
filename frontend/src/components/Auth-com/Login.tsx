@@ -144,7 +144,7 @@ export default function LoginPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   errors.email
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -171,7 +171,7 @@ export default function LoginPage() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                className={`w-full px-4 py-2 md:py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
                   errors.password
                     ? "border-red-500 focus:ring-red-500"
                     : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -246,7 +246,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] hover:from-[#4338ca] hover:to-[#6d28d9] dark:hover:from-[#5a52e0] dark:hover:to-[#3a32d0] rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30"
+              className="w-full py-2 md:py-3 px-4 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] hover:from-[#4338ca] hover:to-[#6d28d9] dark:hover:from-[#5a52e0] dark:hover:to-[#3a32d0] rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
@@ -352,7 +352,7 @@ export default function LoginPage() {
                   key={provider}
                   onClick={() => handleProviderLogin({provider})}
                   disabled={isLoading}
-                  className={`inline-flex ${isLoading ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
+                  className={`inline-flex ${isLoading ? 'opacity-50  cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] md:p-3 px-2 py-2 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${color} cursor-pointer`}
                   aria-label={`Sign in with ${name}`}
                 >
                   <span className="flex items-center justify-center">

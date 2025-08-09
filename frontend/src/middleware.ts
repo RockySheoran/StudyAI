@@ -43,6 +43,7 @@ export const config = {
     '/resetpassword',
     '/forgot-password',
     '/dashboard',
-    '/api/auth/callback'
+    '/api/auth/callback', 
+    '/interviews/:path*'
   ]
 }
