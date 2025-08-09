@@ -9,8 +9,11 @@ export const useAutoSubmit = (
 
   useEffect(() => {
     if (finalTranscript && finalTranscript !== prevFinalTranscript && isListening) {
-      setPrevFinalTranscript(finalTranscript);
-      handleSubmit();
+      const trimmedTranscript = finalTranscript.trim();
+      if (trimmedTranscript) {
+        handleSubmit(trimmedTranscript).catch(console.error);
+        setPrevFinalTranscript(trimmedTranscript);
+      }
     }
   }, [finalTranscript, isListening, handleSubmit, prevFinalTranscript]);
 };
