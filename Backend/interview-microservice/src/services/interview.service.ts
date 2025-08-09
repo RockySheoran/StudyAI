@@ -90,6 +90,15 @@ import {  generateInterviewResponse } from './gemini.service';
     };
   }
 
-  export const getInterviewHistoryService = async(userId: string): Promise<IInterview[]> =>{
-    return await Interview.find({ userId }).sort({ createdAt: -1 });
+  export const getInterviewHistoryService = async(userId: string): Promise<any> =>{
+    console.log(userId)
+    try {
+      const interviews = await Interview.find({ userId:userId }).sort({ createdAt: -1 });
+      console.log(interviews)
+      return interviews
+    } catch (error) {
+      console.log(error)
+      return error
+    }
+    
   }
