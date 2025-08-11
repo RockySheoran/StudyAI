@@ -68,7 +68,8 @@ export const sendInterviewMessage = async (
   return response.data;
 };
 
-export const getInterviewHistory = async (): Promise<IInterview[]> => {
+export const getInterviewHistory = async (): Promise<any> => {
+  console.log("Fetching interview history");
   const response = await apiClient.get(`/interview/history`);
   return response.data;
 };

@@ -40,7 +40,7 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
       message: 'Not authorized to access this route',
     });
   }
-  console.log("token:", token);
+  console.log("token:b ehgbfyu", token);
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;

@@ -70,6 +70,7 @@ import { Interview } from '../models/interview.model';
 
   export const getInterviewHistory = async (req: AuthenticatedRequest, res: Response) :Promise<any> =>{
     try {
+      console.log("first")
       const userId = req.user?.id ;
       console.log(userId,"sdcvsdcvefdfvfvef")
       const interviews = await  getInterviewHistoryService(userId!);
