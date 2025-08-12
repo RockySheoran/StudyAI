@@ -135,6 +135,7 @@ export default function InterviewPage() {
   return (
     <div className="">
     <InterviewContainer
+      id={id}
       interview={interview}
       onSendMessage={handleSendMessage}
       onComplete={handleComplete}

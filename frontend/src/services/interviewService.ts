@@ -74,6 +74,14 @@ export const getInterviewHistory = async (): Promise<any> => {
   return response.data;
 };
 
+//feedback
+
+export const FeedbackService = async (id: string): Promise<any> => {
+  console.log("Gerring feedback");
+  const response = await apiClient.get(`/interview/feedback/${id}`);
+  return response.data;
+};
+
 // Resume related services
 export const uploadResume = async (file: File): Promise<void> => {
   const formData = new FormData();

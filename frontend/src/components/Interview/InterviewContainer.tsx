@@ -7,16 +7,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-
+import { useParams } from 'next/navigation';
+import { FeedbackService } from '@/services/interviewService';
 interface InterviewContainerProps {
+  id: string,
   interview: IInterview;
   onSendMessage: (message?: string) => Promise<void>;
   onComplete: () => void;
   isLoading?: boolean;
   error?: string | null;
 }
-
+interface feedback {
+  rating: number;
+  suggestions: string[];
+  strengths: string[];
+};
 export const InterviewContainer = ({
+  id,
   interview,
   onSendMessage,
   onComplete,
@@ -27,9 +34,14 @@ export const InterviewContainer = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [activeMessageIndex, setActiveMessageIndex] = useState<number | null>(null);
-  
+  const [feedback  ,setFeedback] =  useState<feedback> ({
+    rating: 0,
+    suggestions: [],
+    strengths: []
+  })
   // Speech recognition hook
   const {
     text: speechText,
@@ -54,6 +66,21 @@ export const InterviewContainer = ({
     setApiError(null);
     clearSynthesisError();
   }, [clearSynthesisError]);
+
+
+  //handling get feedback
+
+  const getFeedback = useCallback(async () => {
+       setIsFeedbackSubmitting(true);
+       
+        
+         const response = await FeedbackService(id);
+         console.log(response)
+         setFeedback(response.feedback)
+       
+         setIsFeedbackSubmitting(false);
+    }, [inputText, onSendMessage, stopListening, stopSpeaking, resetTranscript, clearErrors])
+
 
   // Handle sending messages
   const handleSubmit = useCallback(async (message?: string) => {
@@ -187,6 +214,7 @@ export const InterviewContainer = ({
           {interview.completedAt ? (
             <span className="text-sm text-green-600 dark:text-green-400">Completed</span>
           ) : (
+            <>
             <Button 
               variant="outline" 
               onClick={onComplete}
@@ -195,7 +223,18 @@ export const InterviewContainer = ({
             >
               {isSubmitting ? 'Ending...' : 'End Interview'}
             </Button>
-          )}
+
+          
+          <Button 
+              variant="outline" 
+              onClick={getFeedback}
+              disabled={isFeedbackSubmitting || isSpeaking || isLoading}
+              className="min-w-[120px]"
+            >
+              {isFeedbackSubmitting ? 'fetching...' : 'Get Feedback'}
+            </Button>
+            </>
+            )}
         </div>
       </div>
 

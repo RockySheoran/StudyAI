@@ -1,5 +1,6 @@
 import { IInterview, Interview, IInterviewMessage } from '../models/interview.model';
 import { Resume } from '../models/resume.model';
+import { extractTextFromPdf } from '../utils/file.utils';
 import {  generateInterviewResponse } from './gemini.service';
 
 
@@ -57,14 +58,15 @@ import {  generateInterviewResponse } from './gemini.service';
     interview.messages.push(userMessageObj);
 
     // Get resume text (in a real app, you'd extract text from the resume)
-    const resume = await Resume.findById(interview.resumeId);
-    const resumeText = resume ? `Resume for user ${userId}` : 'No resume available';
+    const resume = await Resume.findById({_id:interview?.resumeId});
+     const text = await extractTextFromPdf(resume?.url!);
+    // const resumeText = text ? `Resume for user ${userId}` : 'No resume available';
 
     // Get AI response
     const { response, feedback } = await generateInterviewResponse(
       interview.type,
       interview.messages,
-      resumeText
+      text
     );
 
     // Add AI response to conversation
