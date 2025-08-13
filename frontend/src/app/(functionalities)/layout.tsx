@@ -17,7 +17,7 @@ export default function Layout({
       </div>
       
       {/* Content container - flex-1 to take remaining space */}
-      <div className="flex-1 overflow-auto transition-all duration-300">
+      <div className="flex-1 overflow-hidden transition-all duration-300">
         {children}
       </div>
     </div>

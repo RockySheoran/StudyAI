@@ -68,8 +68,17 @@ export const sendInterviewMessage = async (
   return response.data;
 };
 
-export const getInterviewHistory = async (): Promise<IInterview[]> => {
-  const response = await apiClient.get('/interview/history');
+export const getInterviewHistory = async (): Promise<any> => {
+  console.log("Fetching interview history");
+  const response = await apiClient.get(`/interview/history`);
+  return response.data;
+};
+
+//feedback
+
+export const FeedbackService = async (id: string): Promise<any> => {
+  console.log("Gerring feedback");
+  const response = await apiClient.get(`/interview/feedback/${id}`);
   return response.data;
 };
 

@@ -6,18 +6,28 @@ import { IInterview } from '@/types/interview';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
+import axios from 'axios';
+import { useUserStore } from '@/lib/Store/userStore';
+
 
 export default function InterviewHistoryPage() {
   const [interviews, setInterviews] = useState<IInterview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+ const {token } = useUserStore();
   const router = useRouter();
 
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const data = await getInterviewHistory();
-        setInterviews(data);
+        console.log("jhguehrfui")
+        const response = await axios.get("http://localhost:8002/api/interview/history",{
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log("Fetched interviews:", response.data);
+        setInterviews(response.data);
       } catch (err) {
         setError('Failed to load interview history');
         console.error(err);

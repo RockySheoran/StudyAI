@@ -60,7 +60,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     {
       name: "Interview",
       icon: <FaUserTie className="text-lg" />,
-      route: "/interviews/new ",
+      route: "/interviews/new"    ,
     },
     {
       name: "Quiz/QnA",
