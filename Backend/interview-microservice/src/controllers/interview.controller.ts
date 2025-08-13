@@ -94,7 +94,7 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
     const resume: any = await Resume.findById({ _id: interview?.resumeId })
 
     const text = await extractTextFromPdf(resume?.url);
-    //  console.log(text)
+     console.log(text)
     const { response, feedback } = await generateInterviewFeedback(
       interview.type,
       interview.messages,
