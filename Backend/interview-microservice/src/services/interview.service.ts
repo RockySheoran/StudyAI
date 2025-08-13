@@ -59,6 +59,7 @@ import {  generateInterviewResponse } from './gemini.service';
     interview.messages.push(userMessageObj);
 
     let resumeText = await redisClient.get(`resume/${interview?.resumeId}`);
+
     if(!resumeText){
 
       // Get resume text (in a real app, you'd extract text from the resume)

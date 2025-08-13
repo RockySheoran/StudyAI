@@ -93,7 +93,7 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
     console.log(id)
     const interview: any = await Interview.findById({ _id: id });
 
-<<<<<<< HEAD
+
     let resumeText = await redisClient.get(`resume/${interview?.resumeId}`);
     if (!resumeText) {
 
@@ -102,12 +102,6 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
       resumeText = await extractTextFromPdf(resume?.url!);
       await redisClient.set(`resume/${interview?.resumeId}`, resumeText, { EX: 172800 });
     }
-
-    //  console.log(text)
-=======
-    const text = await extractTextFromPdf(resume?.url);
-     console.log(text)
->>>>>>> 38ae4c27e7b5ac81c15d35ac0df5d6cd1e3a51a9
     const { response, feedback } = await generateInterviewFeedback(
       interview.type,
       interview.messages,

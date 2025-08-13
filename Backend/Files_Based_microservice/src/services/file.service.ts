@@ -1,9 +1,9 @@
 import { File } from '../models/file.model';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
-import fs from 'fs';
-import { promisify } from 'util';
+import { unlink } from 'fs/promises';
+
 import { Summary } from '../models/summary.model';
-const unlinkAsync = promisify(fs.unlink);
+
 
 export const uploadFile = async (file: Express.Multer.File, userId?: string) => {
   try {
@@ -30,8 +30,8 @@ export const uploadFile = async (file: Express.Multer.File, userId?: string) => 
 
     console.log(file.path,"file path")
     // Delete local file
-    const a  =await unlinkAsync(file.path);
-    console.log(a,"delete local file")
+    await unlink(file.path);
+    
 
     return newFile;
   } catch (error) {

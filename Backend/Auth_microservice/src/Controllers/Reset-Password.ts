@@ -13,10 +13,9 @@ export const Reset_Password = async (req: Request, res: Response): Promise<any> 
     try {
         // First set the session with the access token
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        console.log("sessionData",data)
-        console.log("sessionError",error)
+
         if (!error) {
-            console.error("Code verification error:", error?.message);
+          
             return res.status(400).json({ 
                 message: "Invalid or expired reset code. Please request a new password reset link." 
             });

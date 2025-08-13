@@ -10,7 +10,7 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
             email: email,
             password: password,
         })
-        console.log(data)
+        
         if (error) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
@@ -30,11 +30,9 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
         const userData = {
             id: data.user.id,
             email: data.user.email,
-            name: data.user.user_metadata.full_name,
+            name: data.user.user_metadata.name,
             accessToken: token
         }
-
-
         return res.status(200).json({ message: "Login successful", userData });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error", error });

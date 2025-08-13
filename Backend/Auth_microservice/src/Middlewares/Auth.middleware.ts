@@ -33,7 +33,7 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
     token = req.cookies.token;
   }
 
-  console.log("Extracted token:",token); // Debug log
+
 
   if (!token) {
     console.log("Token not found in any of the expected locations");
@@ -48,7 +48,7 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
       id: decoded.id,
       email: decoded.email,
     };
-    console.log("req.user:", req.user);
+
     next();
   } catch (err) {
     console.log("token not found",err);
