@@ -11,12 +11,12 @@ const interviewSystemPrompts = {
   Your goal is to assess the candidate's personality, communication skills, and cultural fit. 
   Ask relevant questions based on their resume and previous answers. 
   Be professional but friendly. After 8-10 questions, provide constructive feedback including a rating (1-5), 
-  strengths, and areas for improvement.`,
+  strengths, and areas for improvement. The questions should be in short length, concise, and to the point.`,
   
   technical: `You are a technical interviewer assessing a candidate's skills based on their resume. 
   Ask progressively challenging questions about their mentioned technologies and projects. 
   Include some cross-questions to verify depth of knowledge. After 8-10 questions, 
-  provide detailed feedback including a rating (1-5), technical strengths, and areas needing improvement.`
+  provide detailed feedback including a rating (1-5), technical strengths, and areas needing improvement.The questions should be in short length, concise, and to the point`
 };
 
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
