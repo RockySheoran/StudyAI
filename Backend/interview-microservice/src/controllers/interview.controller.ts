@@ -5,6 +5,7 @@ import { IInterview, Interview } from '../models/interview.model';
 import { IResume, Resume } from '../models/resume.model';
 import { extractTextFromPdf } from '../utils/file.utils';
 import { generateInterviewFeedback } from '../services/gemini.service';
+import { redisClient } from '../config/redis';
 
 
 export const startInterview = async (req: AuthenticatedRequest, res: Response) => {
@@ -91,14 +92,21 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
     const { id } = req.params;
     console.log(id)
     const interview: any = await Interview.findById({ _id: id });
-    const resume: any = await Resume.findById({ _id: interview?.resumeId })
 
-    const text = await extractTextFromPdf(resume?.url);
+    let resumeText = await redisClient.get(`resume/${interview?.resumeId}`);
+    if (!resumeText) {
+
+      // Get resume text (in a real app, you'd extract text from the resume)
+      const resume = await Resume.findById({ _id: interview?.resumeId });
+      resumeText = await extractTextFromPdf(resume?.url!);
+      await redisClient.set(`resume/${interview?.resumeId}`, resumeText, { EX: 172800 });
+    }
+
     //  console.log(text)
     const { response, feedback } = await generateInterviewFeedback(
       interview.type,
       interview.messages,
-      text,
+      resumeText,
       id
     )
 
