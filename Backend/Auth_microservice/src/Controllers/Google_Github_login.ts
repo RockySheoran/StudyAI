@@ -5,7 +5,7 @@ import { generateToken } from "../Utils/generateToken";
 export const Google_Github_login = async (req: Request, res: Response): Promise<any> => {
 
     const { provider } = req.params;
-    console.log(provider)
+
     if (!['google', 'github'].includes(provider)) {
         return res.status(400).json({
             success: false,
@@ -31,7 +31,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
                 message: error?.message || 'Failed to initiate OAuth login',
             });
         }
-        console.log(data.url)
+
         // res.redirect(data.url);
         return res.status(200).json({
             success: true,
@@ -52,7 +52,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
 
 export const Login_callback = async (req: Request, res: Response): Promise<any> => {
     const { code, error: oauthError, error_description } = req.query;
-    // console.log(code, oauthError, error_description);
+
     if (oauthError) {
         console.error('OAuth callback error:', { oauthError, error_description });
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
@@ -77,12 +77,13 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         }
         let user = userData.user;
 
-      
 
-        const token = generateToken({ email: data.user.email || "", id: data.user.id
-            
-         });
-         console.log(token)
+
+        const token = generateToken({
+            email: data.user.email || "", id: data.user.id
+
+        });
+        //  console.log(token)
         // res.cookie('token', token, {
         //     httpOnly: true,
         //     secure: process.env.NODE_ENV === 'production',
@@ -94,7 +95,7 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             secure: process.env.NODE_ENV === 'production',
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             sameSite: 'lax',
-            // domain: process.env.COOKIE_DOMAIN, // Set if using cross-subdomain cookies
+
             path: '/',
         });
 
@@ -104,14 +105,16 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             maxAge: 7 * 24 * 60 * 60 * 1000,
             sameSite: 'lax',
             path: '/',
+
         });
-        let user_Login_Data = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata.full_name,
-            accessToken: token
-        }
-      return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        // let user_Login_Data = {
+        //     id: data.user.id,
+        //     email: data.user.email,
+        //     name: data.user.user_metadata.name,
+        //     accessToken: token
+        // }
+
+        return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
         // return res.status(200).json({ message: "Login successful", user_Login_Data });
     } catch (error: any) {
         console.error('OAuth callback error:', error);

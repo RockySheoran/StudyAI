@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
 import { Resume } from '../models/resume.model';
 import { AuthenticatedRequest } from '../types/custom-types';
+import { unlink } from 'fs/promises';
 
 export class ResumeController {
   async uploadResume(req: AuthenticatedRequest, res: Response) {
@@ -13,11 +14,15 @@ export class ResumeController {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
+
+
       const result = await uploadToCloudinary(file.path, userId || '');
       const publicId = result.split('/').pop()?.split('.')[0] || '';
 
+      await unlink(file.path);
+
       // Delete previous resumes
-      await Resume.deleteMany({ userId: userId || '' });
+      await Resume.deleteMany({ userId: userId });
 
       const resume = new Resume({
         userId: userId || '',

@@ -1,114 +1,197 @@
-import { useState } from 'react';
-import { Button } from '../ui/button';
+'use client';
 
+import { useCallback, useState, useRef } from 'react';
+import { FileText, Loader2, UploadCloud, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
-interface ResumeUploaderProps {
-  onUpload: (file: File) => Promise<void>;
+interface ResumeUploadProps {
+  onUpload: (file: File) => Promise<void> | void;
+  onSkip: () => Promise<void> | void;
+  onBack: () => void;
   isLoading: boolean;
-  onSkip: () => void;
 }
 
-export const ResumeUploader = ({ 
-  onUpload, 
-  isLoading,
-  onSkip
-}: ResumeUploaderProps) => {
-  const [file, setFile] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUploadProps) {
+  const [resume, setResume] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0];
-      
-      // Validate file type
-      if (!selectedFile.type.includes('pdf') && !selectedFile.name.endsWith('.pdf')) {
-        setError('Please upload a PDF file');
-        return;
-      }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    validateAndSetFile(file);
+  };
 
-      // Validate file size (5MB max)
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        setError('File size should be less than 5MB');
-        return;
-      }
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
-      setError(null);
-      setFile(selectedFile);
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) validateAndSetFile(file);
+  };
+
+  const validateAndSetFile = (file: File) => {
+    const validTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload a PDF, DOC, or DOCX file.');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 5MB limit.');
+      return;
+    }
+
+    setResume(file);
+  };
+
+  const removeFile = () => {
+    setResume(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
-    try {
-      await onUpload(file);
-    } catch (err) {
-      setError('Failed to upload resume');
+  const handleUpload = async () => {
+    if (resume) {
+      await onUpload(resume);
     }
+  };
+
+  const handleSkip = async () => {
+    await onSkip();
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Upload Your Resume</h2>
-        <p className="text-gray-600 mt-2">
-          (Optional) Upload your resume for personalized interview questions
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative">
-          <input
-            type="file"
-            id="resume-upload"
-            accept=".pdf"
-            onChange={handleFileChange}
-            disabled={isLoading}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <label 
-            htmlFor="resume-upload"
-            className={`block w-full px-4 py-12 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${
-              file 
-                ? 'border-green-500 bg-green-50 text-green-700' 
-                : 'border-gray-300 hover:border-gray-400 text-gray-500'
-            }`}
-          >
-            {file ? (
-              <span className="font-medium">{file.name}</span>
-            ) : (
-              <>
-                <span className="block text-sm font-medium">Choose a PDF file</span>
-                <span className="block text-xs mt-1">or drag and drop here</span>
-              </>
-            )}
-          </label>
+    <div className="max-w-md mx-auto py-8">
+      <div className="border-0 shadow-sm rounded-lg bg-card text-card-foreground">
+        <div className="p-6 text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/50 mb-4">
+            <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2">Upload Your Resume</h2>
+          <p className="text-muted-foreground">
+            Upload your resume to personalize your interview experience (optional)
+          </p>
         </div>
         
-        {error && (
-          <p className="text-red-500 text-sm">{error}</p>
-        )}
-
-        <div className="flex gap-3">
-          <Button
-            type="submit"
-            disabled={!file || isLoading}
-            className="flex-1 py-3"
+        <div className="px-6 pb-6">
+          <div
+            className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 mb-6 ${
+              isDragging ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-muted-foreground/30'
+            } bg-muted/50 dark:bg-muted/20 transition-colors`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={triggerFileInput}
           >
-            {isLoading ? 'Uploading...' : 'Upload & Continue'}
-          </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              id="resume-upload"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={isLoading}
+            />
+            <UploadCloud className={`h-12 w-12 mb-4 ${isDragging ? 'text-blue-500' : 'text-muted-foreground'}`} />
+            <p className="text-sm text-muted-foreground text-center mb-2">
+              {isDragging ? 'Drop your resume here' : 'Drag & drop your resume here or click to browse'}
+            </p>
+            <Button 
+              variant="outline" 
+              type="button"
+              disabled={isLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerFileInput();
+              }}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                'Select File'
+              )}
+            </Button>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              PDF, DOC, or DOCX (max 5MB)
+            </p>
+          </div>
+
+          {resume && (
+            <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm truncate max-w-xs">{resume.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={removeFile}
+                disabled={isLoading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 pt-0 flex flex-col gap-3">
           <Button
-            type="button"
-            onClick={onSkip}
+            size="lg"
+            className="w-full"
+            onClick={handleUpload}
+            disabled={(!resume || isLoading)}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Starting Interview...
+              </>
+            ) : (
+              'Start Interview with Resume'
+            )}
+          </Button>
+          
+          <Button
             variant="outline"
-            className="flex-1 py-3"
+            size="lg"
+            className="w-full"
+            onClick={handleSkip}
             disabled={isLoading}
           >
-            Skip
+            Skip Resume and Start
+          </Button>
+          
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            disabled={isLoading}
+          >
+            Back to Interview Type
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
-};
+}

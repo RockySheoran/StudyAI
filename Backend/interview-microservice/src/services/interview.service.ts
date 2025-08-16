@@ -1,12 +1,14 @@
+import { redisClient } from '../config/redis';
 import { IInterview, Interview, IInterviewMessage } from '../models/interview.model';
 import { Resume } from '../models/resume.model';
+import { extractTextFromPdf } from '../utils/file.utils';
 import {  generateInterviewResponse } from './gemini.service';
 
 
  
 
   export const startInterviewService = async(userId: string , type: 'personal' | 'technical'): Promise<IInterview> =>{
-    console.log(userId ,"iytiuyt");
+    console.log(userId);
     console.log(type);
 
     const latestResume = await Resume.findOne({ userId }).sort({ uploadDate: -1 });
@@ -56,10 +58,17 @@ import {  generateInterviewResponse } from './gemini.service';
 
     interview.messages.push(userMessageObj);
 
-    // Get resume text (in a real app, you'd extract text from the resume)
-    const resume = await Resume.findById(interview.resumeId);
-    const resumeText = resume ? `Resume for user ${userId}` : 'No resume available';
+    let resumeText = await redisClient.get(`resume/${interview?.resumeId}`);
 
+    if(!resumeText){
+
+      // Get resume text (in a real app, you'd extract text from the resume)
+      const resume = await Resume.findById({_id:interview?.resumeId});
+       resumeText = await extractTextFromPdf(resume?.url!);
+       await redisClient.set(`resume/${interview?.resumeId}`, resumeText, { EX: 172800 });
+    }
+
+    // const resumeText = text ? `Resume for user ${userId}` : 'No resume available';
     // Get AI response
     const { response, feedback } = await generateInterviewResponse(
       interview.type,

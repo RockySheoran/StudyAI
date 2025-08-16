@@ -1,14 +1,25 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { IInterview } from '@/types/interview';
+import { feedback, IInterview } from '@/types/interview';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useParams } from 'next/navigation';
+import { FeedbackService } from '@/services/interviewService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import router from 'next/navigation';
 
 interface InterviewContainerProps {
+  id: string,
   interview: IInterview;
   onSendMessage: (message?: string) => Promise<void>;
   onComplete: () => void;
@@ -17,19 +28,32 @@ interface InterviewContainerProps {
 }
 
 export const InterviewContainer = ({
+  id,
   interview,
   onSendMessage,
   onComplete,
   isLoading = false,
   error = null,
 }: InterviewContainerProps) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const showDetails = searchParams.get('details') === 'true';
+  const [showMsgBox, setShowMsgBox] = useState(showDetails);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [activeMessageIndex, setActiveMessageIndex] = useState<number | null>(null);
-  
+  const [feedback, setFeedback] = useState<feedback>({
+    rating: 0,
+    suggestions: [],
+    strengths: []
+  });
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
   // Speech recognition hook
   const {
     text: speechText,
@@ -54,6 +78,30 @@ export const InterviewContainer = ({
     setApiError(null);
     clearSynthesisError();
   }, [clearSynthesisError]);
+
+  // Toggle item expansion
+  const toggleExpand = (type: string, index: number) => {
+    const key = `${type}-${index}`;
+    setExpandedItems(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Handle getting feedback
+  const getFeedback = useCallback(async () => {
+    setIsFeedbackSubmitting(true);
+    try {
+      const response = await FeedbackService(id);
+      setFeedback(response.feedback);
+      setShowFeedbackModal(true);
+    } catch (err) {
+      console.error('Error getting feedback:', err);
+      toast.error('Failed to get feedback. Please try again.');
+    } finally {
+      setIsFeedbackSubmitting(false);
+    }
+  }, [id]);
 
   // Handle sending messages
   const handleSubmit = useCallback(async (message?: string) => {
@@ -161,10 +209,107 @@ export const InterviewContainer = ({
     }
   }, [isSpeaking, stopSpeaking, speak, interview?.messages]);
 
+  // Render feedback item with expand/collapse functionality
+  const renderFeedbackItem = (type: 'suggestions' | 'strengths', item: string, index: number) => {
+    const key = `${type}-${index}`;
+    const isExpanded = expandedItems[key] || false;
+    const shouldTruncate = item.length > 150 && !isExpanded;
+    
+    return (
+      <div key={index} className="mb-3 last:mb-0">
+        <div className="flex items-start">
+          <span className={cn(
+            "flex-shrink-0 inline-block w-4 h-4 rounded-full mt-1 mr-2",
+            type === 'strengths' ? 'bg-green-500' : 'bg-yellow-500'
+          )} />
+          <div>
+            <p className={cn("text-sm", shouldTruncate ? "line-clamp-3" : "")}>
+              {item}
+            </p>
+            {item.length > 150 && (
+              <button
+                onClick={() => toggleExpand(type, index)}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+              >
+                {isExpanded ? 'Show less' : 'Show full'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+      {/* Feedback Modal */}
+      <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">Interview Feedback</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Rating Section */}
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-medium text-lg mb-3">Overall Rating</h3>
+              <div className="flex items-center">
+                <div className="text-3xl font-bold mr-4">
+                  {feedback.rating.toFixed(1)}/5.0
+                </div>
+                <div className="flex-1">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div 
+                      className="bg-blue-600 h-2.5 rounded-full" 
+                      style={{ width: `${(feedback.rating / 5) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Strengths Section */}
+            {feedback.strengths.length > 0 && (
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <h3 className="font-medium text-lg mb-3 text-green-800 dark:text-green-200">
+                  Your Strengths
+                </h3>
+                <div className="space-y-2">
+                  {feedback.strengths.map((item, index) => 
+                    renderFeedbackItem('strengths', item, index)
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Suggestions Section */}
+            {feedback.suggestions.length > 0 && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <h3 className="font-medium text-lg mb-3 text-yellow-800 dark:text-yellow-200">
+                  Areas for Improvement
+                </h3>
+                <div className="space-y-2">
+                  {feedback.suggestions.map((item, index) => 
+                    renderFeedbackItem('suggestions', item, index)
+                  )}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-center">
+              <Button 
+                onClick={() => setShowFeedbackModal(false)}
+                className="mt-4"
+              >
+                Close Feedback
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Fixed Header - 64px height */}
-      <div className="h-16 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
+      <div className=" mt-17 h-16 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
         <div className="h-full max-w-4xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold dark:text-white">
@@ -184,17 +329,43 @@ export const InterviewContainer = ({
             </button>
           </div>
           
-          {interview.completedAt ? (
+          {(showMsgBox) ? (
+            <>
             <span className="text-sm text-green-600 dark:text-green-400">Completed</span>
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/interviews/history')}
+                className="min-w-[120px] cursor-pointer"
+              >
+                History Page
+              </Button>
+            
+            </>
           ) : (
-            <Button 
-              variant="outline" 
-              onClick={onComplete}
-              disabled={isSubmitting || isSpeaking || isLoading}
-              className="min-w-[120px]"
-            >
-              {isSubmitting ? 'Ending...' : 'End Interview'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={onComplete}
+                disabled={isSubmitting || isSpeaking || isLoading}
+                className="min-w-[120px]"
+              >
+                {isSubmitting ? 'Ending...' : 'End Interview'}
+              </Button>
+
+              <Button 
+                variant="outline" 
+                onClick={getFeedback}
+                disabled={isFeedbackSubmitting || isSpeaking || isLoading}
+                className="min-w-[120px]"
+              >
+                {isFeedbackSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : 'Get Feedback'}
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -245,7 +416,7 @@ export const InterviewContainer = ({
       </div>
 
       {/* Fixed Input Area - 72px height (approx) */}
-      {!interview.completedAt && (
+      {(!interview.completedAt && !showMsgBox) && (
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
           <div className="max-w-4xl mx-auto">
             {(error || apiError || speechError || synthesisError) && (

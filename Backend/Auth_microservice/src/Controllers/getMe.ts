@@ -27,7 +27,7 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<any> 
     
     console.log("user:", data.user.user_metadata);
     const userData = {
-      name : data.user.user_metadata.full_name,
+      name : data.user.user_metadata.name,
       email : data.user.email,
       avatar : data.user.user_metadata.avatar_url,
     }

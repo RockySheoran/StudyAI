@@ -13,7 +13,9 @@
 //     }
 //     const pdfText = await extractTextFromPdf(pdfUrl);
 //     console.log(pdfText, "pdfText");
-//     logger.info('PDF text extracted successfully');
+//     logger.info('PDF text extracted successfully
+// 
+// ');
 
 //     // Enhance prompt with RAG
 //     const enhancedPrompt = enhancePromptWithRAG(pdfText);

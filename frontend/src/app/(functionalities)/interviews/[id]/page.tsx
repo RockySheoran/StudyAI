@@ -14,6 +14,8 @@ export default function InterviewPage() {
   const router = useRouter();
   const params = useParams();
 
+
+
   const id = params.id as string;
   const [interview, setInterview] = useState<IInterview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,6 +137,7 @@ export default function InterviewPage() {
   return (
     <div className="">
     <InterviewContainer
+      id={id}
       interview={interview}
       onSendMessage={handleSendMessage}
       onComplete={handleComplete}
