@@ -2,16 +2,17 @@ import { Request, Response } from 'express';
 import { uploadFile, getFileById } from '../services/file.service';
 import { createSummaryJob, getSummaryStatus } from '../services/summary.service';
 import { summaryQueue } from '../services/queue.service';
+import { AuthenticatedRequest } from '../types/custom-types';
 
 
-export const uploadFileController = async (req: Request, res: Response) => {
+export const uploadFileController = async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    // const userId = req.user?.id; // Assuming you have authentication middleware
-    const userId = "JFGD"
+    const userId = req.user?.id; // Assuming you have authentication middleware
+   
     const file : any = await uploadFile(req.file, userId);
     console.log(file)
     

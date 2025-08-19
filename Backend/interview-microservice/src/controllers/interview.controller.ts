@@ -12,7 +12,7 @@ export const startInterview = async (req: AuthenticatedRequest, res: Response) =
   try {
     const { type } = req.body;
 
-    const userId = req.user?.id || 'user'; // Assuming you have authentication middleware
+    const userId = req.user?.id; // Assuming you have authentication middleware
 
     if (!type || (type !== 'personal' && type !== 'technical')) {
       return res.status(400).json({ error: 'Invalid interview type' });
@@ -20,7 +20,7 @@ export const startInterview = async (req: AuthenticatedRequest, res: Response) =
     }
 
 
-    const interview = await startInterviewService(userId, type);
+    const interview = await startInterviewService(userId!, type);
     console.log(interview);
     res.status(201).json(interview);
   } catch (error) {

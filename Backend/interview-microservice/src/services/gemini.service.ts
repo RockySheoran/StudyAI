@@ -38,7 +38,7 @@ export const generateInterviewResponse = async (
     `;
 
     // Convert conversation history to Gemini format with proper role alternation
-    const chatHistory = conversationHistory.map((msg, index) => ({
+    const chatHistory = conversationHistory?.map((msg, index) => ({
       role: msg.role === 'user' ? 'user' as const : 'model' as const,
       parts: [{ text: msg.content }],
     }));

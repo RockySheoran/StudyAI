@@ -7,7 +7,7 @@ const redisConnection = {
   port: parseInt(process.env.REDIS_PORT || '6379'),
   password: process.env.REDIS_PASSWORD,
 };
-console.log(redisConnection,"redisConnection")
+
 
 export const summaryQueue = new Queue('summaryQueue', {
   connection: redisConnection,

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useParams } from 'next/navigation';
+import { BiCaretDownCircle } from "react-icons/bi";
 import { FeedbackService } from '@/services/interviewService';
 import {
   Dialog,
@@ -53,7 +54,7 @@ export const InterviewContainer = ({
   });
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Speech recognition hook
   const {
     text: speechText,
@@ -309,37 +310,117 @@ export const InterviewContainer = ({
       </Dialog>
 
       {/* Fixed Header - 64px height */}
-      <div className=" mt-17 h-16 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
-        <div className="h-full max-w-4xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold dark:text-white">
-              {interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
-            </h2>
-            <button 
-              onClick={toggleAssistantSpeech}
-              className={cn(
-                "p-2 rounded-full transition-colors",
-                isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
-                !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
-              )}
-              disabled={!interview?.messages?.length}
-              aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
-            >
-              {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
+       <div className="mt-15 md:mt-0 px-2 py-1 md:p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
+      {/* Mobile menu button and title */}
+      <div className="md:hidden flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold dark:text-white">
+            {interview.type === 'personal' ? 'Personal' : 'Technical'}
+          </h2>
+          <button 
+            onClick={toggleAssistantSpeech}
+            className={cn(
+              "p-2 rounded-full transition-colors",
+              isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
+              !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+            )}
+            disabled={!interview?.messages?.length}
+            aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
+          >
+            {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+        </div>
+        
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          aria-label="Toggle menu"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {isMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <BiCaretDownCircle size={25}/>
+            )}
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+        {/* Title and volume button for desktop */}
+        <div className="hidden md:flex items-center gap-2">
+          <h2 className="text-xl font-semibold dark:text-white">
+            {interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
+          </h2>
+          <button 
+            onClick={toggleAssistantSpeech}
+            className={cn(
+              "p-2 rounded-full transition-colors",
+              isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
+              !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+            )}
+            disabled={!interview?.messages?.length}
+            aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
+          >
+            {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </button>
+        </div>
+        
+        {/* Mobile menu content */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-2 py-2 space-y-2 border-t border-gray-200 dark:border-gray-700">
+            {showMsgBox ? (
+              <div className="flex flex-col space-y-2">
+                <span className="text-sm text-green-600 dark:text-green-400 py-2">Completed</span>
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/interviews/history')}
+                  className="w-full"
+                >
+                  History Page
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col space-y-2">
+                <Button 
+                  variant="outline" 
+                  onClick={onComplete}
+                  disabled={isSubmitting || isSpeaking || isLoading}
+                  className="w-full"
+                >
+                  {isSubmitting ? 'Ending...' : 'End Interview'}
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  onClick={getFeedback}
+                  disabled={isFeedbackSubmitting || isSpeaking || isLoading}
+                  className="w-full"
+                >
+                  {isFeedbackSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : 'Get Feedback'}
+                </Button>
+              </div>
+            )}
           </div>
-          
-          {(showMsgBox) ? (
+        )}
+        
+        {/* Desktop buttons */}
+        <div className="hidden md:flex items-center">
+          {showMsgBox ? (
             <>
-            <span className="text-sm text-green-600 dark:text-green-400">Completed</span>
+              <span className="text-sm text-green-600 dark:text-green-400 mr-4">Completed</span>
               <Button 
                 variant="outline" 
                 onClick={() => router.push('/interviews/history')}
-                className="min-w-[120px] cursor-pointer"
+                className="min-w-[120px]"
               >
                 History Page
               </Button>
-            
             </>
           ) : (
             <div className="flex gap-2">
@@ -368,6 +449,7 @@ export const InterviewContainer = ({
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {/* Messages Container - Scrollable Area */}
