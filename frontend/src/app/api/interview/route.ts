@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import apiClient from '@/lib/api';
+import apiClient from '@/lib/Api/Interview-api';
 
 export async function POST(req: Request) {
   try {

@@ -65,7 +65,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     {
       name: "Quiz/QnA",
       icon: <FaQuestionCircle className="text-lg" />,
-      route: "/quiz",
+      route: "/quiz_qna",
     },
     {
       name: "English Conversation",
