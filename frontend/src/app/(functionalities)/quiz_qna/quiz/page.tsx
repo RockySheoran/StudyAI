@@ -1,7 +1,7 @@
 // frontend/src/app/quiz/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { api } from '@/lib/Api/Quiz-Qna-api';
 import QuizQuestions from '@/components/Quiz-Qna/Quiz/QuizQuestions';
 import QuizResults from '@/components/Quiz-Qna/Quiz/QuizResults';
 import QuizForm from '@/components/Quiz-Qna/Quiz/QuizForm';
+import { useQuizStore } from '@/lib/Store/Quiz-Qna/quizStore';
 
 
 const formSchema = z.object({
@@ -21,12 +22,25 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function QuizPage() {
-  const [step, setStep] = useState<'form' | 'quiz' | 'results'>('form');
-  const [quizData, setQuizData] = useState<QuizData | null>(null);
-  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Get store state and actions
+  const {
+    currentStep,
+    currentQuiz,
+    currentQuestionIndex,
+    userAnswers,
+    quizResult,
+    setCurrentStep,
+    setCurrentQuiz,
+    setCurrentQuestionIndex,
+    setUserAnswers,
+    setQuizResult,
+    clearCurrentQuiz,
+    addQuizResult
+  } = useQuizStore();
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,13 +49,26 @@ export default function QuizPage() {
     }
   });
 
+  // Restore form data from store if available
+  useEffect(() => {
+    if (currentStep === 'form' && currentQuiz) {
+      form.setValue('educationLevel', currentQuiz.educationLevel);
+      form.setValue('topic', currentQuiz.topic);
+    }
+  }, [currentStep, currentQuiz, form]);
+
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     setError(null);
     try {
       const response = await api.generateQuiz(data);
-      setQuizData(response.data);
-      setStep('quiz');
+      const quizData: QuizData = response.data;
+      
+      // Store quiz data and reset progress
+      setCurrentQuiz(quizData);
+      setCurrentQuestionIndex(0);
+      setUserAnswers({});
+      setCurrentStep('quiz');
     } catch (error: any) {
       console.error('Error generating quiz:', error);
       setError(error.message || 'Failed to generate quiz. Please try again.');
@@ -51,17 +78,22 @@ export default function QuizPage() {
   };
 
   const handleQuizSubmit = async (answers: Record<number, string>) => {
-    if (!quizData) return;
+    if (!currentQuiz) return;
     
     setLoading(true);
     setError(null);
     try {
       const response = await api.submitQuiz({
-        quizId: quizData._id,
+        quizId: currentQuiz._id,
         answers: Object.values(answers)
       });
-      setQuizResult(response.data);
-      setStep('results');
+      
+      const result: QuizResult = response.data;
+      
+      // Store result and move to results page
+      setQuizResult(result);
+      addQuizResult(result);
+      setCurrentStep('results');
     } catch (error: any) {
       console.error('Error submitting quiz:', error);
       setError(error.message || 'Failed to submit quiz. Please try again.');
@@ -70,12 +102,31 @@ export default function QuizPage() {
     }
   };
 
+  const handleAnswerSelect = (questionIndex: number, answer: string) => {
+    setUserAnswers({ ...userAnswers, [questionIndex]: answer });
+  };
+
+  const handleQuestionNavigation = (newIndex: number) => {
+    setCurrentQuestionIndex(newIndex);
+  };
+
   const handleRestart = () => {
-    setStep('form');
-    setQuizData(null);
-    setQuizResult(null);
+    setCurrentStep('form');
+    clearCurrentQuiz();
     setError(null);
     form.reset();
+  };
+
+  const handleCancel = () => {
+    setCurrentStep('form');
+    setError(null);
+  };
+  const reset = () => {
+    form.reset();
+    setCurrentQuiz(null);
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
+    setQuizResult(null);
   };
 
   return (
@@ -91,25 +142,29 @@ export default function QuizPage() {
           </div>
         )}
         
-        {step === 'form' && (
+        {currentStep === 'form' && (
           <QuizForm 
-
             form={form} 
+            reset={reset}
             onSubmit={onSubmit} 
             loading={loading} 
           />
         )}
         
-        {step === 'quiz' && quizData && (
+        {currentStep === 'quiz' && currentQuiz && (
           <QuizQuestions 
-            quizData={quizData} 
+            quizData={currentQuiz}
+            currentQuestionIndex={currentQuestionIndex}
+            userAnswers={userAnswers}
+            onAnswerSelect={handleAnswerSelect}
+            onQuestionNavigate={handleQuestionNavigation}
             onSubmit={handleQuizSubmit}
-            onCancel={() => setStep('form')}
+            onCancel={handleCancel}
             loading={loading}
           />
         )}
         
-        {step === 'results' && quizResult && (
+        {currentStep === 'results' && quizResult && (
           <QuizResults 
             result={quizResult} 
             onRestart={handleRestart} 

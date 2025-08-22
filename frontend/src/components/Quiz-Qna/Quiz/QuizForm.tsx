@@ -5,12 +5,14 @@ interface QuizFormProps {
   form: UseFormReturn<{
     educationLevel: string;
     topic: string;
+
   }>;
   onSubmit: (data: { educationLevel: string; topic: string }) => void;
   loading: boolean;
+  reset: () => void;
 }
 
-export default function QuizForm({ form, onSubmit, loading }: QuizFormProps) {
+export default function QuizForm({ form, onSubmit, loading, reset }: QuizFormProps) {
   const { register, handleSubmit, formState: { errors } } = form;
 
   return (
@@ -55,14 +57,24 @@ export default function QuizForm({ form, onSubmit, loading }: QuizFormProps) {
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.topic.message}</p>
           )}
         </div>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => reset()}
+            className=" w-full bg-gray-300 cursor-pointer dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            Reset
+          </button>
+       
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
-        >
+          className="w-full bg-blue-600 cursor-pointer dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
+          >
           {loading ? 'Generating Quiz...' : 'Generate Quiz'}
         </button>
+          </div>
       </form>
     </div>
   );

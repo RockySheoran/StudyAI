@@ -11,6 +11,7 @@ export interface IQuizQuestion {
 export interface IQuiz extends Document {
   educationLevel: string;
   topic: string;
+  userId: string;
   questions: IQuizQuestion[];
   createdAt: Date;
   updatedAt: Date;
@@ -25,6 +26,7 @@ const QuizQuestionSchema = new Schema({
 
 const QuizSchema = new Schema({
   educationLevel: { type: String, required: true },
+  userId: { type: String, required: true },
   topic: { type: String, required: true },
   questions: [QuizQuestionSchema]
 }, {

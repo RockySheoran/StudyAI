@@ -9,9 +9,10 @@ interface QnAFormProps {
   }>;
   onSubmit: (data: { educationLevel: string; topic: string; marks: number }) => void;
   loading: boolean;
+  resetForm: () => void;
 }
 
-export default function QnAForm({ form, onSubmit, loading }: QnAFormProps) {
+export default function QnAForm({ form, onSubmit, loading, resetForm }: QnAFormProps) {
   const { register, handleSubmit, formState: { errors } } = form;
 
   return (
@@ -73,14 +74,23 @@ export default function QnAForm({ form, onSubmit, loading }: QnAFormProps) {
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.marks.message}</p>
           )}
         </div>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => resetForm()}
+            className="w-full bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            Reset
+          </button>
 
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-green-600 dark:bg-green-700 text-white py-2 px-4 rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
-        >
+          >
           {loading ? 'Generating QnA...' : 'Generate QnA'}
         </button>
+          </div>
       </form>
     </div>
   );

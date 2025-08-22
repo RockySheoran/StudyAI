@@ -1,7 +1,7 @@
 // frontend/src/app/qna/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,8 @@ import { api } from '@/lib/Api/Quiz-Qna-api';
 import QnAForm from '@/components/Quiz-Qna/Qna/QnAForm';
 import QnAQuestions from '@/components/Quiz-Qna/Qna/QnAQuestions';
 import QnAResults from '@/components/Quiz-Qna/Qna/QnAResults';
+import { useQnAStore } from '@/lib/Store/Quiz-Qna/qnaStore';
+
 
 const formSchema = z.object({
   educationLevel: z.string().min(1, 'Education level is required'),
@@ -20,12 +22,25 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function QnAPage() {
-  const [step, setStep] = useState<'form' | 'qna' | 'results'>('form');
-  const [qnaData, setQnaData] = useState<QnAData | null>(null);
-  const [qnaResult, setQnaResult] = useState<QnAResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Get store state and actions
+  const {
+    currentStep,
+    currentQnA,
+    currentQuestionIndex,
+    userAnswers,
+    qnaResult,
+    setCurrentStep,
+    setCurrentQnA,
+    setCurrentQuestionIndex,
+    setUserAnswers,
+    setQnaResult,
+    clearCurrentQnA,
+    addQnAResult
+  } = useQnAStore();
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,13 +50,27 @@ export default function QnAPage() {
     }
   });
 
+  // Restore form data from store if available
+  useEffect(() => {
+    if (currentStep === 'form' && currentQnA) {
+      form.setValue('educationLevel', currentQnA.educationLevel);
+      form.setValue('topic', currentQnA.topic);
+      form.setValue('marks', currentQnA.questions[0]?.maxMarks || 2);
+    }
+  }, [currentStep, currentQnA, form]);
+
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     setError(null);
     try {
       const response = await api.generateQnA(data);
-      setQnaData(response.data);
-      setStep('qna');
+      const qnaData: QnAData = response.data;
+      
+      // Store QnA data and reset progress
+      setCurrentQnA(qnaData);
+      setCurrentQuestionIndex(0);
+      setUserAnswers({});
+      setCurrentStep('qna');
     } catch (error: any) {
       console.error('Error generating QnA:', error);
       setError(error.message || 'Failed to generate QnA. Please try again.');
@@ -51,17 +80,22 @@ export default function QnAPage() {
   };
 
   const handleQnASubmit = async (answers: Record<number, string>) => {
-    if (!qnaData) return;
+    if (!currentQnA) return;
     
     setLoading(true);
     setError(null);
     try {
       const response = await api.submitQnA({
-        qnaId: qnaData._id,
+        qnaId: currentQnA._id,
         answers: Object.values(answers)
       });
-      setQnaResult(response.data);
-      setStep('results');
+      
+      const result: QnAResult = response.data;
+      
+      // Store result and move to results page
+      setQnaResult(result);
+      addQnAResult(result);
+      setCurrentStep('results');
     } catch (error: any) {
       console.error('Error submitting QnA:', error);
       setError(error.message || 'Failed to submit QnA. Please try again.');
@@ -70,12 +104,30 @@ export default function QnAPage() {
     }
   };
 
+  const handleAnswerChange = (questionIndex: number, answer: string) => {
+    setUserAnswers({ ...userAnswers, [questionIndex]: answer });
+  };
+
+  const handleQuestionNavigation = (newIndex: number) => {
+    setCurrentQuestionIndex(newIndex);
+  };
+
   const handleRestart = () => {
-    setStep('form');
-    setQnaData(null);
-    setQnaResult(null);
+    setCurrentStep('form');
+    clearCurrentQnA();
     setError(null);
     form.reset();
+  };
+
+  const handleCancel = () => {
+    setCurrentStep('form');
+    setError(null);
+  };
+  const resetForm = () => {
+    form.reset();
+    setCurrentQnA(null);
+    setCurrentQuestionIndex(0);
+    setUserAnswers({});
   };
 
   return (
@@ -91,26 +143,31 @@ export default function QnAPage() {
           </div>
         )}
         
-        {step === 'form' && (
+        {currentStep === 'form' && (
           <QnAForm 
             form={form} 
             onSubmit={onSubmit} 
             loading={loading} 
+            resetForm={resetForm}
           />
         )}
         
-        {step === 'qna' && qnaData && (
+        {currentStep === 'qna' && currentQnA && (
           <QnAQuestions 
-            qnaData={qnaData} 
+            qnaData={currentQnA}
+            currentQuestionIndex={currentQuestionIndex}
+            userAnswers={userAnswers}
+            onAnswerChange={handleAnswerChange}
+            onQuestionNavigate={handleQuestionNavigation}
             onSubmit={handleQnASubmit}
-            onCancel={() => setStep('form')}
+            onCancel={handleCancel}
             loading={loading}
           />
         )}
         
-        {step === 'results' && qnaResult && (
+        {currentStep === 'results' && qnaResult && (
           <QnAResults 
-            result={qnaResult} 
+            // result={qnaResult} 
             onRestart={handleRestart} 
           />
         )}

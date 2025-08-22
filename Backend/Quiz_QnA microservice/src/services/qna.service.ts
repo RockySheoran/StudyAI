@@ -3,7 +3,7 @@ import QnA, { IQnA } from '../models/qna.model';
 import geminiService from './gemini.service';
 
 class QnAService {
-  async generateQnA(educationLevel: string, topic: string, marks: number): Promise<IQnA> {
+  async generateQnA(educationLevel: string, topic: string, marks: number, userId: string): Promise<IQnA> {
     try {
       // In a real implementation, you would use Gemini to generate QnA questions
       // For now, we'll create some sample questions
@@ -20,6 +20,7 @@ class QnAService {
         educationLevel,
         topic,
         questions: sampleQuestions,
+        userId
       });
       
       return await qna.save();

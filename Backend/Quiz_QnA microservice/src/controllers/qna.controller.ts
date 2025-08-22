@@ -3,14 +3,16 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { qnaValidationSchema } from '../utils/validation';
 import qnaService from '../services/qna.service';
+import { AuthenticatedRequest } from '../utils/custom-types';
 
 class QnAController {
-  async generateQnA(req: Request, res: Response, next: NextFunction) {
+  async generateQnA(req: AuthenticatedRequest , res: Response, next: NextFunction) {
     try {
       const { educationLevel, topic, marks } = qnaValidationSchema.parse(req.body);
-      
-      const qna = await qnaService.generateQnA(educationLevel, topic, marks);
-      
+      const {id} = req.user;
+
+      const qna = await qnaService.generateQnA(educationLevel, topic, marks, id);
+
       res.status(StatusCodes.CREATED).json({
         success: true,
         data: qna,

@@ -2,14 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { quizValidationSchema } from '../utils/validation';
 import quizService from '../services/quiz.service';
+import { AuthenticatedRequest } from '../utils/custom-types';
 
 class QuizController {
-  async generateQuiz(req: Request, res: Response, next: NextFunction) {
+  async generateQuiz(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { educationLevel, topic } = quizValidationSchema.parse(req.body);
-      
-      const quiz = await quizService.generateQuiz(educationLevel, topic);
-      
+      const { id } = req.user;
+
+      const quiz = await quizService.generateQuiz(educationLevel, topic, id);
+
       res.status(StatusCodes.CREATED).json({
         success: true,
         data: quiz,
@@ -20,7 +22,7 @@ class QuizController {
     }
   }
 
-  async submitQuiz(req: Request, res: Response, next: NextFunction) {
+  async submitQuiz(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { quizId, answers } = req.body;
       

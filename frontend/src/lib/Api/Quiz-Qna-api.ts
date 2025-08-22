@@ -1,31 +1,56 @@
 // frontend/src/lib/api.ts
 import axios from 'axios';
-
+import { getSession } from 'next-auth/react';
 export const API_BASE_URL = process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_URL || 'http://localhost:8004/api';
 
+interface UserStorage {
+  state: {
+    token?: string;
+    // Add other user state properties if needed
+  };
+}
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
+    
   },
   timeout: 30000, // 30 seconds timeout
 });
 
 // Request interceptor for adding auth tokens if needed
-apiClient.interceptors.request.use(
-  (config) => {
-    // You can add auth tokens here if needed
-    // const token = localStorage.getItem('authToken');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+apiClient.interceptors.request.use(async (config) => {
+  // Only run in client-side environment
+  if (typeof window !== 'undefined') {
+    try {
+      // Check for localStorage token first
+      const userStorage = localStorage.getItem('user-storage');
+      let token: string | undefined;
+      
+      if (userStorage) {
+        const user: UserStorage = JSON.parse(userStorage);
+        token = user.state?.token;
+      }
+
+      // If no localStorage token, check for NextAuth session
+      if (!token) {
+        const session = await getSession();
+        token = session?.accessToken ;
+      }
+
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error('Error setting auth token:', error);
+      // Don't block the request if there's an error
+    }
   }
-);
+  
+  return config;
+});
 
 // Response interceptor for handling common errors
 apiClient.interceptors.response.use(

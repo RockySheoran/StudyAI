@@ -24,7 +24,7 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "../Interview_microservice/src/Middlewares/auth.middleware.ts"  ],
   "exclude": [
     "node_modules",
     "src/**/*.spec.ts",
