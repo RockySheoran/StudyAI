@@ -34,10 +34,10 @@ export class GeminiService {
         detailInstruction = 'Provide a concise definition in 1-2 sentences.';
         break;
       case 'more':
-        detailInstruction = 'Provide a detailed explanation in a short paragraph (3-5 sentences).';
+        detailInstruction = 'Provide a detailed explanation in a short paragraph (8-10 sentences).Also give the name of the types if any are there.';
         break;
       case 'most':
-        detailInstruction = 'Provide a comprehensive explanation in a long paragraph (6-10 sentences) with key details and context.';
+        detailInstruction = 'Provide a comprehensive explanation in a long paragraph (20-25 sentences) with key details and context. Also explain the types if it has any and provide examples. The details should be in-depth and thorough.  ';
         break;
       default:
         detailInstruction = 'Provide a detailed explanation in a paragraph.';

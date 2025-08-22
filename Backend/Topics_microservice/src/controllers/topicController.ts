@@ -2,13 +2,16 @@ import { Request, Response } from 'express';
 import { GeminiService } from '../services/geminiService';
 import { HistoryService } from '../services/historyService';
 import { TopicRequest, TopicResponse } from '../types';
+import { AuthenticatedRequest } from '../types/custom-types';
 
 const geminiService = new GeminiService();
 const historyService = new HistoryService();
 
-export const getTopicDefinition = async (req: Request, res: Response): Promise<void> => {
+export const getTopicDefinition = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { topic, detailLevel, userId } = req.body as TopicRequest & { userId?: string };
+    const { topic, detailLevel } = req.body as TopicRequest & { userId?: string };
+    const id = req?.user?.id ;
+    console.log("userId in getTopicDefinition:", id);
     
     const definition = await geminiService.getTopicDefinition({ topic, detailLevel });
     
@@ -17,7 +20,7 @@ export const getTopicDefinition = async (req: Request, res: Response): Promise<v
       topic,
       definition,
       detailLevel,
-      userId
+      userId: id,
     });
 
     const response: TopicResponse = {
