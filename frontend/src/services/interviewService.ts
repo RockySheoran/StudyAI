@@ -46,9 +46,9 @@
 //   },
 // };
 
-import apiClient from '@/lib/Api/Interview-api';
-import { IInterview } from '@/types/interview';
 
+import { IInterview } from '@/types/interview';
+import apiClient from '@/Actions/Interview/Interview-api';
 // Interview related services
 export const fetchInterview = async (id: string): Promise<IInterview> => {
   const response = await apiClient.get(`/interview/${id}`);

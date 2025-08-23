@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { QnAData, QnAResult } from '@/types/Qna-Quiz/qna';
-import { api } from '@/lib/Api/Quiz-Qna-api';
+import { api } from '@/Actions/Quiz-Qna/Quiz-Qna-api';
 import QnAForm from '@/components/Quiz-Qna/Qna/QnAForm';
 import QnAQuestions from '@/components/Quiz-Qna/Qna/QnAQuestions';
 import QnAResults from '@/components/Quiz-Qna/Qna/QnAResults';

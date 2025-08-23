@@ -18,7 +18,7 @@ import {
 } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
-import { ThemeToggle } from '../common-Components/theme-toggle';
+import { ThemeToggle } from '../common-Components/Theme-toggle';
 import { SignUp_Actions } from '@/Actions/Auth/SignUp';
 import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
 import { toast } from 'sonner';

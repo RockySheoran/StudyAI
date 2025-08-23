@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LogoutButton from "../Auth-com/LogOut_Popup";
 import { useUserStore } from "@/lib/Store/userStore";
 import { usePathname, useRouter } from "next/navigation";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "./Theme-toggle";
 import { div } from "framer-motion/client";
 import { useTheme } from "next-themes";
 

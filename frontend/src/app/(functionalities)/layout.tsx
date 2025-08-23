@@ -1,5 +1,5 @@
 'use client';
-import Navbar from "@/components/common-Components/navbar";
+import Navbar from "@/components/common-Components/Navbar";
 import { useState } from "react";
 
 export default function Layout({
