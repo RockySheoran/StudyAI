@@ -46,7 +46,7 @@
 //   },
 // };
 
-import apiClient from '@/lib/api';
+import apiClient from '@/lib/Api/Interview-api';
 import { IInterview } from '@/types/interview';
 
 // Interview related services

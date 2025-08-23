@@ -39,7 +39,7 @@ export default function NewInterviewPage() {
       }
 
       const interviewResponse = await startInterview(selectedType);
-      toast.success('Interview started!');
+      toast.success('Interview starting...');
       router.push(`/interviews/${interviewResponse._id}`);
     } catch (error) {
       console.error('Interview start error:', error);
