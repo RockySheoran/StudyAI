@@ -68,9 +68,9 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
       route: "/quiz_qna",
     },
     {
-      name: "English Conversation",
+      name: "Current Affairs",
       icon: <FaComments className="text-lg" />,
-      route: "/english-conversation",
+      route: "/current_affairs",
     },
     {
       name: "Topics",
