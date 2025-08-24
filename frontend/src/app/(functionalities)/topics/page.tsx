@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FaSpinner, FaCheckCircle, FaTimesCircle, FaHistory, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTopicStore, useTopicResponse, useTopicLoading, useTopicError, useCurrentTopic, useCurrentDetailLevel, useSubmitted, useTopicHistory } from '@/lib/Store/topicStore';
+import { useUserStore } from '@/lib/Store/userStore';
 
 const GeminiTopicExplorer: React.FC = () => {
   const {
@@ -26,6 +27,7 @@ const GeminiTopicExplorer: React.FC = () => {
     clearHistory
   } = useTopicStore();
 
+  const {token} = useUserStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -47,7 +49,7 @@ const GeminiTopicExplorer: React.FC = () => {
 
       const result = await axios.post(
         'http://localhost:8005/api/topic/definition',
-        requestData
+        requestData,{ headers: { Authorization: `Bearer ${token}` } }
       );
 
       setResponse(result.data);

@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LogoutButton from "../Auth-com/LogOut_Popup";
 import { useUserStore } from "@/lib/Store/userStore";
 import { usePathname, useRouter } from "next/navigation";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "./Theme-toggle";
 import { div } from "framer-motion/client";
 import { useTheme } from "next-themes";
 
@@ -68,9 +68,9 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
       route: "/quiz_qna",
     },
     {
-      name: "English Conversation",
+      name: "Current Affairs",
       icon: <FaComments className="text-lg" />,
-      route: "/english-conversation",
+      route: "/current_affairs",
     },
     {
       name: "Topics",
