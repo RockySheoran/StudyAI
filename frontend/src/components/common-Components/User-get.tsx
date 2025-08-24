@@ -8,20 +8,23 @@ import { toast } from "sonner";
 
 const User_get = ({ initialToken, loading, setLoading }: { initialToken?: string, loading?: boolean, setLoading: (loading: boolean) => void }) => {
   const { setToken, setProfile, name, email, clearUser } = useUserStore();
-
+  console.log("vbyuhfvbwkvfirst", initialToken)
   // Initialize token once when component mounts
   useEffect(() => {
     if (initialToken) {
+      console.log("first" , initialToken  )
       setToken(initialToken);
     }
   }, [initialToken, setToken]);
 
   // Fetch user profile data
   useEffect(() => {
-    if (initialToken && !name) {
+    if (initialToken ) {
       const getMe = async () => {
         try {
+          console.log("first" , initialToken)
           const res = await GetMe_action({ token: initialToken });
+          console.log("GetMe_action response:", res);
           if (res.status === 200) {
             setProfile(res.data);
           } else if (res.status === 500) {

@@ -2,11 +2,12 @@
 import React, { useState, useEffect } from 'react';
 
 import ArticleModal from './ArticleModal';
-import { CurrentAffair } from '@/types/Current-Affairs/CurrentAffair-types';
+import { CurrentAffair, PaginationInfo } from '@/types/Current-Affairs/CurrentAffair-types';
 import { fetchHistory } from '@/Actions/Current-Affairs/CurrentAffair-Api';
 
 const History: React.FC = () => {
   const [affairs, setAffairs] = useState<CurrentAffair[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedAffair, setSelectedAffair] = useState<CurrentAffair | null>(null);
@@ -16,7 +17,8 @@ const History: React.FC = () => {
     const loadHistory = async () => {
       try {
         const history = await fetchHistory();
-        setAffairs(history);
+        setAffairs(history.affairs);
+        setPagination(history.pagination);
       } catch (err) {
         setError('Failed to load history. Please try again.');
         console.error(err);
@@ -28,6 +30,22 @@ const History: React.FC = () => {
     loadHistory();
   }, []);
 
+  const loadMore = async () => {
+    if (!pagination || !pagination.hasNext) return;
+    
+    setLoading(true);
+    try {
+      const history = await fetchHistory(pagination.currentPage + 1);
+      setAffairs([...affairs, ...history.affairs]);
+      setPagination(history.pagination);
+    } catch (err) {
+      setError('Failed to load more articles. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openModal = (affair: CurrentAffair) => {
     setSelectedAffair(affair);
     setShowModal(true);
@@ -38,7 +56,7 @@ const History: React.FC = () => {
     setSelectedAffair(null);
   };
 
-  if (loading) {
+  if (loading && affairs.length === 0) {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex justify-center items-center h-64">
@@ -63,25 +81,39 @@ const History: React.FC = () => {
           <p className="text-gray-600">No history available yet.</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {affairs.map((affair) => (
-            <div key={affair._id} className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold text-gray-800 mb-2">{affair.title}</h2>
-              <p className="text-gray-600 mb-4">{affair.summary}</p>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  {new Date(affair.createdAt!).toLocaleDateString()} • {affair.category}
-                </span>
-                <button
-                  onClick={() => openModal(affair)}
-                  className="bg-blue-500 text-white py-1 px-3 rounded-md text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Read Full Article
-                </button>
+        <>
+          <div className="space-y-6">
+            {affairs.map((affair, index) => (
+              <div key={affair._id || index} className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">{affair.title}</h2>
+                <p className="text-gray-600 mb-4">{affair.summary}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">
+                    {affair.createdAt && new Date(affair.createdAt).toLocaleDateString()} • {affair.category}
+                  </span>
+                  <button
+                    onClick={() => openModal(affair)}
+                    className="bg-blue-500 text-white py-1 px-3 rounded-md text-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Read Full Article
+                  </button>
+                </div>
               </div>
+            ))}
+          </div>
+          
+          {pagination && pagination.hasNext && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={loadMore}
+                disabled={loading}
+                className="bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              >
+                {loading ? 'Loading...' : 'Load More'}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
       
       {showModal && selectedAffair && (

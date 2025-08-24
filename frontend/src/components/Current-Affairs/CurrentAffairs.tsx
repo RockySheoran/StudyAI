@@ -1,26 +1,29 @@
 'use client';
-import { fetchCurrentAffairs } from '@/Actions/Current-Affairs/CurrentAffair-Api';
-import { AffairType, CurrentAffair } from '@/types/Current-Affairs/CurrentAffair-types';
 import React, { useState } from 'react';
 import ArticleModal from './ArticleModal';
+import { AffairType, CurrentAffair, PaginationInfo } from '@/types/Current-Affairs/CurrentAffair-types';
+import { fetchCurrentAffairs } from '@/Actions/Current-Affairs/CurrentAffair-Api';
 
 const CurrentAffairs: React.FC = () => {
   const [type, setType] = useState<AffairType>('random');
   const [customCategory, setCustomCategory] = useState('');
-  const [affair, setAffair] = useState<CurrentAffair | null>(null);
+  const [affairs, setAffairs] = useState<CurrentAffair[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedAffair, setSelectedAffair] = useState<CurrentAffair | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, page: number = 1) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     
     try {
       const category = type === 'custom' ? customCategory : undefined;
-      const result = await fetchCurrentAffairs(type, category);
-      setAffair(result);
+      const result = await fetchCurrentAffairs(type, category, page);
+      setAffairs(result.affairs);
+      setPagination(result.pagination);
     } catch (err) {
       setError('Failed to fetch current affairs. Please try again.');
       console.error(err);
@@ -29,8 +32,32 @@ const CurrentAffairs: React.FC = () => {
     }
   };
 
-  const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
+  const loadMore = async () => {
+    if (!pagination || !pagination.hasNext) return;
+    
+    setLoading(true);
+    try {
+      const category = type === 'custom' ? customCategory : undefined;
+      const result = await fetchCurrentAffairs(type, category, pagination.currentPage + 1);
+      setAffairs([...affairs, ...result.affairs]);
+      setPagination(result.pagination);
+    } catch (err) {
+      setError('Failed to load more articles. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openModal = (affair: CurrentAffair) => {
+    setSelectedAffair(affair);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedAffair(null);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -93,21 +120,37 @@ const CurrentAffairs: React.FC = () => {
         </div>
       )}
       
-      {affair && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">{affair.title}</h2>
-          <p className="text-gray-600 mb-6">{affair.summary}</p>
+      {affairs.length > 0 && (
+        <div className="space-y-6">
+          {affairs.map((affair, index) => (
+            <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">{affair.title}</h2>
+              <p className="text-gray-600 mb-6">{affair.summary}</p>
+              <button
+                onClick={() => openModal(affair)}
+                className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Show More
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {pagination && pagination.hasNext && (
+        <div className="mt-8 text-center">
           <button
-            onClick={openModal}
-            className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={loadMore}
+            disabled={loading}
+            className="bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
           >
-            Show More
+            {loading ? 'Loading...' : 'Load More'}
           </button>
         </div>
       )}
       
-      {showModal && affair && (
-        <ArticleModal affair={affair} onClose={closeModal} />
+      {showModal && selectedAffair && (
+        <ArticleModal affair={selectedAffair} onClose={closeModal} />
       )}
     </div>
   );

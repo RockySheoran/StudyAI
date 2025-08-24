@@ -1,5 +1,4 @@
 import CurrentAffairs from "@/components/Current-Affairs/CurrentAffairs"
-
 const page = () => {
     return (
         <div>
@@ -7,3 +6,4 @@ const page = () => {
         </div>
     )
 }
+export default page;

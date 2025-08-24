@@ -8,3 +8,15 @@ export interface CurrentAffair {
 }
 
 export type AffairType = 'random' | 'custom';
+
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface CurrentAffairsResponse {
+  affairs: CurrentAffair[];
+  pagination: PaginationInfo;
+}

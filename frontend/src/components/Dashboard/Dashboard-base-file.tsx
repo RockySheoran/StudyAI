@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { Dashboard_hero } from "./Dashboard-hero";
 import { Summary_history } from "./Summary-history";
 
+
+
 export const Dashboard_base_file = () => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | undefined>(undefined);
@@ -14,6 +16,7 @@ export const Dashboard_base_file = () => {
     const fetchToken = async () => {
       try {
         const fetchedToken = await Token_get();
+        console.log("Fetched token:", fetchedToken);  
         setToken(fetchedToken);
       } catch (error) {
         console.error("Error fetching token:", error);

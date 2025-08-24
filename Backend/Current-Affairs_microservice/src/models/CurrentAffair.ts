@@ -6,6 +6,7 @@ export interface ICurrentAffair extends Document {
   fullContent: string;
   category: string;
   createdAt: Date;
+  userId: string;
 }
 
 const CurrentAffairSchema: Schema = new Schema({
