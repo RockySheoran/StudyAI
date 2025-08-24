@@ -1,4 +1,4 @@
-interface ISummary {
+export interface ISummary {
   _id:string;
   fileId: string;
   content: string;

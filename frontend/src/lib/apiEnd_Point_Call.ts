@@ -14,4 +14,5 @@ export const api_forgot_url = `${BACKEND_URL}/forgot-password`;
 export const api_reset_url = `${BACKEND_URL}/reset-password`;
 
 
-export const api_file_upload_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api` 
+export const api_file_upload_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api`
+export const api_summary_history_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api/summary-history` 

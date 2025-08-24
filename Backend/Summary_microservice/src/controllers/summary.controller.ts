@@ -36,8 +36,9 @@ export const getSummaryController = async (req: Request, res: Response) => {
 
 export const getSummaryHistory = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { id } = req.user;
-    const summaries = await Summary.find({ userId : id });
+    const { id } = req.user!;
+    const summaries = await Summary.find({ userId: id })
+    .sort({ createdAt: -1 }); // Sort in descending order
     res.json(summaries);
   } catch (error) {
     console.error('Get summary history error:', error);

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { uploadFileController, checkSummaryStatus } from '../controllers/file.controller';
 import { getSummaryController, getSummaryHistory } from '../controllers/summary.controller';
 import multer from 'multer';
@@ -17,7 +17,7 @@ router.get('/file/:fileId/status', checkSummaryStatus);
 
 // Summary routes
 router.get('/summary/:summaryId', getSummaryController);
-router.get("/summary/history", middleware, getSummaryHistory);
+router.get("/summary-history", middleware, getSummaryHistory);
 
 router.get('/check', (req : Request, res : Response) => {
   res.send('List of all summaries');
