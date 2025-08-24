@@ -56,6 +56,15 @@ class QnAService {
       throw new Error('Failed to fetch QnA');
     }
   }
+
+  async getQnAHistory(id: string): Promise<IQnA[] | null> {
+    try {
+      return await QnA.find({ userId: id });
+    } catch (error) {
+      console.error('Error in getQnAHistory:', error);
+      throw new Error('Failed to fetch QnA history');
+    }
+  }
 }
 
 export default new QnAService();

@@ -71,6 +71,15 @@ class QuizService {
       throw new Error('Failed to fetch quiz');
     }
   }
+
+  async getQuizHistory(id: string): Promise<IQuiz[] | null> {
+    try {
+      return await Quiz.find({ userId: id });
+    } catch (error) {
+      console.error('Error in getQuizHistory:', error);
+      throw new Error('Failed to fetch quiz history');
+    }
+  }
 }
 
 export default new QuizService();

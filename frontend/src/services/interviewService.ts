@@ -47,7 +47,7 @@
 // };
 
 
-import { IInterview } from '@/types/interview';
+import { IInterview } from '@/types/Interview-type';
 import apiClient from '@/Actions/Interview/Interview-api';
 // Interview related services
 export const fetchInterview = async (id: string): Promise<IInterview> => {

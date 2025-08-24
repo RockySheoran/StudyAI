@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { IInterview, feedback } from '@/types/interview';
+import { IInterview, feedback } from '@/types/Interview-type';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';

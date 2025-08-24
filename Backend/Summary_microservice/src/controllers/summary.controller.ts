@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Summary } from '../models/summary.model';
 import { File } from '../models/file.model';
+import { AuthenticatedRequest } from '../types/custom-types';
 
 export const getSummaryController = async (req: Request, res: Response) => {
   try {
@@ -30,5 +31,16 @@ export const getSummaryController = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Get summary error:', error);
     res.status(500).json({ error: 'Failed to get summary' });
+  }
+};
+
+export const getSummaryHistory = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { id } = req.user;
+    const summaries = await Summary.find({ userId : id });
+    res.json(summaries);
+  } catch (error) {
+    console.error('Get summary history error:', error);
+    res.status(500).json({ error: 'Failed to get summary history' });
   }
 };
