@@ -1,6 +1,7 @@
-import { Router } from 'express';
+import { Router   , Request , Response} from 'express';
 import { startInterview, continueInterview, getInterviewHistory, fetchInterview, feedbackController } from '../controllers/interview.controller';
 import { middleware } from '../Middlewares/auth.middleware';
+
 
 const router = Router();
 
@@ -9,7 +10,7 @@ router.post('/start', middleware, startInterview);
 router.get("/:id", middleware, fetchInterview);
 router.post('/continue', middleware, continueInterview);
 router.get("/feedback/:id", middleware,feedbackController);
-router.get('/check', middleware, (req, res) => {
+router.get('/check', middleware, (req : Request, res : Response) => {
   res.send('List of all interviews');
 });
 

@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { InterviewContainer } from '@/components/Interview/InterviewContainer';
 import { fetchInterview, sendInterviewMessage } from '@/services/interviewService';
 import { Loading } from '@/components/ui/Loading';
-import { IInterview } from '@/types/interview';
+import { IInterview } from '@/types/Interview-type';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 

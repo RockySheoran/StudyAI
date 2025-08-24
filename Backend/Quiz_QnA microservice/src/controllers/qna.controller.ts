@@ -68,6 +68,29 @@ class QnAController {
       next(error);
     }
   }
+
+  async getQnAHistory(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.user;
+      
+      const qnaHistory = await qnaService.getQnAHistory(id);
+      
+      if (!qnaHistory) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: 'QnA history not found'
+        });
+      }
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: qnaHistory,
+        message: 'QnA history retrieved successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new QnAController();

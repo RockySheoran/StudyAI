@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { feedback, IInterview } from '@/types/interview';
+import { feedback, IInterview } from '@/types/Interview-type';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Textarea } from '@/components/ui/textarea';
