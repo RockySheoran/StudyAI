@@ -1,22 +1,36 @@
-// frontend/src/app/qna/components/QnAResults.tsx
+// frontend/src/components/Quiz-Qna/Qna/QnAResults.tsx
+import { useQnAStore } from "@/lib/Store/Quiz-Qna/qnaStore";
 import { QnAResult } from "@/types/Qna-Quiz/qna";
 
+
 interface QnAResultsProps {
-  result: QnAResult;
   onRestart: () => void;
 }
 
-export default function QnAResults({ result, onRestart }: QnAResultsProps) {
+export default function QnAResults({ onRestart }: QnAResultsProps) {
+  const { recentResults } = useQnAStore();
+  const result = recentResults[0]; // Get the most recent result
+
+  if (!result) {
+    return (
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+          No Results Found
+        </h2>
+        <button
+          onClick={onRestart}
+          className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          Try Another QnA
+        </button>
+      </div>
+    );
+  }
+
   const getScoreColor = (percentage: number) => {
     if (percentage >= 80) return 'text-green-600 dark:text-green-400';
     if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400';
     return 'text-red-600 dark:text-red-400';
-  };
-
-  const getScoreBgColor = (percentage: number) => {
-    if (percentage >= 80) return 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200';
-    if (percentage >= 60) return 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200';
-    return 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200';
   };
 
   return (
@@ -34,47 +48,17 @@ export default function QnAResults({ result, onRestart }: QnAResultsProps) {
         </p>
       </div>
       
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{result.totalScore}</div>
-          <div className="text-sm text-green-800 dark:text-green-200">Your Score</div>
-        </div>
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{result.maxPossibleScore}</div>
-          <div className="text-sm text-blue-800 dark:text-blue-200">Max Possible</div>
-        </div>
-        <div className={`p-4 rounded-lg text-center ${getScoreBgColor(result.percentage)}`}>
-          <div className={`text-2xl font-bold ${getScoreColor(result.percentage)}`}>
-            {result.percentage}%
-          </div>
-          <div className="text-sm">Percentage</div>
-        </div>
-      </div>
-
       <div className="mb-8">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Detailed Feedback</h3>
         <div className="space-y-6">
           {result.evaluations.map((evaluation, index) => (
             <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
-              <div className="flex items-start justify-between mb-2">
-                <h4 className="font-medium text-gray-800 dark:text-white">
-                  Question {index + 1}: {evaluation.question}
-                </h4>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  evaluation.score >= evaluation.maxMarks * 0.8
-                    ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                    : evaluation.score >= evaluation.maxMarks * 0.6
-                    ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                    : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                }`}>
-                  {evaluation.score}/{evaluation.maxMarks}
-                </span>
-              </div>
-              
+              <h4 className="font-medium mb-2 text-gray-800 dark:text-white">
+                Question {index + 1}: {evaluation.question}
+              </h4>
               <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md mb-2">
                 <p className="text-sm text-gray-700 dark:text-gray-300">{evaluation.answer}</p>
               </div>
-              
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   Score: {evaluation.score}/{evaluation.maxMarks}

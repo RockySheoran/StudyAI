@@ -4,7 +4,7 @@ import geminiService from './gemini.service';
 import { shuffleArray } from '../utils/helpers';
 
 class QuizService {
-  async generateQuiz(educationLevel: string, topic: string): Promise<IQuiz> {
+  async generateQuiz(educationLevel: string, topic: string, userId: string): Promise<IQuiz> {
     try {
       // Generate questions using Gemini AI
       const questions = await geminiService.generateQuizQuestions(educationLevel, topic);
@@ -18,6 +18,7 @@ class QuizService {
       // Save to database
       const quiz = new Quiz({
         educationLevel,
+        userId,
         topic,
         questions: processedQuestions,
       });

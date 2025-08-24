@@ -12,6 +12,7 @@ export interface IQnA extends Document {
   questions: IQnAQuestion[];
   createdAt: Date;
   updatedAt: Date;
+  userId: string;
 }
 
 const QnAQuestionSchema = new Schema({
@@ -23,6 +24,7 @@ const QnASchema = new Schema({
   educationLevel: { type: String, required: true },
   topic: { type: String, required: true },
   questions: [QnAQuestionSchema],
+  userId: { type: String, required: true },
 }, {
   timestamps: true
 });
