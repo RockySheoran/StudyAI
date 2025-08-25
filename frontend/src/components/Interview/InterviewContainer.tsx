@@ -412,7 +412,7 @@ export const InterviewContainer = ({
         {/* Desktop buttons */}
         <div className="hidden md:flex items-center">
           {showMsgBox ? (
-            <>
+            <div className="flex gap-2 justify-center items-center" >
               <span className="text-sm text-green-600 dark:text-green-400 mr-4">Completed</span>
               <Button 
                 variant="outline" 
@@ -421,7 +421,20 @@ export const InterviewContainer = ({
               >
                 History Page
               </Button>
-            </>
+              <Button 
+                variant="outline" 
+                onClick={getFeedback}
+                disabled={isFeedbackSubmitting || isSpeaking || isLoading}
+                className="min-w-[120px]"
+              >
+                {isFeedbackSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : 'Get Feedback'}
+              </Button>
+            </div>
           ) : (
             <div className="flex gap-2">
               <Button 

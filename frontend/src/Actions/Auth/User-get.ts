@@ -3,8 +3,8 @@ import { cookies, headers } from 'next/headers';
 import { getToken } from 'next-auth/jwt';
 
 export const Token_get = async () => {
-const cookieStore = cookies();
-  const headersList = await headers();
+   const cookieStore = cookies();
+    const headersList = await headers();
   
   const req = {
     headers: Object.fromEntries(headersList.entries()),

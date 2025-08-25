@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 const User_get = ({ initialToken, loading, setLoading }: { initialToken?: string, loading?: boolean, setLoading: (loading: boolean) => void }) => {
   const { setToken, setProfile, name, email, clearUser } = useUserStore();
-
+console.log(initialToken ,"vmkfd vkdf")
   // Initialize token once when component mounts
   useEffect(() => {
     if (initialToken) {
@@ -19,6 +19,7 @@ const User_get = ({ initialToken, loading, setLoading }: { initialToken?: string
   // Fetch user profile data
   useEffect(() => {
     if (initialToken && !name) {
+      console.log(initialToken)
       const getMe = async () => {
         try {
           const res = await GetMe_action({ token: initialToken });
@@ -40,16 +41,12 @@ const User_get = ({ initialToken, loading, setLoading }: { initialToken?: string
   }, [initialToken, name, setProfile]);
 
   return (
-    <div className="mt-44">
+    <div className="">
       {loading ? (
         <p>Loading...</p>
       ) : (
         <> {
-          name ? (
-            <p>Welcome back, {name}!</p>
-          ) : (
-            <p>something went wrong</p>
-          )
+         
         }
         </>
       )}

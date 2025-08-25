@@ -5,45 +5,48 @@ import { IInterview, feedback } from '@/types/Interview-type';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
-import axios from 'axios';
 import { useUserStore } from '@/lib/Store/userStore';
+import { useInterviewHistoryStore } from '@/lib/Store/History/Interview_history_store';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Star, Calendar, Clock, MessageSquare, ChevronRight, RefreshCw, FileText, Trophy, Lightbulb } from 'lucide-react';
 
 export default function InterviewHistoryPage() {
-  const [interviews, setInterviews] = useState<IInterview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { token } = useUserStore();
+  const {
+    interviews,
+    loading,
+    error,
+    fetchInterviews
+  } = useInterviewHistoryStore();
   const router = useRouter();
   const [selectedFeedback, setSelectedFeedback] = useState<feedback | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const response = await axios.get("http://localhost:8002/api/interview/history", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        setInterviews(response.data);
-      } catch (err) {
-        setError('Failed to load interview history');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (token) {
+      fetchInterviews(token);
+    }
+  }, [token, fetchInterviews]);
 
-    loadHistory();
-  }, [token]);
+  const handleRefresh = async () => {
+    if (!token) return;
+    setIsRefreshing(true);
+    await fetchInterviews(token, true);
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
   const handleStartNew = () => {
     router.push('/interviews/new');
@@ -63,184 +66,354 @@ export default function InterviewHistoryPage() {
     const shouldTruncate = item.length > 150 && !isExpanded;
     
     return (
-      <div key={index} className="mb-3 last:mb-0">
+      <motion.div 
+        key={index} 
+        className="mb-3 last:mb-0 p-3 bg-white dark:bg-gray-800 rounded-lg border"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+      >
         <div className="flex items-start">
           <span className={cn(
-            "flex-shrink-0 inline-block w-4 h-4 rounded-full mt-1 mr-2",
-            type === 'strengths' ? 'bg-green-500' : 'bg-yellow-500'
-          )} />
-          <div>
-            <p className={cn("text-sm", shouldTruncate ? "line-clamp-3" : "")}>
+            "flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full mt-0.5 mr-3",
+            type === 'strengths' 
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
+              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+          )}>
+            {type === 'strengths' ? (
+              <Trophy className="w-3 h-3" />
+            ) : (
+              <Lightbulb className="w-3 h-3" />
+            )}
+          </span>
+          <div className="flex-1">
+            <p className={cn("text-sm text-gray-700 dark:text-gray-300", shouldTruncate ? "line-clamp-3" : "")}>
               {item}
             </p>
             {item.length > 150 && (
               <button
                 onClick={() => toggleExpand(type, index)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-2 font-medium"
               >
-                {isExpanded ? 'Show less' : 'Show full'}
+                {isExpanded ? 'Show less' : 'Read more'}
               </button>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
+  const getInterviewTypeColor = (type: string) => {
+    switch (type) {
+      case 'personal': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700';
+      case 'technical': return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600';
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loading />
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4 lg:p-6">
       {/* Feedback Modal */}
       <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-center">Interview Feedback</DialogTitle>
+            <DialogTitle className="text-center text-2xl flex items-center justify-center gap-2">
+              <FileText className="w-6 h-6" />
+              Interview Feedback
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Detailed analysis of your interview performance
+            </DialogDescription>
           </DialogHeader>
           
           {selectedFeedback && (
-            <div className="space-y-6">
+            <motion.div 
+              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
               {/* Rating Section */}
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                <h3 className="font-medium text-lg mb-3">Overall Rating</h3>
-                <div className="flex items-center">
-                  <div className="text-3xl font-bold mr-4">
-                    {selectedFeedback.rating.toFixed(1)}/5.0
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                      <div 
-                        className="bg-blue-600 h-2.5 rounded-full" 
-                        style={{ width: `${(selectedFeedback.rating / 5) * 100}%` }}
-                      ></div>
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-500" />
+                    Overall Rating
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-6">
+                    <div className="text-4xl font-bold bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm">
+                      {selectedFeedback?.rating?.toFixed(1)}
+                      <span className="text-2xl text-gray-500">/5</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Performance score</span>
+                        <span className="text-sm font-medium">{selectedFeedback.rating}/5</span>
+                      </div>
+                      <Progress value={(selectedFeedback.rating / 5) * 100} className="h-3" />
                     </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
               
               {/* Strengths Section */}
               {selectedFeedback.strengths.length > 0 && (
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                  <h3 className="font-medium text-lg mb-3 text-green-800 dark:text-green-200">
-                    Your Strengths
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedFeedback.strengths.map((item, index) => 
-                      renderFeedbackItem('strengths', item, index)
-                    )}
-                  </div>
-                </div>
+                <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-300">
+                      <Trophy className="w-5 h-5" />
+                      Your Strengths
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {selectedFeedback.strengths.map((item, index) => 
+                        renderFeedbackItem('strengths', item, index)
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
               
               {/* Suggestions Section */}
               {selectedFeedback.suggestions.length > 0 && (
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
-                  <h3 className="font-medium text-lg mb-3 text-yellow-800 dark:text-yellow-200">
-                    Areas for Improvement
-                  </h3>
-                  <div className="space-y-2">
-                    {selectedFeedback.suggestions.map((item, index) => 
-                      renderFeedbackItem('suggestions', item, index)
-                    )}
-                  </div>
-                </div>
+                <Card className="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
+                      <Lightbulb className="w-5 h-5" />
+                      Areas for Improvement
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {selectedFeedback.suggestions.map((item, index) => 
+                        renderFeedbackItem('suggestions', item, index)
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
-            </div>
+            </motion.div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Main Content */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Interview History</h1>
-        <Button onClick={handleStartNew}>Start New Interview</Button>
-      </div>
-
-      {error && (
-        <div className="p-4 mb-4 bg-red-50 text-red-600 rounded-lg">
-          {error}
+      {/* Main Content Header */}
+      <motion.div 
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Interview History</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Review your past interviews and track your progress
+          </p>
         </div>
-      )}
-
-      {interviews.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No interview history found</p>
-          <Button onClick={handleStartNew}>Start Your First Interview</Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {interviews.map((interview) => (
-            <div
-              key={interview._id}
-              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
+        
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <motion.span
+              animate={{ rotate: isRefreshing ? 360 : 0 }}
+              transition={{ duration: 0.5, repeat: isRefreshing ? Infinity : 0 }}
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium dark:text-white">
-                    {interview.type === 'personal'
-                      ? 'Personal Interview'
-                      : 'Technical Interview'}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(interview.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                {interview.completedAt && (
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-xs rounded-full">
-                    Completed
-                  </span>
-                )}
-              </div>
-
-              {interview.feedback && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <span className="font-medium mr-2 dark:text-white">Rating:</span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <span
-                            key={i}
-                            className={`text-lg ${interview.feedback && i < interview.feedback.rating ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
-                        ({interview.feedback.rating}/5)
-                      </span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedFeedback(interview.feedback ?? null);
-                        setShowFeedbackModal(true);
-                      }}
-                    >
-                      See Full Feedback
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-3 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/interviews/${interview._id}?details=true`)}
-                >
-                  View Details
-                </Button>
-              </div>
-            </div>
-          ))}
+              <RefreshCw className="w-4 h-4" />
+            </motion.span>
+            Refresh
+          </Button>
+          <Button onClick={handleStartNew} className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" />
+            New Interview
+          </Button>
         </div>
-      )}
+      </motion.div>
+
+      {/* Error State */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="p-4 mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-sm">{error}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => token && fetchInterviews(token, true)}
+                className="ml-4 border-red-300 text-red-600 hover:bg-red-100"
+              >
+                Try Again
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Empty State */}
+      <AnimatePresence>
+        {!loading && interviews.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="text-center py-12"
+          >
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-auto">
+              <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No interviews yet
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
+                Start your first interview to begin your practice journey
+              </p>
+              <Button onClick={handleStartNew} size="lg" className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                Start Your First Interview
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Interview List */}
+      <AnimatePresence mode="popLayout">
+        {interviews.length > 0 && (
+          <motion.div 
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
+          >
+            {interviews.map((interview, index) => (
+              <motion.div
+                key={interview._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                layout
+              >
+                <Card className="h-full hover:shadow-md transition-shadow duration-300 group cursor-pointer">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge className={getInterviewTypeColor(interview.type)}>
+                        {interview.type === 'personal' ? 'Personal' : 'Technical'}
+                      </Badge>
+                      {interview.completedAt && (
+                        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700">
+                          Completed
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      Interview Session
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2 mt-2">
+                      <Calendar className="w-4 h-4" />
+                      {formatDate(interview.createdAt)}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="pb-3">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Questions</span>
+                        <span className="font-medium">
+                          {interview.messages.filter(m => m.role === 'assistant').length}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">Responses</span>
+                        <span className="font-medium">
+                          {interview.messages.filter(m => m.role === 'user').length}
+                        </span>
+                      </div>
+                      
+                      {interview.feedback && (
+                        <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">Rating</span>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${i < interview?.feedback?.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
+                                />
+                              ))}
+                              <span className="text-sm font-medium ml-1">
+                                ({interview?.feedback?.rating?.toFixed(1)})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                    {interview.feedback && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFeedback(interview.feedback ?? null);
+                          setShowFeedbackModal(true);
+                        }}
+                        className="text-xs"
+                      >
+                        View Feedback
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push(`/interviews/${interview._id}?details=true`)}
+                      className="text-xs gap-1"
+                    >
+                      Details
+                      <ChevronRight className="w-3 h-3" />
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
