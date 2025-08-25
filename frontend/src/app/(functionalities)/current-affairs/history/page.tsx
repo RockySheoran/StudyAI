@@ -1,8 +1,9 @@
 import React from 'react'
+import History from '@/components/Current-Affairs/History'
 
 function page() {
   return (
-    <div>page</div>
+    <History/>
   )
 }
 
