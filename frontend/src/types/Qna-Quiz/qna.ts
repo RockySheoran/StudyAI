@@ -10,6 +10,7 @@ export interface QnAData {
   educationLevel: string;
   topic: string;
   questions: QnAQuestion[];
+  createdAt: Date;
 }
 
 export interface QnAEvaluation {

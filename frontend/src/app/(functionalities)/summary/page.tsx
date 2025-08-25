@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FaUpload, FaSpinner, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api_file_upload_url } from '@/lib/apiEnd_Point_Call';
+import { useUserStore } from '@/lib/Store/userStore';
 
 const FileUploader = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -17,6 +18,7 @@ const FileUploader = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [click, setClick] = useState(false);
+  const {token } =useUserStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -36,6 +38,7 @@ const FileUploader = () => {
     setStatus('uploading');
     setError(null);
     setProgress(0);
+    
 
     const formData = new FormData();
     formData.append('file', file);
@@ -45,6 +48,7 @@ const FileUploader = () => {
       const response = await axios.post(`${api_file_upload_url}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          "Authorization":`Bearer ${token}`
         },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {

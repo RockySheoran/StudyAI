@@ -67,6 +67,29 @@ class QuizController {
       next(error);
     }
   }
+
+  async getQuizHistory(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.user;
+      
+      const quizHistory = await quizService.getQuizHistory(id);
+      
+      if (!quizHistory) {
+        return res.status(StatusCodes.NOT_FOUND).json({
+          success: false,
+          message: 'Quiz history not found'
+        });
+      }
+      
+      res.status(StatusCodes.OK).json({
+        success: true,
+        data: quizHistory,
+        message: 'Quiz history retrieved successfully'
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new QuizController();

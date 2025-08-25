@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/Layout/Layout';
+import Link from 'next/link';
 import { uploadResume, startInterview } from '@/services/interviewService';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Loader2, Briefcase, User } from 'lucide-react';
+import { Loader2, Briefcase, User, History } from 'lucide-react';
 import { ResumeUpload } from '@/components/Interview/ResumeUploader';
+import { motion } from 'framer-motion';
 
 export default function NewInterviewPage() {
   const router = useRouter();
@@ -59,83 +60,113 @@ export default function NewInterviewPage() {
   };
 
   return (
-    <Layout>
-      {step === 'type' ? (
-        <InterviewTypeSelect 
-          onSelect={handleTypeSelect} 
-          selectedType={selectedType} 
-        />
-      ) : (
-        <ResumeUpload
-          onUpload={handleStartInterview}
-          onSkip={() => handleStartInterview()}
-          onBack={goBack}
-          isLoading={loading}
-        />
-      )}
-    </Layout>
-  );
-}
+    <>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-6 transition-colors duration-200">
+        <div className="max-w-4xl w-full">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-4">
+              Practice Interview
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Prepare for your next job interview with AI-powered practice sessions
+            </p>
+          </motion.div>
 
-function InterviewTypeSelect({ 
-  onSelect, 
-  selectedType 
-}: { 
-  onSelect: (type: 'personal' | 'technical') => void;
-  selectedType?: 'personal' | 'technical';
-}) {
-  return (
-    <div className="max-w-md mx-auto py-8">
-      <Card className="border-0 shadow-sm bg-gray-200 dark:bg-gray-800">
-        <CardHeader className="text-center">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/50 mb-4">
-            <Briefcase className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          
+
+          {step === 'type' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div 
+                  className="block p-8 text-center cursor-pointer"
+                  onClick={() => handleTypeSelect('technical')}
+                >
+                  <div className="bg-blue-100 dark:bg-blue-900 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                    <Briefcase className="text-blue-600 dark:text-blue-400 text-2xl" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+                    Technical Interview
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Practice coding and technical questions
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div 
+                  className="block p-8 text-center cursor-pointer"
+                  onClick={() => handleTypeSelect('personal')}
+                >
+                  <div className="bg-purple-100 dark:bg-purple-900 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                    <User className="text-purple-600 dark:text-purple-400 text-2xl" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+                    Personal Interview
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Practice behavioral and situational questions
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <ResumeUpload
+              onUpload={handleStartInterview}
+              onSkip={() => handleStartInterview()}
+              onBack={goBack}
+              isLoading={loading}
+            />
+          )}
+          <div>
+            {/* View History Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <Link 
+              href="/interviews/history" 
+              className="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-semibold py-4 px-8 rounded-lg transition duration-300"
+            >
+              <History className="mr-3" />
+              View Interview History
+            </Link>
+          </motion.div>
           </div>
-          <CardTitle className="text-2xl">Select Interview Type</CardTitle>
-          <CardDescription>
-            Choose the type of interview you want to practice
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <Button
-            variant={selectedType === 'technical' ? 'default' : 'outline'}
-            size="lg"
-            className="h-24 justify-start px-6"
-            onClick={() => onSelect('technical')}
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/50">
-                <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-medium">Technical Interview</h3>
-                <p className="text-sm text-muted-foreground">
-                  Practice coding and technical questions
-                </p>
-              </div>
-            </div>
-          </Button>
 
-          <Button
-            variant={selectedType === 'personal' ? 'default' : 'outline'}
-            size="lg"
-            className="h-24 justify-start px-6"
-            onClick={() => onSelect('personal')}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-12 text-center text-sm text-gray-500 dark:text-gray-400"
           >
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/50">
-                <User className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div className="text-left">
-                <h3 className="font-medium">Personal Interview</h3>
-                <p className="text-sm text-muted-foreground">
-                  Practice behavioral and situational questions
-                </p>
-              </div>
-            </div>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+            <p>Powered by AI • Comprehensive interview preparation</p>
+          </motion.div>
+        </div>
+      </div>
+    </>
   );
 }
