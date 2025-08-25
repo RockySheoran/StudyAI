@@ -24,3 +24,6 @@ export const getHistory = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
 };
+
+// Make sure to export the function properly
+export default { getHistory };

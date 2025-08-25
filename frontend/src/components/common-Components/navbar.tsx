@@ -70,7 +70,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     {
       name: "Current Affairs",
       icon: <FaComments className="text-lg" />,
-      route: "/current_affairs",
+      route: "/current-affairs",
     },
     {
       name: "Topics",

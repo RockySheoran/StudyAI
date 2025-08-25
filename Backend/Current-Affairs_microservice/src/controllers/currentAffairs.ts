@@ -13,30 +13,29 @@ export const getCurrentAffairs = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
     
-    // Check if we have enough articles in the database
-    const existingCount = await CurrentAffair.countDocuments({
-      category: type === 'custom' ? category : 'random'
-    });
-    
-    // If we don't have enough articles, generate new ones
-    if (existingCount < pageNum * limit) {
-      const articlesToGenerate = Math.max(limit, pageNum * limit - existingCount);
-      const generatedArticles = await generateCurrentAffairs(
-        type === 'custom' ? category as string : 'random',
-        articlesToGenerate
-      );
-      
-      // Save new articles to database
-      const articlesToSave = generatedArticles.map((article: any) => ({
-        title: article.title,
-        summary: article.summary,
-        fullContent: article.fullContent,
-        category: type === 'custom' ? category : 'random',
-        userId:"123",
-      }));
-      
-      await CurrentAffair.insertMany(articlesToSave);
+    // Delete all existing articles before generating new ones
+    if (pageNum === 1) {
+      await CurrentAffair.deleteMany({});
+      console.log('Deleted all existing articles from database');
     }
+    
+    // Generate new articles
+    const articlesToGenerate = limit;
+    const generatedArticles = await generateCurrentAffairs(
+      type === 'custom' ? category as string : 'random',
+      articlesToGenerate
+    );
+    
+    // Save new articles to database
+    const articlesToSave = generatedArticles.map((article: any) => ({
+      title: article.title,
+      summary: article.summary,
+      fullContent: article.fullContent,
+      category: type === 'custom' ? category : 'random',
+      userId: "123",
+    }));
+    
+    await CurrentAffair.insertMany(articlesToSave);
     
     // Fetch articles with pagination
     const affairs = await CurrentAffair.find({
@@ -72,3 +71,6 @@ export const getCurrentAffairs = async (req: Request, res: Response) => {
     });
   }
 };
+
+// Make sure to export the function properly
+export default { getCurrentAffairs };

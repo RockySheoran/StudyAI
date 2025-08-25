@@ -1,4 +1,5 @@
 export interface CurrentAffair {
+  sourceUrl: string | undefined;
   _id?: string;
   title: string;
   summary: string;
