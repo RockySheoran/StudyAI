@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { 
   FiEye, 
   FiEyeOff, 
@@ -13,12 +13,15 @@ import {
   FiLoader, 
   FiMail, 
   FiLock,
-  FiAlertCircle
-} from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
-import { Google_Login_Action } from "@/Actions/Auth/ProviderAction";
-import { toast } from "sonner";
+  FiAlertCircle,
+  FiX
+} from 'react-icons/fi';
+import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from 'react-icons/fa';
+import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
+import { toast } from 'sonner';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 // Define Zod schema for form validation
 const loginSchema = z.object({
@@ -101,34 +104,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a12] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300">
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-[#0a0a12] dark:to-[#161622] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Mobile Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden flex justify-center mb-6"
+        >
+          <div className="w-16 h-16 relative">
+            <Image
+              src="/Logo2.jpg"
+              alt="StudyAI Logo"
+              fill
+              className="rounded-full object-cover border-4 border-white dark:border-[#2e2e3a] shadow-md"
+            />
+          </div>
+        </motion.div>
+
         {/* Login Card */}
-        <div className="w-full max-w-md p-8 rounded-2xl shadow-xl bg-white dark:bg-[#161622] border border-gray-200 dark:border-[#2e2e3a] transition-all hover:shadow-2xl hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] mb-2">
-              Welcome Back
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full p-6 rounded-2xl shadow-xl bg-white dark:bg-[#1e1e2a] border border-indigo-100 dark:border-[#2e2e3a]"
+        >
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="hidden md:flex justify-center mb-4">
+              <div className="w-16 h-16 relative">
+                <Image
+                  src="/Logo2.jpg"
+                  alt="StudyAI Logo"
+                  fill
+                  className="rounded-full object-cover border-4 border-white dark:border-[#2e2e3a] shadow-md"
+                />
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+              Welcome to StudyAI
             </h1>
-            <p className="text-gray-500 dark:text-[#8a8a9b]">
-              Sign in to your Stellar account
+            <p className="text-sm text-gray-500 dark:text-[#8a8a9b] mt-1">
+              Sign in to continue your learning journey
             </p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Error Message */}
             {errors.root && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 rounded-lg transition-all duration-300 flex items-center gap-2">
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 rounded-lg flex items-center gap-2 text-sm"
+              >
                 <FiAlertCircle className="flex-shrink-0" />
                 {errors.root.message}
-              </div>
+              </motion.div>
             )}
 
             {/* Email Field */}
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium mb-1 text-gray-800 dark:text-[#e0e0e0]"
+                className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e0e0e0]"
               >
                 Email Address
               </label>
@@ -140,7 +179,7 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   {...register('email')}
-                  className={`w-full pl-10 px-4 py-2 md:py-3 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                  className={`w-full pl-10 px-4 py-3 bg-gray-50 dark:bg-[#161622] border ${
                     errors.email
                       ? "border-red-500 focus:ring-red-500"
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -150,7 +189,7 @@ export default function LoginPage() {
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-400 animate-fade-in flex items-center gap-1">
+                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
                   <FiAlertCircle className="flex-shrink-0" />
                   {errors.email.message}
                 </p>
@@ -161,7 +200,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium mb-1 text-gray-800 dark:text-[#e0e0e0]"
+                className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e0e0e0]"
               >
                 Password
               </label>
@@ -173,7 +212,7 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   {...register('password')}
-                  className={`w-full pl-10 px-4 py-2 md:py-3 pr-10 bg-gray-50 dark:bg-[#1e1e2a] border ${
+                  className={`w-full pl-10 px-4 py-3 pr-10 bg-gray-50 dark:bg-[#161622] border ${
                     errors.password
                       ? "border-red-500 focus:ring-red-500"
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
@@ -197,7 +236,7 @@ export default function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-400 animate-fade-in flex items-center gap-1">
+                <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
                   <FiAlertCircle className="flex-shrink-0" />
                   {errors.password.message}
                 </p>
@@ -205,11 +244,11 @@ export default function LoginPage() {
             </div>
 
             {/* Forgot Password Link */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-2">
               <div className="text-sm">
                 <a
                   href="/forgot-password"
-                  className="font-medium text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  className="font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors cursor-pointer"
                 >
                   Forgot password?
                 </a>
@@ -217,10 +256,12 @@ export default function LoginPage() {
             </div>
 
             {/* Submit Button */}
-            <button
+            <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 md:py-3 px-4 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] dark:from-[#6c63ff] dark:to-[#4a3fff] hover:from-[#4338ca] hover:to-[#6d28d9] dark:hover:from-[#5a52e0] dark:hover:to-[#3a32d0] rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center"
+              whileHover={{ scale: isLoading ? 1 : 1.02 }}
+              whileTap={{ scale: isLoading ? 1 : 0.98 }}
+              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
             >
               {isLoading ? (
                 <>
@@ -233,7 +274,7 @@ export default function LoginPage() {
                   Sign In
                 </>
               )}
-            </button>
+            </motion.button>
           </form>
 
           {/* Social Login Section */}
@@ -243,36 +284,38 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-200 dark:border-[#2e2e3a]" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 text-gray-500 dark:text-[#8a8a9b] bg-white dark:bg-[#161622]">
+                <span className="px-2 text-gray-500 dark:text-[#8a8a9b] bg-white dark:bg-[#1e1e2a]">
                   Or continue with
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <motion.button
                 onClick={() => handleProviderLogin({provider: 'google'})}
                 disabled={isLoading}
-                className={`inline-flex ${isLoading ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-2 md:p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800/50 cursor-pointer`}
+                whileHover={{ y: -2 }}
+                className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
                 aria-label="Sign in with Google"
               >
                 <span className="flex items-center justify-center">
                   <FcGoogle className="h-5 w-5" />
                   <span className="ml-2 hidden sm:inline">Google</span>
                 </span>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 onClick={() => handleProviderLogin({provider: 'github'})}
                 disabled={isLoading}
-                className={`inline-flex ${isLoading ? 'opacity-50 cursor-not-allowed disabled' : ''} w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#1e1e2a] p-2 md:p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-800/50 cursor-pointer`}
+                whileHover={{ y: -2 }}
+                className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
                 aria-label="Sign in with GitHub"
               >
                 <span className="flex items-center justify-center">
                   <FaGithub className="h-5 w-5" />
                   <span className="ml-2 hidden sm:inline">GitHub</span>
                 </span>
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -281,12 +324,12 @@ export default function LoginPage() {
             Don't have an account?{" "}
             <a
               href="/signup"
-              className="font-medium text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+              className="font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors cursor-pointer"
             >
               Sign up
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
