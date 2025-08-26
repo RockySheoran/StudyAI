@@ -35,6 +35,9 @@ class QnAController {
       }
       
       const result = await qnaService.evaluateQnA(qnaId, answers);
+      const qna = await qnaService.getQnAById(qnaId);
+      qna.result = result;
+      await qna.save();
       
       res.status(StatusCodes.OK).json({
         success: true,
@@ -74,6 +77,7 @@ class QnAController {
       const { id } = req.user;
       
       const qnaHistory = await qnaService.getQnAHistory(id);
+
       
       if (!qnaHistory) {
         return res.status(StatusCodes.NOT_FOUND).json({

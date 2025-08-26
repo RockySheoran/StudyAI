@@ -3,7 +3,7 @@ import React from 'react';
 import axios from 'axios';
 import { FaSpinner, FaCheckCircle, FaTimesCircle, FaHistory, FaTrash } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTopicStore, useTopicResponse, useTopicLoading, useTopicError, useCurrentTopic, useCurrentDetailLevel, useSubmitted, useTopicHistory } from '@/lib/Store/topicStore';
+import { useTopicStore, useTopicResponse, useTopicLoading, useTopicError, useCurrentTopic, useCurrentDetailLevel, useSubmitted, useTopicHistory } from '@/lib/Store/Topics/topicStore';
 import { useUserStore } from '@/lib/Store/userStore';
 
 const GeminiTopicExplorer: React.FC = () => {
