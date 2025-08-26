@@ -54,13 +54,13 @@ class GeminiService {
     }
   }
 
-  async evaluateQnAAnswers(questions: string[], answers: string[]) {
+  async evaluateQnAAnswers(questions: string[], answers: string[],perQuestionMarks:number) {
     const prompt = `
       Evaluate the following questions and answers. For each question-answer pair, provide a score from 0 to the maximum marks (2-5 as specified) based on accuracy and completeness.
-      
+      perQuestionMarks:${perQuestionMarks}
       Format the response as a JSON object with:
       - totalScore: number (sum of all scores)
-      - maxPossibleScore: number (sum of all maximum marks)
+      - maxPossibleScore: number (sum of all maximum marks) ${perQuestionMarks * questions.length}
       - evaluations: array of objects with:
         - question: string
         - answer: string

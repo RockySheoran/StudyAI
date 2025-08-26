@@ -19,3 +19,7 @@ export const api_file_upload_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/
 export const api_summary_history_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api/summary-history` 
 export const api_delete_summary_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api`
 export const api_interview_history_url = `${process.env.NEXT_PUBLIC_INTERVIEW_BACKEND_URL}/api/interview/history`
+export const api_quiz_history_url = `${process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_URL}/api/quiz/history`
+export const api_qna_history_url = `${process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_URL}/api/qna/history`
+export const api_topic_history_url = `${process.env.NEXT_PUBLIC_TOPIC_BACKEND_URL}/api/topic/history`
+

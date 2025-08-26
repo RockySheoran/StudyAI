@@ -1,8 +1,11 @@
+import { QuizQnaFullHistory } from '@/components/Quiz-Qna/QuizQnaFullHistory'
 import React from 'react'
 
 function page() {
   return (
-    <div>page</div>
+    <div>
+      <QuizQnaFullHistory />
+    </div>
   )
 }
 

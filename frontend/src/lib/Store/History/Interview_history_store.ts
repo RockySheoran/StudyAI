@@ -71,8 +71,9 @@ export const useInterviewHistoryStore = create<InterviewHistoryState>()(
           const { interviews, isDataStale, setLoading, setInterviews, setError } = get();
           
           // Return cached data if available and not stale, unless force refresh
-          if (!forceRefresh && interviews.length > 0 && !isDataStale()) {
+          if (!forceRefresh && interviews.length > 0) {
             console.log("Using cached interview data");
+            setError(null);
             return;
           }
 

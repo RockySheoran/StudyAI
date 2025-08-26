@@ -37,9 +37,12 @@ export const getTopicDefinition = async (req: AuthenticatedRequest, res: Respons
   }
 };
 
-export const getSearchHistory = async (req: Request, res: Response): Promise<void> => {
+export const getSearchHistory = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { limit, userId } = req.query;
+    // const { limit } = req.query;
+    const limit ="10";
+    const userId = req?.user?.id;
+
     const historyLimit = limit ? parseInt(limit as string, 10) : 10;
     
     const history = await historyService.getHistory(historyLimit, userId as string);

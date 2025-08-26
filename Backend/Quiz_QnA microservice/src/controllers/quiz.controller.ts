@@ -34,6 +34,10 @@ class QuizController {
       }
       
       const result = await quizService.evaluateQuiz(quizId, answers);
+      console.log(result)
+      const quiz = await quizService.getQuizById(quizId);
+      quiz.result = result;
+      await quiz.save();
       
       res.status(StatusCodes.OK).json({
         success: true,
@@ -73,6 +77,7 @@ class QuizController {
       const { id } = req.user;
       
       const quizHistory = await quizService.getQuizHistory(id);
+      console.log(quizHistory)
       
       if (!quizHistory) {
         return res.status(StatusCodes.NOT_FOUND).json({
