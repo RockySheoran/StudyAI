@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { generateCurrentAffairs } from '../services/geminiService';
 import CurrentAffair from '../models/CurrentAffair';
+import { AuthenticatedRequest } from '../types/custom-types';
 
-export const getCurrentAffairs = async (req: Request, res: Response) => {
+export const getCurrentAffairs = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { type, category, page = '1' } = req.query;
     const pageNum = parseInt(page as string) || 1;
@@ -12,10 +13,11 @@ export const getCurrentAffairs = async (req: Request, res: Response) => {
     if (!type || (type === 'custom' && !category)) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
-    
+    const id = req?.user?.id ;
+    console.log("userId in getTopicDefinition:", id);
     // Delete all existing articles before generating new ones
     if (pageNum === 1) {
-      await CurrentAffair.deleteMany({});
+      await CurrentAffair.deleteMany({userId: id});
       console.log('Deleted all existing articles from database');
     }
     
@@ -32,7 +34,7 @@ export const getCurrentAffairs = async (req: Request, res: Response) => {
       summary: article.summary,
       fullContent: article.fullContent,
       category: type === 'custom' ? category : 'random',
-      userId: "123",
+      userId: id,
     }));
     
     await CurrentAffair.insertMany(articlesToSave);

@@ -35,6 +35,8 @@ export const middleware = (req: AuthenticatedRequest, res: Response, next: NextF
     token = req.cookies.token;
   }
 
+  console.log("Token from middleware:", token);
+
   if (!token) {
     return res.status(401).json({
       success: false,

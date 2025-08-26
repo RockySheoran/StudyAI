@@ -3,7 +3,7 @@ import {  getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isPublicPath = path === '/login' || path === '/signup' || path === '/' || path === '/resetpassword' || path === '/forgot-password';
+  const isPublicPath = path === '/login' || path === '/signup' || path==='/' || path === '/resetpassword' || path === '/forgot-password';
 
   // Check for token in cookies (from backend)
   const tokenFromCookie = request.cookies.get('token')?.value || '';
@@ -30,9 +30,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.nextUrl));
   }
 
-  if (!isPublicPath && !hasToken) {
+  if (!isPublicPath && !hasToken && path !== '/') {
     return NextResponse.redirect(new URL('/login', request.nextUrl));
   }
+
+  if (!isPublicPath && !hasToken) {
+    return NextResponse.redirect(new URL('/', request.nextUrl));
+  }
+
 }
 
 export const config = {
@@ -44,6 +49,10 @@ export const config = {
     '/forgot-password',
     '/dashboard',
     '/api/auth/callback', 
-    '/interviews/:path*'
+    '/interviews/:path*',
+    '/current-affairs/:path*',
+    '/topics/:path*',
+    '/quiz_qna/:path*',
+    '/summary/:path*',
   ]
 }

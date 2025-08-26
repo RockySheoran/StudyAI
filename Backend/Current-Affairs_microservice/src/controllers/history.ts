@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import CurrentAffair from '../models/CurrentAffair';
+import { AuthenticatedRequest } from '../types/custom-types';
 
-export const getHistory = async (req: Request, res: Response) => {
+export const getHistory = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
+     const id = req?.user?.id ;
+    console.log("userId in getTopicDefinition:", id);
     
-    const affairs = await CurrentAffair.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const affairs = await CurrentAffair.find({userId:id}).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const total = await CurrentAffair.countDocuments();
     
     res.json({
