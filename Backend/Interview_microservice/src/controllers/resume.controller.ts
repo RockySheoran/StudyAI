@@ -22,7 +22,7 @@ export class ResumeController {
       await unlink(file.path);
 
       // Delete previous resumes
-      await Resume.deleteMany({ userId: userId });
+      // await Resume.deleteMany({ userId: userId });
 
       const resume = new Resume({
         userId: userId || '',

@@ -82,12 +82,14 @@ export const getSummaryStatus = async (fileId: string) => {
   try {
     // First check Redis cache
     const cachedSummary = await redisClient.get(`summary:${fileId}`);
+    console.log(cachedSummary,"cachedSummary")
     if (cachedSummary) {
       return JSON.parse(cachedSummary);
     }
 
     // Fallback to database
     const summary = await Summary.findOne({ fileId });
+    console.log(summary,"summary")
     if (!summary) return { status: 'not_found' };
 
     const result = {
@@ -98,7 +100,7 @@ export const getSummaryStatus = async (fileId: string) => {
 
     // Cache the result
     await redisClient.set(`summary:${fileId}`, JSON.stringify(result));
-
+    console.log(result,"result")
     return result;
   } catch (error) {
     console.error('Error getting summary status:', error);

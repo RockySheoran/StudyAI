@@ -421,7 +421,7 @@ export const InterviewContainer = ({
               >
                 History Page
               </Button>
-              <Button 
+              {/* <Button 
                 variant="outline" 
                 onClick={getFeedback}
                 disabled={isFeedbackSubmitting || isSpeaking || isLoading}
@@ -433,7 +433,7 @@ export const InterviewContainer = ({
                     Loading...
                   </>
                 ) : 'Get Feedback'}
-              </Button>
+              </Button> */}
             </div>
           ) : (
             <div className="flex gap-2">
