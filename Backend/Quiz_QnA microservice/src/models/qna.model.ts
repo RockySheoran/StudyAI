@@ -6,6 +6,18 @@ export interface IQnAQuestion {
   maxMarks: number;
 }
 
+export interface IQnAResult {
+  question: string;
+  answer: string;
+  score: number;
+  maxMarks: number;
+  feedback: string;
+}
+interface IQnAAllResult {
+  totalScore: number;
+  maxPossibleScore: number;
+  evaluations: IQnAResult[];
+}
 export interface IQnA extends Document {
   educationLevel: string;
   topic: string;
@@ -13,6 +25,8 @@ export interface IQnA extends Document {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
+  result: IQnAAllResult;
+  type: string;
 }
 
 const QnAQuestionSchema = new Schema({
@@ -20,11 +34,29 @@ const QnAQuestionSchema = new Schema({
   maxMarks: { type: Number, required: true, min: 2, max: 5 },
 });
 
+const QnAResultSchema = new Schema({
+  question: { type: String},
+  answer: { type: String },
+ 
+  score: { type: Number },
+  maxMarks: { type: Number },
+  feedback: { type: String },
+});
+
+const AllQnAResultSchema = new Schema({
+  totalScore: { type: Number },
+  maxPossibleScore: { type: Number},
+ 
+  evaluations: [QnAResultSchema],
+});
+
 const QnASchema = new Schema({
   educationLevel: { type: String, required: true },
   topic: { type: String, required: true },
   questions: [QnAQuestionSchema],
   userId: { type: String, required: true },
+  result: AllQnAResultSchema,
+  type: { type: String, default: 'qna', required: true },
 }, {
   timestamps: true
 });

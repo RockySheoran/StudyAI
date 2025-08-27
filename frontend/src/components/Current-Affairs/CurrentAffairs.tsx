@@ -6,6 +6,7 @@ import { fetchCurrentAffairs } from '@/Actions/Current-Affairs/CurrentAffair-Api
 import { FaHistory, FaSearch, FaChevronRight, FaSpinner, FaTimesCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUserStore } from '@/lib/Store/userStore';
 
 const CurrentAffairs: React.FC = () => {
   const [type, setType] = useState<AffairType>('random');
@@ -23,6 +24,7 @@ const CurrentAffairs: React.FC = () => {
     setMounted(true);
   }, []);
 
+  const {token} = useUserStore();
   const handleSubmit = async (e: React.FormEvent, page: number = 1) => {
     e.preventDefault();
     setLoading(true);
@@ -30,7 +32,7 @@ const CurrentAffairs: React.FC = () => {
     
     try {
       const category = type === 'custom' ? customCategory : undefined;
-      const result = await fetchCurrentAffairs(type, category, page);
+      const result = await fetchCurrentAffairs(type, category, page , token!);
       setAffairs(result.affairs);
       setPagination(result.pagination);
     } catch (err) {
@@ -47,7 +49,7 @@ const CurrentAffairs: React.FC = () => {
     setLoading(true);
     try {
       const category = type === 'custom' ? customCategory : undefined;
-      const result = await fetchCurrentAffairs(type, category, pagination.currentPage + 1);
+      const result = await fetchCurrentAffairs(type, category, pagination.currentPage + 1 , token!);
       setAffairs([...affairs, ...result.affairs]);
       setPagination(result.pagination);
     } catch (err) {

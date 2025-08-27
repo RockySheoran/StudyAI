@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { QuizData, QuizResult } from '@/types/Qna-Quiz/quiz';
 import { api } from '@/Actions/Quiz-Qna/Quiz-Qna-api';
@@ -24,6 +25,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function QuizPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   // Get store state and actions
   const {
@@ -56,6 +58,10 @@ export default function QuizPage() {
       form.setValue('topic', currentQuiz.topic);
     }
   }, [currentStep, currentQuiz, form]);
+
+  const handleGoBack = () => {
+    router.back();
+  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -132,6 +138,28 @@ export default function QuizPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors duration-200">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Go Back Button */}
+        <button
+          onClick={handleGoBack}
+          className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors duration-200"
+        >
+          <svg 
+            className="w-5 h-5 mr-2" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+            />
+          </svg>
+          Go Back
+        </button>
+        
         <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-8">
           Quiz Generator
         </h1>
@@ -170,6 +198,8 @@ export default function QuizPage() {
             onRestart={handleRestart} 
           />
         )}
+
+        
       </div>
     </div>
   );

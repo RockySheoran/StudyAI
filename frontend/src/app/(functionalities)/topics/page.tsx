@@ -1,9 +1,10 @@
 'use client';
 import React from 'react';
 import axios from 'axios';
-import { FaSpinner, FaCheckCircle, FaTimesCircle, FaHistory, FaTrash } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { FaSpinner, FaCheckCircle, FaTimesCircle, FaHistory, FaTrash, FaEye } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTopicStore, useTopicResponse, useTopicLoading, useTopicError, useCurrentTopic, useCurrentDetailLevel, useSubmitted, useTopicHistory } from '@/lib/Store/topicStore';
+import { useTopicStore, useTopicResponse, useTopicLoading, useTopicError, useCurrentTopic, useCurrentDetailLevel, useSubmitted, useTopicHistory } from '@/lib/Store/Topics/topicStore';
 import { useUserStore } from '@/lib/Store/userStore';
 
 const GeminiTopicExplorer: React.FC = () => {
@@ -28,6 +29,8 @@ const GeminiTopicExplorer: React.FC = () => {
   } = useTopicStore();
 
   const {token} = useUserStore();
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -70,6 +73,10 @@ const GeminiTopicExplorer: React.FC = () => {
     setCurrentDetailLevel(historyItem.detailLevel as 'less' | 'more' | 'most');
     setResponse(historyItem);
     setSubmitted(true);
+  };
+
+  const handleViewFullHistory = () => {
+    router.push('/topics/history');
   };
 
   return (
@@ -270,15 +277,26 @@ const GeminiTopicExplorer: React.FC = () => {
                     <FaHistory className="mr-2" />
                     History
                   </h3>
-                  {history.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    {history.length > 0 && (
+                      <button
+                        onClick={clearHistory}
+                        className="text-sm text-red-500 hover:text-red-700 dark:hover:text-red-400 flex items-center"
+                        title="Clear History"
+                      >
+                        <FaTrash className="mr-1" />
+                        Clear
+                      </button>
+                    )}
                     <button
-                      onClick={clearHistory}
-                      className="text-sm text-red-500 hover:text-red-700 dark:hover:text-red-400 flex items-center"
+                      onClick={handleViewFullHistory}
+                      className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center"
+                      title="View Full History"
                     >
-                      <FaTrash className="mr-1" />
-                      Clear
+                      <FaEye className="mr-1" />
+                      View Full
                     </button>
-                  )}
+                  </div>
                 </div>
 
                 {history.length === 0 ? (
@@ -314,6 +332,7 @@ const GeminiTopicExplorer: React.FC = () => {
                               removeFromHistory(item.timestamp);
                             }}
                             className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 ml-2"
+                            title="Delete this item"
                           >
                             <FaTrash size={12} />
                           </button>

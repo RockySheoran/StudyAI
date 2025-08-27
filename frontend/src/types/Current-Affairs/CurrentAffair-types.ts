@@ -20,4 +20,5 @@ export interface PaginationInfo {
 export interface CurrentAffairsResponse {
   affairs: CurrentAffair[];
   pagination: PaginationInfo;
+  token?: string;
 }

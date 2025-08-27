@@ -1,12 +1,14 @@
-// frontend/src/app/quiz/components/QuizResults.tsx
+// frontend/src/components/Quiz-Qna/Quiz/QuizResults.tsx
 import { QuizResult } from "@/types/Qna-Quiz/quiz";
 
 interface QuizResultsProps {
   result: QuizResult;
   onRestart: () => void;
+  showRestartButton?: boolean;
+  title?: string;
 }
 
-export default function QuizResults({ result, onRestart }: QuizResultsProps) {
+export default function QuizResults({ result, onRestart, showRestartButton = true, title = 'Quiz Results' }: QuizResultsProps) {
   const getScoreColor = (percentage: number) => {
     if (percentage >= 80) return 'text-green-600 dark:text-green-400';
     if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400';
@@ -22,7 +24,7 @@ export default function QuizResults({ result, onRestart }: QuizResultsProps) {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
       <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-white">
-        Quiz Results
+        {title}
       </h2>
       
       <div className="text-center mb-8">
@@ -77,15 +79,16 @@ export default function QuizResults({ result, onRestart }: QuizResultsProps) {
           </div>
         </div>
       )}
-      
-      <div className="text-center">
-        <button
-          onClick={onRestart}
-          className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-        >
-          Take Another Quiz
-        </button>
-      </div>
+      {showRestartButton && (
+        <div className="text-center">
+          <button
+            onClick={onRestart}
+            className="px-6 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            Take Another Quiz
+          </button>
+        </div>
+      )}
     </div>
   );
 }

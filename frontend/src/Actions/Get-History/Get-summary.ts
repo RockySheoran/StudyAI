@@ -1,3 +1,4 @@
+"use server"
 import { api_summary_history_url } from "@/lib/apiEnd_Point_Call"
 import axios from "axios"
 
@@ -9,7 +10,7 @@ export const Summary_history_get = async ({token}:{token:string}) =>{
                 "Authorization": `Bearer ${token}`
             }
         })
-        console.log(res.data)
+        // console.log(res.data)
 
         return {
             status: 200,
@@ -18,7 +19,7 @@ export const Summary_history_get = async ({token}:{token:string}) =>{
         }
         
     } catch (error:any) {
-        console.log(error?.response?.data)
+        // console.log(error?.response?.data)
         return {
             status: 500,
             message: error?.response?.data?.message || "Internal server error",

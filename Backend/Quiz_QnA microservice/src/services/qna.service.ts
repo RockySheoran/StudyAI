@@ -39,7 +39,9 @@ class QnAService {
       
       // Use Gemini to evaluate answers
       const questions = qna.questions.map(q => q.question);
-      const evaluation = await geminiService.evaluateQnAAnswers(questions, userAnswers);
+      const PerQuestionMarks = qna.questions[0].maxMarks;
+      const evaluation = await geminiService.evaluateQnAAnswers(questions, userAnswers,PerQuestionMarks);
+      console.log(evaluation)
       
       return evaluation;
     } catch (error) {

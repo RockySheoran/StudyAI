@@ -1,15 +1,20 @@
 // frontend/src/components/Quiz-Qna/Qna/QnAResults.tsx
 import { useQnAStore } from "@/lib/Store/Quiz-Qna/qnaStore";
+import { useQuizQnAHistoryStore } from "@/lib/Store/Quiz-Qna/quizQnaHistoryStore";
 import { QnAResult } from "@/types/Qna-Quiz/qna";
 
-
 interface QnAResultsProps {
+  result?: QnAResult;
   onRestart: () => void;
+  showRestartButton?: boolean;
+  title?: string;
 }
 
-export default function QnAResults({ onRestart }: QnAResultsProps) {
+export default function QnAResults({ result, onRestart, showRestartButton = true, title = 'QnA Results' }: QnAResultsProps) {
   const { recentResults } = useQnAStore();
-  const result = recentResults[0]; // Get the most recent result
+  if (!result) {
+    result = recentResults[0]; // Get the most recent result
+  }
 
   if (!result) {
     return (
@@ -36,7 +41,7 @@ export default function QnAResults({ onRestart }: QnAResultsProps) {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
       <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-white">
-        QnA Results
+        {title}
       </h2>
       
       <div className="text-center mb-8">
@@ -70,14 +75,16 @@ export default function QnAResults({ onRestart }: QnAResultsProps) {
         </div>
       </div>
       
-      <div className="text-center">
-        <button
-          onClick={onRestart}
-          className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
-        >
-          Try Another QnA
-        </button>
-      </div>
+      {showRestartButton && (
+        <div className="text-center">
+          <button
+            onClick={onRestart}
+            className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+          >
+            Try Another QnA
+          </button>
+        </div>
+      )}
     </div>
   );
 }

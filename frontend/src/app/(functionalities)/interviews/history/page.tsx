@@ -153,7 +153,7 @@ export default function InterviewHistoryPage() {
               transition={{ duration: 0.3 }}
             >
               {/* Rating Section */}
-              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:bg-gray-900 dark:to-indigo-950/30">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-yellow-500" />
@@ -179,7 +179,7 @@ export default function InterviewHistoryPage() {
               
               {/* Strengths Section */}
               {selectedFeedback.strengths.length > 0 && (
-                <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+                <Card className="bg-green-50 dark:bg-gray-900 border-green-200 dark:border-green-800">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-300">
                       <Trophy className="w-5 h-5" />

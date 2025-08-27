@@ -6,6 +6,7 @@ import { fetchHistory } from '@/Actions/Current-Affairs/CurrentAffair-Api';
 import { FaHistory, FaChevronRight, FaClock, FaFolder, FaArrowLeft, FaSpinner, FaTimesCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/lib/Store/userStore';
 
 const History: React.FC = () => {
   const [affairs, setAffairs] = useState<CurrentAffair[]>([]);
@@ -16,12 +17,13 @@ const History: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const {token} = useUserStore();
 
   useEffect(() => {
     setMounted(true);
     const loadHistory = async () => {
       try {
-        const history = await fetchHistory();
+        const history = await fetchHistory(1, token!);
         setAffairs(history.affairs);
         setPagination(history.pagination);
       } catch (err) {
@@ -40,7 +42,7 @@ const History: React.FC = () => {
     
     setLoading(true);
     try {
-      const history = await fetchHistory(pagination.currentPage + 1);
+      const history = await fetchHistory(pagination.currentPage + 1, token!);
       setAffairs([...affairs, ...history.affairs]);
       setPagination(history.pagination);
     } catch (err) {
