@@ -31,6 +31,30 @@ const InterviewCard: React.FC<InterviewCardProps> = ({
     }
   };
 
+  // Check if feedback is valid and complete
+  const hasValidFeedback = (feedback: any) => {
+    if (!feedback) return false;
+    
+    // Check if rating exists and is a valid number
+    const hasValidRating = feedback.rating !== undefined && 
+                          feedback.rating !== null && 
+                          typeof feedback.rating === 'number' && 
+                          feedback.rating > 0;
+    
+    // Check if strengths array exists and has content
+    const hasStrengths = Array.isArray(feedback.strengths) && 
+                        feedback.strengths.length > 0 && 
+                        feedback.strengths.some((strength: string) => strength.trim().length > 0);
+    
+    // Check if suggestions array exists and has content
+    const hasSuggestions = Array.isArray(feedback.suggestions) && 
+                          feedback.suggestions.length > 0 && 
+                          feedback.suggestions.some((suggestion: string) => suggestion.trim().length > 0);
+    
+    // Feedback is valid if it has rating AND (strengths OR suggestions)
+    return hasValidRating && (hasStrengths || hasSuggestions);
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -84,7 +108,7 @@ const InterviewCard: React.FC<InterviewCardProps> = ({
               </span>
             </div>
             
-            {interview.feedback ? (
+            {hasValidFeedback(interview.feedback) ? (
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Rating</span>
@@ -122,7 +146,7 @@ const InterviewCard: React.FC<InterviewCardProps> = ({
         </CardContent>
         
         <CardFooter className="flex justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
-          {interview.feedback ? (
+          {hasValidFeedback(interview.feedback) ? (
             <Button
               variant="outline"
               size="sm"

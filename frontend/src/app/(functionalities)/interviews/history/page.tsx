@@ -44,6 +44,30 @@ export default function InterviewHistoryPage() {
     }
   }, [token, fetchInterviews]);
 
+  // Check if feedback is valid and complete
+  const hasValidFeedback = (feedback: any) => {
+    if (!feedback) return false;
+    
+    // Check if rating exists and is a valid number
+    const hasValidRating = feedback.rating !== undefined && 
+                          feedback.rating !== null && 
+                          typeof feedback.rating === 'number' && 
+                          feedback.rating > 0;
+    
+    // Check if strengths array exists and has content
+    const hasStrengths = Array.isArray(feedback.strengths) && 
+                        feedback.strengths.length > 0 && 
+                        feedback.strengths.some((strength: string) => strength.trim().length > 0);
+    
+    // Check if suggestions array exists and has content
+    const hasSuggestions = Array.isArray(feedback.suggestions) && 
+                          feedback.suggestions.length > 0 && 
+                          feedback.suggestions.some((suggestion: string) => suggestion.trim().length > 0);
+    
+    // Feedback is valid if it has rating AND (strengths OR suggestions)
+    return hasValidRating && (hasStrengths || hasSuggestions);
+  };
+
   // Filtered and paginated interviews
   const filteredInterviews = useMemo(() => {
     let filtered = interviews.filter(interview => {
@@ -60,9 +84,9 @@ export default function InterviewHistoryPage() {
       if (statusFilter === 'completed') {
         matchesStatus = !!interview.completedAt;
       } else if (statusFilter === 'with-feedback') {
-        matchesStatus = !!interview.feedback;
+        matchesStatus = hasValidFeedback(interview.feedback);
       } else if (statusFilter === 'no-feedback') {
-        matchesStatus = !interview.feedback;
+        matchesStatus = !hasValidFeedback(interview.feedback);
       }
 
       return matchesSearch && matchesType && matchesStatus;
@@ -119,127 +143,19 @@ export default function InterviewHistoryPage() {
   return (
     <div className="max-w-7xl mx-auto p-4 lg:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       {/* Feedback Modal */}
-      <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl flex items-center justify-center gap-2">
-              <FileText className="w-6 h-6" />
-              Interview Feedback
-            </DialogTitle>
-            <DialogDescription className="text-center">
-              Detailed analysis of your interview performance
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedFeedback && (
-            <motion.div 
-              className="space-y-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              {/* Rating Section */}
-              <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-500" />
-                    Overall Rating
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-6">
-                    <div className="text-4xl font-bold bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm">
-                      {selectedFeedback?.rating?.toFixed(1)}
-                      <span className="text-2xl text-gray-500">/5</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">Performance score</span>
-                        <span className="text-sm font-medium">{selectedFeedback.rating}/5</span>
-                      </div>
-                      <Progress value={(selectedFeedback.rating / 5) * 100} className="h-3" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Strengths Section */}
-              {selectedFeedback.strengths.length > 0 && (
-                <Card className="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-300">
-                      <Trophy className="w-5 h-5" />
-                      Your Strengths
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {selectedFeedback.strengths.map((item, index) => 
-                        renderFeedbackItem('strengths', item, index)
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Suggestions Section */}
-              {selectedFeedback.suggestions.length > 0 && (
-                <Card className="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
-                      <Lightbulb className="w-5 h-5" />
-                      Areas for Improvement
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {selectedFeedback.suggestions.map((item, index) => 
-                        renderFeedbackItem('suggestions', item, index)
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </motion.div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        feedback={selectedFeedback}
+      />
 
-      {/* Main Content Header */}
-      <motion.div 
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Interview History</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Review your past interviews and track your progress
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={loading || isRefreshing}
-            className="flex items-center gap-2"
-          >
-            <motion.span
-              animate={{ rotate: isRefreshing ? 360 : 0 }}
-              transition={{ duration: 0.5, repeat: isRefreshing ? Infinity : 0 }}
-            >
-              <RefreshCw className="w-4 h-4" />
-            </motion.span>
-            Refresh
-          </Button>
-          <Button onClick={handleStartNew} className="flex items-center gap-2">
-            <MessageSquare className="w-4 h-4" />
-            New Interview
-          </Button>
-        </div>
-      </motion.div>
+      {/* Header */}
+      <InterviewHistoryHeader
+        onRefresh={handleRefresh}
+        onStartNew={handleStartNew}
+        isRefreshing={isRefreshing}
+        loading={loading}
+      />
 
       {/* Error State */}
       <AnimatePresence>
