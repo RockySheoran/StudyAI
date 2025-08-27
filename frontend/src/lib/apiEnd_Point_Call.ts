@@ -1,3 +1,4 @@
+
 import process from "process";
 
 const BACKEND_URL = `${process.env.BACKEND_URL}/api/auth`;
@@ -15,7 +16,7 @@ export const api_forgot_url = `${BACKEND_URL}/forgot-password`;
 export const api_reset_url = `${BACKEND_URL}/reset-password`;
 
 
-export const api_file_upload_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api`
+
 export const api_summary_history_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api/summary-history` 
 export const api_delete_summary_url = `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api`
 export const api_interview_history_url = `${process.env.NEXT_PUBLIC_INTERVIEW_BACKEND_URL}/api/interview/history`

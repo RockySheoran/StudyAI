@@ -61,6 +61,10 @@ export const useTopicHistoryStore = create<TopicHistoryState>()(
           if (!token) return;
           
           set({ isLoading: true, error: null });
+
+          if(get().allHistory?.length > 0){
+            return;
+          }
           
           try {
             const { Get_Topic_history } = await import('@/Actions/Get-History/Get_Topic_history');
