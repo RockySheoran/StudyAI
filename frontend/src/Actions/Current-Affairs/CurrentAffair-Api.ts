@@ -4,7 +4,7 @@ import { CurrentAffairsResponse } from '@/types/Current-Affairs/CurrentAffair-ty
 import axios from 'axios';
 import { headers } from 'next/headers';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL}/api` || 'http://localhost:5000/api';
 
 export const fetchCurrentAffairs = async (
   type: 'random' | 'custom', 
@@ -14,18 +14,33 @@ export const fetchCurrentAffairs = async (
 ): Promise<CurrentAffairsResponse> => {
   
   console.log(token , "token from store");
-  const response = await axios.get(`${API_BASE_URL}/current-affairs`, {
-    params: { type, category, page },
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`${API_BASE_URL}/current-affairs`, {
+      params: { type, category, page },
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };
 
 export const fetchHistory = async (page: number = 1, token?: string): Promise<CurrentAffairsResponse> => {
+  if (!token) {
+    throw new Error('Authentication token is required');
+  }
+  
   console.log(token , "token from store");
-  const response = await axios.get(`${API_BASE_URL}/history`, {
-    params: { page },
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+  try {
+    const response = await axios.get(`${API_BASE_URL}/history`, {
+      params: { page },
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    console.log(response.data);
+    return response.data;
+  } catch (error:any) {
+    console.log(error.response.data);
+    throw error;
+  }
 };

@@ -3,6 +3,8 @@ import { Interview_history } from "./Interview-history";
 import { Summary_history   } from "./Summary-history";
 import { Quiz_Qna_History } from "./Quiz_Qna_History";
 import { Topic_History } from "./Topic_history";
+import Current_Affairs_History from "./Current_Affairs_history";
+
 
 
 export const Dashboard_file_section_file_import = () => {
@@ -12,6 +14,7 @@ export const Dashboard_file_section_file_import = () => {
             <Summary_history />
             <Interview_history />
             <Quiz_Qna_History />
+            <Current_Affairs_History/>
             <Topic_History/>
           
         </div>

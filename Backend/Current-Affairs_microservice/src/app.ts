@@ -15,6 +15,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/current-affairs' , currentAffairsRoutes);
-app.use('/api/history', historyRoutes);
+app.use('/api/current-affairs/history', historyRoutes);
 
 export default app;

@@ -122,6 +122,13 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
         },
 
         refreshHistory: async ({token }: {token: string}) => {
+          if(!token){
+            return;
+          }
+
+           if(get().allHistory?.length > 0){
+            return;
+           }
           
             // Fetch data from APIs
             const [quizResponse, qnaResponse] = await Promise.all([

@@ -1,8 +1,9 @@
 'use client';
 import { CurrentAffair } from '@/types/Current-Affairs/CurrentAffair-types';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaExternalLinkAlt, FaSpinner } from 'react-icons/fa';
+import { useCurrentAffairsHistoryStore } from '@/lib/Store/Current-Affairs/currentAffairsHistoryStore';
 
 interface ArticleModalProps {
   affair: CurrentAffair;
@@ -10,9 +11,24 @@ interface ArticleModalProps {
 }
 
 const ArticleModal: React.FC<ArticleModalProps> = ({ affair, onClose }) => {
+  const { addToHistory } = useCurrentAffairsHistoryStore();
+  const [startTime, setStartTime] = useState<number>(Date.now());
+
+  useEffect(() => {
+    // Record when user starts reading
+    setStartTime(Date.now());
+  }, [affair]);
+
+  const handleClose = () => {
+    // Calculate reading time and add to history
+    const readTime = Math.floor((Date.now() - startTime) / 1000);
+    addToHistory(affair, readTime);
+    onClose();
+  };
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      handleClose();
     }
   };
 
@@ -38,7 +54,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ affair, onClose }) => {
                 {affair.title}
               </h2>
               <motion.button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -87,7 +103,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ affair, onClose }) => {
             
             <div className="mt-8 flex justify-end">
               <motion.button
-                onClick={onClose}
+                onClick={handleClose}
                 className="bg-indigo-600 dark:bg-indigo-700 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
