@@ -5,13 +5,13 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 import { QnAData, QnAResult } from '@/types/Qna-Quiz/qna';
 import { api } from '@/Actions/Quiz-Qna/Quiz-Qna-api';
 import QnAForm from '@/components/Quiz-Qna/Qna/QnAForm';
 import QnAQuestions from '@/components/Quiz-Qna/Qna/QnAQuestions';
 import QnAResults from '@/components/Quiz-Qna/Qna/QnAResults';
 import { useQnAStore } from '@/lib/Store/Quiz-Qna/qnaStore';
-
 
 const formSchema = z.object({
   educationLevel: z.string().min(1, 'Education level is required'),
@@ -24,6 +24,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function QnAPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   // Get store state and actions
   const {
@@ -58,6 +59,10 @@ export default function QnAPage() {
       form.setValue('marks', currentQnA.questions[0]?.maxMarks || 2);
     }
   }, [currentStep, currentQnA, form]);
+
+  const handleGoBack = () => {
+    router.back();
+  };
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -133,6 +138,28 @@ export default function QnAPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors duration-200">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Go Back Button */}
+        <button
+          onClick={handleGoBack}
+          className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors duration-200"
+        >
+          <svg 
+            className="w-5 h-5 mr-2" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+            />
+          </svg>
+          Go Back
+        </button>
+        
         <h1 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-8">
           QnA Generator
         </h1>
@@ -171,6 +198,7 @@ export default function QnAPage() {
             onRestart={handleRestart} 
           />
         )}
+        
       </div>
     </div>
   );

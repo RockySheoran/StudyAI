@@ -182,13 +182,13 @@ export default function TopicsFullHistory() {
                             View all your topic definitions and explanations
                         </p>
                     </div>
-                    <Link
-                        href="/dashboard"
+                    <button
+                        onClick={() => router.back()}
                         className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200 w-full sm:w-auto flex-shrink-0"
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back to Dashboard
-                    </Link>
+                        Go Back
+                    </button>
                 </div>
 
                 {/* Stats Cards */}
