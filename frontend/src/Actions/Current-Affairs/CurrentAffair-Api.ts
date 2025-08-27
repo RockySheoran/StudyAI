@@ -12,8 +12,11 @@ export const fetchCurrentAffairs = async (
   page: number = 1,
   token ?: string
 ): Promise<CurrentAffairsResponse> => {
-  
-  console.log(token , "token from store");
+  console.log("first")
+  console.log(token , "token from store api");
+  console.log("first" )
+  console.log(API_BASE_URL);
+  console.log("11")
   try {
     const response = await axios.get(`${API_BASE_URL}/current-affairs`, {
       params: { type, category, page },
@@ -32,8 +35,10 @@ export const fetchHistory = async (page: number = 1, token?: string): Promise<Cu
   }
   
   console.log(token , "token from store");
+  console.log(API_BASE_URL);
+  console.log("11")
   try {
-    const response = await axios.get(`${API_BASE_URL}/history`, {
+    const response = await axios.get(`${API_BASE_URL}/current-affairs/history`, {
       params: { page },
       headers: { Authorization: `Bearer ${token}` }
     });

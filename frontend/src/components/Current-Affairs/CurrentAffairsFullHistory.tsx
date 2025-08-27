@@ -141,7 +141,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
   };
 
   const handleBackToDashboard = () => {
-    router.push('/dashboard');
+    router.back();
   };
 
   const clearFilters = () => {
@@ -276,7 +276,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
               whileHover={{ x: -5 }}
             >
               <FaArrowLeft />
-              Dashboard
+              Go Back
             </motion.button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
