@@ -9,8 +9,9 @@ export interface IInterviewMessage {
 export interface IInterview extends Document {
   userId: string;
   type: 'personal' | 'technical';
-  resumeId: string;
+  resumeId?: string;
   messages: IInterviewMessage[];
+  status: 'active' | 'completed' | 'cancelled';
   feedback?: {
     rating: number;
     suggestions: string[];
@@ -23,7 +24,8 @@ export interface IInterview extends Document {
 const interviewSchema = new mongoose.Schema<IInterview>({
   userId: { type: String, required: true },
   type: { type: String, enum: ['personal', 'technical'], required: true },
-  resumeId: { type: String, required: true },
+  resumeId: { type: String, required: false },
+  status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' },
   messages: [
     {
       role: { type: String, enum: ['user', 'assistant'], required: true },

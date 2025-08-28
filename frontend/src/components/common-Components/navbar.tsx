@@ -21,6 +21,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "./Theme-toggle";
 import { div } from "framer-motion/client";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 
 interface NavItem {
   name: string;
@@ -34,7 +35,6 @@ interface NavbarProps {
 }
 
 const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window?.innerWidth : 1024
@@ -43,7 +43,6 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  
 
   // Nav items data
   const navItems: NavItem[] = [
@@ -60,7 +59,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     {
       name: "Interview",
       icon: <FaUserTie className="text-lg" />,
-      route: "/interviews/new"    ,
+      route: "/interviews/new",
     },
     {
       name: "Quiz/QnA",
@@ -94,8 +93,6 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
-
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
@@ -103,6 +100,11 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
   const toggleDesktopSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  // Close mobile menu when navigating to different routes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     setMobileMenuOpen(false);
@@ -116,13 +118,18 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
     <>
       {/* Mobile Top Header - Always visible on mobile */}
       <header className="md:hidden  fixed top-0 left-0 right-0 z-90 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex justify-between items-center">
-        <motion.h1
-          className="text-xl font-bold text-indigo-600 dark:text-indigo-400"
+        <motion.div
+          className="relative w-10 h-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          Logo
-        </motion.h1>
+          <Image
+            src="/Logo2.jpg"
+            alt="StudyAI Logo"
+            fill
+            className="rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-sm"
+          />
+        </motion.div>
 
         <div className="flex items-center space-x-4">
           <motion.button
@@ -159,16 +166,18 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                 <nav className="flex-1 flex flex-col justify-between">
                   <div className="space-y-1 px-2 py-4">
                     {navItems.map((item) => (
-                      <motion.a
+                      <motion.button
                         key={item.name}
-                        href={item.route}
-                        className={`flex items-center p-3 rounded-lg transition-colors ${
+                        onClick={() => {
+                          router.push(item.route);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={`flex items-center p-3 rounded-lg transition-colors w-full text-left ${
                           isActive(item.route)
                             ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
                             : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                         }`}
                         whileHover={{ x: 5 }}
-                        onClick={() => setMobileMenuOpen(false)}
                       >
                         <span className="text-gray-600 dark:text-gray-300">
                           {item.icon}
@@ -179,13 +188,13 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                             <FaChevronRight className="text-gray-500" />
                           </span>
                         )}
-                      </motion.a>
+                      </motion.button>
                     ))}
                   </div>
 
                   <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between mb-4">
-                    <ThemeToggle/>
+                      <ThemeToggle />
                       <span className="text-sm text-gray-600 dark:text-gray-300">
                         {theme === "light" ? "Light Mode" : "Dark Mode"}
                       </span>
@@ -216,7 +225,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                           </p>
                         </div>
                       </div>
-                      <div >
+                      <div>
                         <LogoutButton />
                       </div>
                     </div>
@@ -235,38 +244,70 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 flex items-center justify-between">
-            {isOpen && (
-              <motion.h1
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-xl font-bold text-indigo-600 dark:text-indigo-400"
-              >
-                Logo
-              </motion.h1>
+          {/* Header section with logo and toggle */}
+          <div className={`${isOpen ? 'p-4' : 'p-2'} flex-shrink-0 border-b border-gray-200 dark:border-gray-700`}>
+            {isOpen ? (
+              <div className="flex items-center justify-between w-full">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="relative w-10 h-10"
+                >
+                  <Image
+                    src="/Logo2.jpg"
+                    alt="StudyAI Logo"
+                    fill
+                    className="rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-sm"
+                  />
+                </motion.div>
+                <motion.button
+                  onClick={toggleDesktopSidebar}
+                  className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaTimes className="text-gray-600 dark:text-gray-300" />
+                </motion.button>
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <motion.button
+                  onClick={toggleDesktopSidebar}
+                  className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className="relative w-8 h-8">
+                    <Image
+                      src="/Logo2.jpg"
+                      alt="StudyAI Logo"
+                      fill
+                      className="rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-sm"
+                    />
+                  </div>
+                </motion.button>
+              </div>
             )}
-            <motion.button
-              onClick={toggleDesktopSidebar}
-              className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <FaBars className="text-gray-600 dark:text-gray-300" />
-            </motion.button>
           </div>
 
-          <nav className="flex-1 flex flex-col justify-between overflow-y-auto">
-            <div className="space-y-1 px-2">
+          <nav className="flex-1 flex flex-col justify-between">
+            <div className={`space-y-1 ${isOpen ? 'px-2' : 'px-1'} py-4  overflow-hidden flex-1`}>
               {navItems.map((item) => (
-                <motion.a
+                <motion.button
                   key={item.name}
-                  href={item.route}
-                  className={`flex items-center p-3 rounded-lg transition-colors ${
+                  onClick={() => {
+                    router.push(item.route);
+                    if (windowWidth < 768) {
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className={`flex items-center ${isOpen ? 'justify-start' : 'justify-center'} p-3 rounded-lg transition-colors w-full text-left ${
                     isActive(item.route)
                       ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
                       : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                   }`}
-                  whileHover={{ x: 5 }}
+                  whileHover={isOpen ? { x: 5 } : { scale: 1.1 }}
                 >
                   <span className="text-gray-600 dark:text-gray-300">
                     {item.icon}
@@ -289,13 +330,13 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                       <FaChevronRight className="text-gray-500" />
                     </motion.span>
                   )}
-                </motion.a>
+                </motion.button>
               ))}
             </div>
 
-            <div className="p-4 border-t  border-gray-200 dark:border-gray-700">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="flex items-center justify-between mb-4 mx-auto ">
-                <ThemeToggle/>
+                <ThemeToggle />
                 {isOpen && (
                   <motion.span
                     className="text-sm text-gray-600 dark:text-gray-300"
@@ -343,7 +384,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                   )}
                 </div>
                 {isOpen && (
-                  <div >
+                  <div>
                     <LogoutButton />
                   </div>
                 )}
