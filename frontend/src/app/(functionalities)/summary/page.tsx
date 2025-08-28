@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaRobot, FaFileAlt, FaUpload } from 'react-icons/fa';
+import { FaRobot, FaFileAlt, FaUpload, FaHistory } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/Store/userStore';
 import { useSummaryStore } from '@/lib/Store/Summary/summaryStore';
 import FileUploadComponent from '@/components/Summary/FileUploadComponent';
@@ -9,6 +10,7 @@ import ProgressIndicator from '@/components/Summary/ProgressIndicator';
 import SummaryDisplay from '@/components/Summary/SummaryDisplay';
 
 const SummaryPage = () => {
+  const router = useRouter();
   const { token } = useUserStore();
   const { 
     selectedFile, 
@@ -37,8 +39,22 @@ const SummaryPage = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8 text-center"
+          className="mb-8 text-center relative"
         >
+          {/* History Button */}
+          <motion.button
+            onClick={() => router.push('/summary/history')}
+            className="absolute top-0 right-0 flex items-center px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors duration-200 font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <FaHistory className="mr-2 text-sm" />
+            History
+          </motion.button>
+
           <div className="flex items-center justify-center mb-4">
             <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mr-4">
               <FaRobot className="text-indigo-600 dark:text-indigo-400 text-3xl" />
