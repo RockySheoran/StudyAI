@@ -10,15 +10,32 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const interviewSystemPrompts = {
   personal: `You are a professional HR interviewer conducting a personal interview. 
 
-Your goal is to assess the candidate's personality, communication skills, and cultural fit. 
-Ask relevant questions based on their resume and previous answers. Keep the interview in the personal domain only. dont ask the candidate any technical questions.
-Be professional but friendly. After 8-10 questions, provide constructive feedback including a rating (1-5), 
-strengths, and areas for improvement. The questions should be in short length, concise, and to the point.`,
-  technical: `You are a technical interviewer assessing a candidate's skills based on their resume. 
-Ask progressively challenging questions about their mentioned technologies and projects. Keep the interview in the technical domain only. dont ask the candidate any personal questions.
-Include some cross-questions to verify depth of knowledge. After 8-10 questions, 
-provide detailed feedback including a rating (1-5), technical strengths, and areas needing improvement.The questions should be in short length, concise, and to the point`
+Your goal is to assess the candidate's personality, communication skills, cultural fit, and soft skills. 
+Ask relevant questions based on their resume and previous answers. Keep the interview focused on:
+- Background and experience
+- Behavioral situations
+- Career goals and motivations
+- Team collaboration
+- Problem-solving approach
+- Leadership examples
 
+DO NOT ask technical coding questions. Be professional but friendly. 
+Ask follow-up questions based on their responses. Keep questions concise and engaging.
+When the interview concludes, provide constructive feedback.`,
+  
+  technical: `You are a senior technical interviewer assessing a candidate's technical skills and knowledge.
+
+Focus on evaluating their technical competency through:
+- Programming languages and frameworks mentioned in resume
+- System design and architecture
+- Problem-solving methodology
+- Code quality and best practices
+- Technical challenges they've faced
+- Depth of understanding in their stated technologies
+
+DO NOT ask personal or behavioral questions. Ask progressively challenging questions.
+Include follow-up questions to verify depth of knowledge.
+When the interview concludes, provide detailed technical feedback.`
 };
 
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -26,7 +43,8 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 export const generateInterviewResponse = async (
   interviewType: 'personal' | 'technical',
   conversationHistory: IInterviewMessage[],
-  resumeText: string
+  resumeText: string,
+  shouldEnd: boolean = false
 ): Promise<{ response: string; feedback?: any }> => {
   try {
     // Prepare the initial prompt that combines system instructions and resume
@@ -60,11 +78,27 @@ export const generateInterviewResponse = async (
     const response = await result.response;
     const text = response.text();
 
-    // Check if the response contains feedback (end of interview)
-    // if (text.includes('Rating:') || text.includes('Feedback:')) {
-    //   const feedback = parseFeedback(text);
-    //   return { response: text, feedback };
-    // }
+    // If this should be the final response, generate feedback
+    if (shouldEnd) {
+      const feedbackPrompt = `
+        Based on this interview conversation, please provide final feedback and end the interview.
+        Include:
+        1. A brief closing statement
+        2. Rating (1-5)
+        3. Key strengths demonstrated
+        4. Areas for improvement
+        5. Overall performance summary
+        
+        Format your response as a natural conclusion to the interview followed by structured feedback.
+      `;
+      
+      const feedbackResult = await chat.sendMessage(feedbackPrompt);
+      const feedbackResponse = await feedbackResult.response;
+      const feedbackText = feedbackResponse.text();
+      
+      const feedback = parseFeedback(feedbackText);
+      return { response: feedbackText, feedback };
+    }
 
     return { response: text };
   } catch (error) {
@@ -134,9 +168,22 @@ const parseFeedback = (text: string) => {
     .replace(/\*\*\d+\./g, '')  // Remove patterns like **4.
     .replace(/^\*\*|\*\*$/g, ''); // Remove ** at start or end of entire text
 
-  // Extract rating
-  const ratingMatch = cleanedText.match(/Rating:\s*(\d)\/5/);
-  const rating = ratingMatch ? parseInt(ratingMatch[1]) : 3;
+  // Extract rating - try multiple patterns
+  let rating = 3; // default
+  const ratingPatterns = [
+    /Rating:\s*(\d)\/5/i,
+    /Rating:\s*(\d)/i,
+    /(\d)\/5/,
+    /Score:\s*(\d)/i
+  ];
+  
+  for (const pattern of ratingPatterns) {
+    const match = cleanedText.match(pattern);
+    if (match) {
+      rating = parseInt(match[1]);
+      break;
+    }
+  }
 
   // Extract strengths - looking for bullet points under "Key Strengths Demonstrated"
   const strengthsSection = cleanedText.match(/Key Strengths Demonstrated:([\s\S]*?)(?=Areas for Improvement:|$)/i);

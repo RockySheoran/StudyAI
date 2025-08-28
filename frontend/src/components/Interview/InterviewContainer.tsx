@@ -4,13 +4,14 @@ import { feedback, IInterview } from '@/types/Interview-type';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Loader2, Mic, MicOff, Volume2, VolumeX, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useParams } from 'next/navigation';
 import { BiCaretDownCircle } from "react-icons/bi";
 import { FeedbackService } from '@/services/interviewService';
+import { motion } from 'framer-motion';
 import {
   Dialog,
   DialogContent,
@@ -131,15 +132,30 @@ export const InterviewContainer = ({
     }
   }, [inputText, onSendMessage, stopListening, stopSpeaking, resetTranscript, clearErrors]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when new messages arrive or when coming from history
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+    if (messagesEndRef.current && interview?.messages?.length) {
+      const shouldAutoScroll = showMsgBox || interview?.messages?.length > 0;
+      if (shouldAutoScroll) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
     }
-  }, [interview?.messages]);
+  }, [interview?.messages?.length, showMsgBox]);
+
+  // Auto-speak last message when coming from history with showDetails=true
+  useEffect(() => {
+    if (showMsgBox && interview?.messages?.length && !isSpeaking) {
+      const lastMessage = interview.messages[interview.messages.length - 1];
+      if (lastMessage?.role === 'assistant' && lastMessage?.content) {
+        // Small delay to ensure component is fully loaded
+        setTimeout(() => {
+          speak(lastMessage.content);
+        }, 500);
+      }
+    }
+  }, [showMsgBox, interview?.messages, speak, isSpeaking]);
 
   // Handle speaking assistant messages
   useEffect(() => {
@@ -242,7 +258,7 @@ export const InterviewContainer = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-transparent">
       {/* Feedback Modal */}
       <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -309,8 +325,8 @@ export const InterviewContainer = ({
         </DialogContent>
       </Dialog>
 
-      {/* Fixed Header - 64px height */}
-       <div className="mt-15 md:mt-0 px-2 py-1 md:p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-10">
+      {/* Enhanced Header - Fixed */}
+       <div className="flex-shrink-0 px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       {/* Mobile menu button and title */}
       <div className="md:hidden flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
@@ -465,66 +481,113 @@ export const InterviewContainer = ({
       </div>
       </div>
 
-      {/* Messages Container - Scrollable Area */}
+      {/* Enhanced Messages Container - Scrollable */}
       <div 
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 max-w-4xl w-full mx-auto"
+        className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 max-w-5xl w-full mx-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent"
       >
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-6 pb-4">
           {interview?.messages?.map((message, index) => (
-            <div 
-              key={index} 
+            <motion.div 
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(index * 0.05, 0.5) }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div className={cn(
-                "max-w-full md:max-w-[80%] rounded-lg px-4 py-2 relative",
+                "max-w-[90%] sm:max-w-[85%] lg:max-w-[80%] rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-5 py-3 sm:py-4 relative shadow-sm",
                 message.role === 'user' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-blue-200/50 dark:shadow-blue-900/30' 
+                  : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/50 dark:border-gray-700/50 shadow-gray-100/50 dark:shadow-gray-900/30'
               )}>
-                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                <p className="whitespace-pre-wrap break-words leading-relaxed text-sm sm:text-base">{message.content}</p>
+                
+                {/* Message timestamp */}
+                <div className={cn(
+                  "text-xs mt-2 opacity-70",
+                  message.role === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
+                )}>
+                  {new Date(message.timestamp).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+                
                 {message.role === 'assistant' && isSpeaking && activeMessageIndex === index && (
-                  <div className="mt-1 flex items-center space-x-1">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">Assistant is speaking...</span>
-                  </div>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-3 flex items-center space-x-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg"
+                  >
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Assistant is speaking...</span>
+                  </motion.div>
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
           
           {(isLoading || isSubmitting) && (
-            <div className="flex justify-start">
-              <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2 max-w-full md:max-w-[80%]">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Processing your response...</span>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex justify-start"
+            >
+              <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl px-3 sm:px-4 lg:px-5 py-3 sm:py-4 max-w-[90%] sm:max-w-[85%] lg:max-w-[80%] shadow-sm">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="relative">
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-blue-500" />
+                    <div className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 border-2 border-blue-200 dark:border-blue-800 rounded-full animate-pulse"></div>
+                  </div>
+                  <span className="font-medium text-sm sm:text-base">Processing your response...</span>
+                </div>
+                <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  This may take a few moments
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
+          
+          {/* Scroll anchor */}
+          <div ref={messagesEndRef} className="h-1" />
           
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Fixed Input Area - 72px height (approx) */}
+      {/* Enhanced Input Area - Fixed */}
       {(!interview.completedAt && !showMsgBox) && (
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-          <div className="max-w-4xl mx-auto">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="flex-shrink-0 p-3 sm:p-4 lg:p-6 border-t border-gray-200/50 dark:border-gray-700/50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg"
+        >
+          <div className="max-w-5xl mx-auto">
             {(error || apiError || speechError || synthesisError) && (
-              <div className="mb-2 p-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded text-sm flex justify-between items-center">
-                <span>{error || apiError || speechError || synthesisError}</span>
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm flex justify-between items-center border border-red-200 dark:border-red-800"
+              >
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{error || apiError || speechError || synthesisError}</span>
+                </div>
                 <button 
                   onClick={clearErrors}
-                  className="ml-2 font-bold text-lg hover:text-red-800 dark:hover:text-red-300"
+                  className="ml-2 p-1 hover:bg-red-100 dark:hover:bg-red-800/50 rounded transition-colors"
                   aria-label="Dismiss error"
                 >
-                  &times;
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-              </div>
+              </motion.div>
             )}
             
             <div className="relative">
@@ -532,18 +595,20 @@ export const InterviewContainer = ({
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isListening ? "Speak now (your speech will appear here)..." : "Type your response..."}
-                className="w-full p-3 pr-12 min-h-[60px] max-h-[120px] resize-none dark:bg-gray-800 dark:border-gray-700"
+                placeholder={isListening ? "🎤 Speak now (your speech will appear here)..." : "💬 Type your response or use voice input..."}
+                className="w-full p-4 pr-14 min-h-[80px] max-h-[140px] resize-none border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200 bg-white dark:bg-gray-800 text-base"
                 disabled={isSubmitting || isSpeaking || isLoading}
               />
-              <button
+              <motion.button
                 type="button"
                 onClick={toggleListening}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "absolute right-3 bottom-3 p-2 rounded-full transition-colors",
+                  "absolute right-3 bottom-3 p-3 rounded-full transition-all duration-200 shadow-lg",
                   isListening 
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200',
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-200 dark:shadow-red-900/50' 
+                    : 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-200 dark:shadow-blue-900/50',
                   (isSpeaking || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''
                 )}
                 disabled={isSpeaking || isSubmitting}
@@ -554,38 +619,54 @@ export const InterviewContainer = ({
                 ) : (
                   <Mic className="h-5 w-5" />
                 )}
-              </button>
+              </motion.button>
             </div>
 
-            <div className="flex gap-2 mt-2">
-              <Button
-                onClick={() => handleSubmit()}
-                disabled={!inputText.trim() || isSubmitting || isSpeaking || isLoading}
-                className="flex-1"
-                size="sm"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Sending...
-                  </>
-                ) : 'Send'}
-              </Button>
+            <div className="flex gap-2 flex-col sm:flex-row sm:gap-3 mt-3 sm:mt-4">
+              <motion.div className="flex-1">
+                <Button
+                  onClick={() => handleSubmit()}
+                  disabled={!inputText.trim() || isSubmitting || isSpeaking || isLoading}
+                  className="w-full h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200"
+                  size="lg"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                      Send Response
+                    </>
+                  )}
+                </Button>
+              </motion.div>
               
               {isSpeaking && (
-                <Button
-                  onClick={stopSpeaking}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   className="flex-1"
-                  variant="outline"
-                  size="sm"
-                  disabled={isSubmitting || isLoading}
                 >
-                  Stop Assistant
-                </Button>
+                  <Button
+                    onClick={stopSpeaking}
+                    className="w-full h-12 text-base font-medium"
+                    variant="outline"
+                    size="lg"
+                    disabled={isSubmitting || isLoading}
+                  >
+                    <VolumeX className="w-5 h-5 mr-2" />
+                    Stop Assistant
+                  </Button>
+                </motion.div>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
