@@ -1,10 +1,11 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaNewspaper, FaClock, FaExternalLinkAlt, FaEye } from 'react-icons/fa';
+import { FaNewspaper, FaClock, FaExternalLinkAlt, FaEye, FaHistory } from 'react-icons/fa';
+import { useUserStore } from "@/lib/Store/userStore";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { useCurrentAffairsHistoryStore } from '@/lib/Store/Current-Affairs/currentAffairsHistoryStore';
-import { useUserStore } from '@/lib/Store/userStore';
-import { useRouter } from 'next/navigation';
 
 const Current_Affairs_History: React.FC = () => {
   const router = useRouter();
@@ -48,7 +49,7 @@ const Current_Affairs_History: React.FC = () => {
     router.push('/current-affairs/history');
   };
 
-  const handleSeeMore = () => {
+  const handleSeeAll = () => {
     router.push('/current-affairs/history');
   };
 
@@ -94,13 +95,19 @@ const Current_Affairs_History: React.FC = () => {
         </div>
         
         {latestHistory.length > 0 && (
-          <button
-            onClick={handleSeeMore}
-            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            See More
-            <FaExternalLinkAlt className="text-xs" />
-          </button>
+            <Button
+              onClick={handleSeeAll}
+              variant="outline"
+              className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
+            >
+              <FaHistory className="h-4 w-4" />
+              See All
+            </Button>
+          </motion.div>
         )}
       </div>
 

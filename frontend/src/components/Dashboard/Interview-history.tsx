@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IInterview } from "@/types/Interview-type";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 export const Interview_history = () => {
     const { token } = useUserStore();
@@ -93,14 +94,17 @@ export const Interview_history = () => {
                     </div>
                     <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Error Loading Interview History</h3>
                     <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-                    <motion.button
+                    <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => token && fetchInterviews(token)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
                     >
-                        Try Again
-                    </motion.button>
+                        <Button
+                            onClick={() => token && fetchInterviews(token)}
+                            variant="destructive"
+                        >
+                            Try Again
+                        </Button>
+                    </motion.div>
                 </motion.div>
             </div>
         );
@@ -123,34 +127,41 @@ export const Interview_history = () => {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    <motion.button
+                    <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={handleRefresh}
-                        disabled={loading}
-                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                     >
-                        <motion.svg 
-                            animate={{ rotate: isRefreshing ? 360 : 0 }}
-                            transition={{ duration: 0.5, repeat: isRefreshing ? Infinity : 0 }}
-                            className="h-4 w-4" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
+                        <Button
+                            onClick={handleRefresh}
+                            disabled={loading}
+                            variant="outline"
+                            className="flex items-center gap-2"
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </motion.svg>
-                        Refresh
-                    </motion.button>
+                            <motion.svg 
+                                animate={{ rotate: isRefreshing ? 360 : 0 }}
+                                transition={{ duration: 0.5, repeat: isRefreshing ? Infinity : 0 }}
+                                className="h-4 w-4" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </motion.svg>
+                            Refresh
+                        </Button>
+                    </motion.div>
                     
-                    <motion.button
+                    <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={handleStartNew}
-                        className="bg-blue-600 hover:bg-blue-700 flex flex-row text-white px-4 py-2 rounded-lg transition-colors"
                     >
-                       <span className="hidden md:block">Start .</span> New Interview
-                    </motion.button>
+                        <Button
+                            onClick={handleStartNew}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                           <span className="hidden md:block">Start .</span> New Interview
+                        </Button>
+                    </motion.div>
                 </div>
             </motion.div>
 
@@ -172,14 +183,17 @@ export const Interview_history = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                             Start your first interview to see your history here.
                         </p>
-                        <motion.button
+                        <motion.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={handleStartNew}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
-                            Start Your First Interview
-                        </motion.button>
+                            <Button
+                                onClick={handleStartNew}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                Start Your First Interview
+                            </Button>
+                        </motion.div>
                     </motion.div>
                 ) : (
                     <motion.div 
@@ -289,17 +303,21 @@ export const Interview_history = () => {
                             transition={{ delay: 0.3 }}
                             className="text-center pt-4"
                         >
-                            <motion.button
+                            <motion.div
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={handleSeeAll}
-                                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm transition-colors"
                             >
-                                See All Interviews
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </motion.button>
+                                <Button
+                                    onClick={handleSeeAll}
+                                    variant="ghost"
+                                    className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                                >
+                                    See All Interviews
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </Button>
+                            </motion.div>
                         </motion.div>
                     </motion.div>
                 )}

@@ -6,8 +6,10 @@ import { useSummaryHistoryStore } from "@/lib/Store/History/Summary_history_stor
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function Summary_history() {
+  const router = useRouter();
   const { token } = useUserStore();
   const {
     summaries,
@@ -142,6 +144,22 @@ export default function Summary_history() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
+          {/* Go Back Button */}
+          <motion.button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 mb-6 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors font-medium"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Go Back
+          </motion.button>
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Summary History</h1>
