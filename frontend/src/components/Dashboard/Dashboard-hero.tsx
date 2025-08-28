@@ -7,30 +7,8 @@ export const Dashboard_hero = () => {
   const { name, email, avatar } = useUserStore();
   
   return (
-    <div className="bg-indigo-50 dark:bg-gray-800 transition-colors duration-300">
+    <div className=" transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header Icons */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-center mb-8"
-        >
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="p-4 bg-white dark:bg-gray-700 rounded-2xl shadow-md mr-6 border border-indigo-100 dark:border-gray-600"
-          >
-            <FaUser className="text-indigo-600 dark:text-indigo-400 text-3xl" />
-          </motion.div>
-          <div className="w-8 h-0.5 bg-indigo-300 dark:bg-gray-600 rounded-full"></div>
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="p-4 bg-white dark:bg-gray-700 rounded-2xl shadow-md ml-6 border border-blue-100 dark:border-gray-600"
-          >
-            <FaRobot className="text-blue-600 dark:text-blue-400 text-3xl" />
-          </motion.div>
-        </motion.div>
-
         {/* User Info Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
