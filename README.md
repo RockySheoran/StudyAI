@@ -1,6 +1,6 @@
 
 # 🎓 AI Personal Tutor
-
+  
 <div align="center">
 
 ![AI Personal Tutor Logo](./frontend/public/Logo.jpg)
