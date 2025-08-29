@@ -55,8 +55,8 @@ export const fetchInterview = async (id: string): Promise<IInterview> => {
   return response.data;
 };
 
-export const startInterview = async (type: 'personal' | 'technical'): Promise<IInterview> => {
-  const response = await apiClient.post('/interview/start', { type });
+export const startInterview = async (type: 'personal' | 'technical', resumeId: string | null): Promise<IInterview> => {
+  const response = await apiClient.post('/interview/start', { type, resumeId });
   return response.data;
 };
 

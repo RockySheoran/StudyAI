@@ -10,22 +10,24 @@ import { redisClient } from '../config/redis';
 
 export const startInterview = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { type } = req.body;
-
-    const userId = req.user?.id; // Assuming you have authentication middleware
+    const { type, resumeId } = req.body;
+    const userId = req.user?.id;
 
     if (!type || (type !== 'personal' && type !== 'technical')) {
       return res.status(400).json({ error: 'Invalid interview type' });
-
     }
 
+    if (!userId) {
+      return res.status(401).json({ error: 'User authentication required' });
+    }
 
-    const interview = await startInterviewService(userId!, type);
-    console.log(interview);
+    const interview = await startInterviewService(userId, type, resumeId);
     res.status(201).json(interview);
   } catch (error) {
     console.error('Error starting interview:', error);
-    res.status(500).json({ error: 'Failed to start interview' });
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Failed to start interview' 
+    });
   }
 }
 

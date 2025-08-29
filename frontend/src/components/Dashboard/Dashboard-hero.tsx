@@ -1,16 +1,29 @@
 "use client"
 import { useUserStore } from "@/lib/Store/userStore";
+import { motion } from "framer-motion";
+import { FaUser, FaRobot } from "react-icons/fa";
 
 export const Dashboard_hero = () => {
   const { name, email, avatar } = useUserStore();
   
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-4 rounded-b-3xl md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className=" transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* User Info Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 flex flex-col md:flex-row items-center transition-all duration-300 hover:shadow-xl">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 md:p-10 flex flex-col md:flex-row items-center transition-all duration-300 hover:shadow-2xl backdrop-blur-sm"
+        >
           {/* Avatar Section */}
-          <div className="h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-blue-200 to-indigo-200 dark:from-blue-700 dark:to-indigo-800 overflow-hidden mr-0 md:mr-8 mb-4 md:mb-0 flex items-center justify-center ring-4 ring-white dark:ring-gray-700 shadow-md">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            whileHover={{ scale: 1.02 }}
+            className="h-28 w-28 md:h-36 md:w-36 rounded-full bg-indigo-100 dark:bg-indigo-900/30 overflow-hidden mr-0 md:mr-10 mb-6 md:mb-0 flex items-center justify-center ring-4 ring-indigo-200 dark:ring-indigo-800 shadow-lg"
+          >
             {avatar ? (
               <img
                 src={avatar}
@@ -18,32 +31,66 @@ export const Dashboard_hero = () => {
                 alt={`${name}'s avatar`}
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-3xl md:text-4xl font-bold">
+              <div className="h-full w-full flex items-center justify-center bg-indigo-600 dark:bg-indigo-700 text-white text-4xl md:text-5xl font-bold">
                 {name ? name.charAt(0).toUpperCase() : "U"}
               </div>
             )}
-          </div>
+          </motion.div>
           
           {/* Welcome Text */}
-          <div className="text-center md:text-left">
-            <p className="text-sm md:text-base text-blue-600 dark:text-blue-400 font-medium mb-2">
-              Hello there! We're always happy to see you
-            </p>
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-800 dark:text-white">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center md:text-left flex-1"
+          >
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="text-base md:text-lg text-indigo-600 dark:text-indigo-400 font-semibold mb-3"
+            >
+              Hello there! We're always happy to see you ✨
+            </motion.p>
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight"
+            >
               Welcome back, {name || "Valued Learner"}!
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2 md:mt-3 text-sm md:text-base">
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+              className="text-gray-600 dark:text-gray-400 text-base md:text-lg mb-6"
+            >
               {email || "Ready to explore new knowledge today?"}
-            </p>
+            </motion.p>
             
             {/* Motivational Quote */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-gray-700 rounded-lg max-w-md mx-auto md:mx-0">
-              <p className="text-xs md:text-sm text-blue-700 dark:text-blue-300 italic">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.0 }}
+              className="mt-8 p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800 max-w-lg mx-auto md:mx-0 shadow-sm"
+            >
+              <div className="flex items-center mb-3">
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  <FaRobot className="text-indigo-600 dark:text-indigo-400 text-lg mr-3" />
+                </motion.div>
+                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Daily Inspiration</span>
+              </div>
+              <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 italic font-medium">
                 "Every day is a new opportunity to learn something amazing."
               </p>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
