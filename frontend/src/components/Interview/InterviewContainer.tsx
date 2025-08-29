@@ -25,6 +25,7 @@ interface InterviewContainerProps {
   interview: IInterview;
   onSendMessage: (message?: string) => Promise<void>;
   onComplete: () => void;
+  isCompleting?: boolean;
   isLoading?: boolean;
   error?: string | null;
 }
@@ -34,6 +35,7 @@ export const InterviewContainer = ({
   interview,
   onSendMessage,
   onComplete,
+  isCompleting,
   isLoading = false,
   error = null,
 }: InterviewContainerProps) => {
@@ -41,6 +43,7 @@ export const InterviewContainer = ({
   const searchParams = useSearchParams();
   const showDetails = searchParams.get('details') === 'true';
   const [showMsgBox, setShowMsgBox] = useState(showDetails);
+  const [manualSpeechEnabled, setManualSpeechEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
@@ -48,6 +51,7 @@ export const InterviewContainer = ({
   const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [activeMessageIndex, setActiveMessageIndex] = useState<number | null>(null);
+  const [spokenMessageIds, setSpokenMessageIds] = useState<Set<string>>(new Set());
   const [feedback, setFeedback] = useState<feedback>({
     rating: 0,
     suggestions: [],
@@ -144,35 +148,32 @@ export const InterviewContainer = ({
     }
   }, [interview?.messages?.length, showMsgBox]);
 
-  // Auto-speak last message when coming from history with showDetails=true
+  // Handle speaking assistant messages - single effect to prevent duplicates
   useEffect(() => {
-    if (showMsgBox && interview?.messages?.length && !isSpeaking) {
-      const lastMessage = interview.messages[interview.messages.length - 1];
-      if (lastMessage?.role === 'assistant' && lastMessage?.content) {
-        // Small delay to ensure component is fully loaded
-        setTimeout(() => {
-          speak(lastMessage.content);
-        }, 500);
-      }
-    }
-  }, [showMsgBox, interview?.messages, speak, isSpeaking]);
-
-  // Handle speaking assistant messages
-  useEffect(() => {
-    if (!interview?.messages?.length) return;
+    if (!interview?.messages?.length || !manualSpeechEnabled || isSpeaking) return;
 
     const lastMessage = interview.messages[interview.messages.length - 1];
+    const currentMessageIndex = interview.messages.length - 1;
+    const messageId = `${currentMessageIndex}-${lastMessage.timestamp || Date.now()}`;
     
-    // Only speak assistant messages that haven't been spoken yet
-    if (lastMessage.role === 'assistant' && activeMessageIndex !== interview.messages.length - 1) {
-      setActiveMessageIndex(interview.messages.length - 1);
+    // Only speak new assistant messages that haven't been spoken yet
+    if (lastMessage.role === 'assistant' && 
+        lastMessage.content?.trim() && 
+        activeMessageIndex !== currentMessageIndex &&
+        !spokenMessageIds.has(messageId)) {
+      
+      console.log('🎤 Speaking new assistant message:', messageId);
+      setActiveMessageIndex(currentMessageIndex);
+      setSpokenMessageIds(prev => new Set(prev).add(messageId));
+      
+      // Immediate speech without delay for better responsiveness
       speak(lastMessage.content).catch(err => {
         console.error('Error speaking message:', err);
         setApiError('Failed to speak response');
         toast.error('Failed to speak the response');
       });
     }
-  }, [interview?.messages, activeMessageIndex, speak]);
+  }, [interview?.messages, manualSpeechEnabled, isSpeaking, speak]);
 
   // Toggle speech recognition
   const toggleListening = useCallback(async () => {
@@ -225,6 +226,20 @@ export const InterviewContainer = ({
       }
     }
   }, [isSpeaking, stopSpeaking, speak, interview?.messages]);
+
+  // Enable continuous speech mode
+  const enableContinuousSpeech = useCallback(() => {
+    setManualSpeechEnabled(true);
+    if (interview?.messages?.length) {
+      const lastMessage = interview.messages[interview.messages.length - 1];
+      if (lastMessage.role === 'assistant') {
+        speak(lastMessage.content).catch(err => {
+          console.error('Error speaking message:', err);
+          toast.error('Failed to speak the response');
+        });
+      }
+    }
+  }, [speak, interview?.messages]);
 
   // Render feedback item with expand/collapse functionality
   const renderFeedbackItem = (type: 'suggestions' | 'strengths', item: string, index: number) => {
@@ -330,21 +345,35 @@ export const InterviewContainer = ({
       {/* Mobile menu button and title */}
       <div className="md:hidden flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold dark:text-white">
+          <h2 className="text-sm sm:text-lg font-semibold dark:text-white truncate">
             {interview.type === 'personal' ? 'Personal' : 'Technical'}
           </h2>
-          <button 
-            onClick={toggleAssistantSpeech}
-            className={cn(
-              "p-2 rounded-full transition-colors",
-              isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
-              !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={toggleAssistantSpeech}
+              className={cn(
+                "p-1.5 sm:p-2 rounded-full transition-colors",
+                isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
+                !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+              )}
+              disabled={!interview?.messages?.length}
+              aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
+            >
+              {isSpeaking ? <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" /> : <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />}
+            </button>
+            {showMsgBox && !manualSpeechEnabled && (
+              <button 
+                onClick={enableContinuousSpeech}
+                className="p-1.5 sm:p-2 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                aria-label="Enable continuous speech"
+                title="Enable auto-speech for new responses"
+              >
+                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+              </button>
             )}
-            disabled={!interview?.messages?.length}
-            aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
-          >
-            {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
+          </div>
         </div>
         
         <button
@@ -364,22 +393,36 @@ export const InterviewContainer = ({
 
       <div className="flex flex-col md:flex-row md:justify-between md:items-center">
         {/* Title and volume button for desktop */}
-        <div className="hidden md:flex items-center gap-2">
-          <h2 className="text-xl font-semibold dark:text-white">
+        <div className="hidden md:flex items-center gap-3">
+          <h2 className="text-lg lg:text-xl font-semibold dark:text-white">
             {interview.type === 'personal' ? 'Personal Interview' : 'Technical Interview'}
           </h2>
-          <button 
-            onClick={toggleAssistantSpeech}
-            className={cn(
-              "p-2 rounded-full transition-colors",
-              isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
-              !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={toggleAssistantSpeech}
+              className={cn(
+                "p-2 rounded-full transition-colors",
+                isSpeaking ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600",
+                !interview?.messages?.length ? "opacity-50 cursor-not-allowed" : ""
+              )}
+              disabled={!interview?.messages?.length}
+              aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
+            >
+              {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            {showMsgBox && !manualSpeechEnabled && (
+              <button 
+                onClick={enableContinuousSpeech}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white transition-colors text-sm font-medium"
+                aria-label="Enable continuous speech"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+                Enable Auto-Speech
+              </button>
             )}
-            disabled={!interview?.messages?.length}
-            aria-label={isSpeaking ? "Stop assistant" : "Hear last response"}
-          >
-            {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
+          </div>
         </div>
         
         {/* Mobile menu content */}
@@ -388,6 +431,14 @@ export const InterviewContainer = ({
             {showMsgBox ? (
               <div className="flex flex-col space-y-2">
                 <span className="text-sm text-green-600 dark:text-green-400 py-2">Completed</span>
+                {!manualSpeechEnabled && (
+                  <Button 
+                    onClick={enableContinuousSpeech}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    Enable Auto-Speech
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   onClick={() => router.push('/interviews/history')}
@@ -401,10 +452,10 @@ export const InterviewContainer = ({
                 <Button 
                   variant="outline" 
                   onClick={onComplete}
-                  disabled={isSubmitting || isSpeaking || isLoading}
+                  disabled={isSubmitting || isSpeaking || isLoading || isCompleting}
                   className="w-full"
                 >
-                  {isSubmitting ? 'Ending...' : 'End Interview'}
+                  {isCompleting ? 'Ending...' : 'End Interview'}
                 </Button>
 
                 <Button 

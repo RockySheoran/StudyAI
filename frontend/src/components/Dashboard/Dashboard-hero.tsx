@@ -69,7 +69,6 @@ export const Dashboard_hero = () => {
               {email || "Ready to explore new knowledge today?"}
             </motion.p>
             
-            {/* Motivational Quote */}
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -83,10 +82,10 @@ export const Dashboard_hero = () => {
                 >
                   <FaRobot className="text-indigo-600 dark:text-indigo-400 text-lg mr-3" />
                 </motion.div>
-                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">Daily Inspiration</span>
+                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">StudyAI</span>
               </div>
               <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 italic font-medium">
-                "Every day is a new opportunity to learn something amazing."
+                "Explore the whole new way of studying through StudyAI."
               </p>
             </motion.div>
           </motion.div>

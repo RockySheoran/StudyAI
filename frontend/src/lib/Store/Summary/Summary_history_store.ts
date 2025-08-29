@@ -73,6 +73,7 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
           // Return cached data if available and not stale, unless force refresh
           if (!forceRefresh && summaries.length > 0 && !isDataStale()) {
             console.log("Using cached summary data");
+            setError(null);
             return;
           }
 

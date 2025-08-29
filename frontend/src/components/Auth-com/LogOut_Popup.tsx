@@ -16,6 +16,7 @@ import { Logout_Action } from "@/Actions/Auth/Logout_Action";
 import { useUserStore } from "@/lib/Store/userStore";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { performCompleteCleanup } from "@/lib/utils/storageCleanup";
 
 const LogoutButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,25 +27,42 @@ const LogoutButton = () => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    // Your logout logic here
     setIsLoading(true);
-    const res = await Logout_Action({ token: token || "" });
-    console.log("res:", res);
-    if (res.status === 200) {
+    
+    try {
+      const res = await Logout_Action({ token: token || "" });
+      console.log("res:", res);
+      
+      if (res.status === 200) {
+        // Clear all storage data when logout is successful
+        await performCompleteCleanup();
+        
+        // Clear user store
+        clearUser();
+        clearToken();
+        
+        // Close dialog
+        setIsOpen(false);
+        
+        // Show success message
+        toast.success("Logout successfully");
+        
+        // Sign out from NextAuth and redirect
+        await signOut({ redirect: true, callbackUrl: "/login" });
+        
+        // Navigate to login page
+        router.push("/login");
+      } else {
+        toast.error("Logout failed");
+        setIsOpen(false);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("An error occurred during logout");
       setIsOpen(false);
-      clearUser();
-      clearToken();
-      toast.success("Logout successfully");
-      signOut({ redirect: true, callbackUrl: "/login" });
-
-      router.push("/login");
-    } else {
-      toast.error("Logout failed");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-
-    setIsOpen(false);
-    // router.push('/login'); // If using Next.js navigation
   };
 
   return (

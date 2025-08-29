@@ -21,7 +21,7 @@ export const Quiz_Qna_History = () => {
     useEffect(() => {
         const loadHistory = async () => {
             if (!token) return;
-            await refreshHistory({ token });
+            await refreshHistory( token );
         };
         loadHistory();
     }, [refreshHistory, token]);

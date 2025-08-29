@@ -1,25 +1,29 @@
-'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaNewspaper, 
-  FaClock, 
-  FaFilter, 
-  FaSearch, 
-  FaTimes, 
+"use client";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaNewspaper,
+  FaClock,
+  FaFilter,
+  FaSearch,
+  FaTimes,
   FaChevronDown,
   FaArrowLeft,
   FaEye,
-  FaExternalLinkAlt
-} from 'react-icons/fa';
-import { useCurrentAffairsHistoryStore, CurrentAffairsHistoryItem } from '@/lib/Store/Current-Affairs/currentAffairsHistoryStore';
-import { useUserStore } from '@/lib/Store/userStore';
-import { useRouter } from 'next/navigation';
+  FaExternalLinkAlt,
+} from "react-icons/fa";
+import {
+  useCurrentAffairsHistoryStore,
+  CurrentAffairsHistoryItem,
+} from "@/lib/Store/Current-Affairs/currentAffairsHistoryStore";
+import { useUserStore } from "@/lib/Store/userStore";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface FilterState {
   search: string;
   category: string;
-  dateRange: 'all' | 'today' | 'week' | 'month';
+  dateRange: "all" | "today" | "week" | "month";
 }
 
 const CurrentAffairsFullHistory: React.FC = () => {
@@ -31,17 +35,18 @@ const CurrentAffairsFullHistory: React.FC = () => {
     currentView,
     setSelectedHistoryItem,
     setCurrentView,
-    refreshHistory
+    refreshHistory,
   } = useCurrentAffairsHistoryStore();
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
-    search: '',
-    category: 'all',
-    dateRange: 'all'
+    search: "",
+    category: "all",
+    dateRange: "all",
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -52,9 +57,9 @@ const CurrentAffairsFullHistory: React.FC = () => {
       if (token && mounted) {
         setLoading(true);
         try {
-          await refreshHistory({ token });
+          await refreshHistory(token);
         } catch (error) {
-          console.error('Failed to load current affairs history:', error);
+          console.error("Failed to load current affairs history:", error);
         } finally {
           setLoading(false);
         }
@@ -63,10 +68,26 @@ const CurrentAffairsFullHistory: React.FC = () => {
 
     loadHistory();
   }, [token, mounted, refreshHistory]);
+  const handleRefresh = async () => {
+    if (!token || isRefreshing) return;
+
+    setIsRefreshing(true);
+    try {
+      await refreshHistory(token, true);
+      toast.success("History refreshed successfully");
+    } catch (error) {
+      console.error("Error refreshing history:", error);
+      toast.error("Failed to refresh history");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Get unique categories
   const categories = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(allHistory.map(item => item.category)));
+    const uniqueCategories = Array.from(
+      new Set(allHistory.map((item) => item.category))
+    );
     return uniqueCategories.sort();
   }, [allHistory]);
 
@@ -77,34 +98,37 @@ const CurrentAffairsFullHistory: React.FC = () => {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(searchLower) ||
-        item.summary.toLowerCase().includes(searchLower) ||
-        item.category.toLowerCase().includes(searchLower)
+      filtered = filtered.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchLower) ||
+          item.summary.toLowerCase().includes(searchLower) ||
+          item.category.toLowerCase().includes(searchLower)
       );
     }
 
     // Category filter
-    if (filters.category !== 'all') {
-      filtered = filtered.filter(item => item.category === filters.category);
+    if (filters.category !== "all") {
+      filtered = filtered.filter((item) => item.category === filters.category);
     }
 
     // Date range filter
-    if (filters.dateRange !== 'all') {
+    if (filters.dateRange !== "all") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      
-      filtered = filtered.filter(item => {
+
+      filtered = filtered.filter((item) => {
         const itemDate = new Date(item.timestamp);
-        
+
         switch (filters.dateRange) {
-          case 'today':
+          case "today":
             return itemDate >= today;
-          case 'week':
+          case "week":
             const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
             return itemDate >= weekAgo;
-          case 'month':
-            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+          case "month":
+            const monthAgo = new Date(
+              today.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
             return itemDate >= monthAgo;
           default:
             return true;
@@ -112,31 +136,39 @@ const CurrentAffairsFullHistory: React.FC = () => {
       });
     }
 
-    return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   }, [allHistory, filters]);
 
   // Statistics
   const statistics = useMemo(() => {
     const totalSessions = allHistory.length;
-    const totalReadTime = allHistory.reduce((sum, item) => sum + (item.readTime || 0), 0);
-    const averageReadTime = totalSessions > 0 ? totalReadTime / totalSessions : 0;
-    const categoriesRead = new Set(allHistory.map(item => item.category)).size;
+    const totalReadTime = allHistory.reduce(
+      (sum, item) => sum + (item.readTime || 0),
+      0
+    );
+    const averageReadTime =
+      totalSessions > 0 ? totalReadTime / totalSessions : 0;
+    const categoriesRead = new Set(allHistory.map((item) => item.category))
+      .size;
 
     return {
       totalSessions,
       totalReadTime,
       averageReadTime,
-      categoriesRead
+      categoriesRead,
     };
   }, [allHistory]);
 
   const handleItemClick = (item: CurrentAffairsHistoryItem) => {
     setSelectedHistoryItem(item);
-    setCurrentView('details');
+    setCurrentView("details");
   };
 
   const handleBackToHistory = () => {
-    setCurrentView('history');
+    setCurrentView("history");
     setSelectedHistoryItem(null);
   };
 
@@ -146,24 +178,24 @@ const CurrentAffairsFullHistory: React.FC = () => {
 
   const clearFilters = () => {
     setFilters({
-      search: '',
-      category: 'all',
-      dateRange: 'all'
+      search: "",
+      category: "all",
+      dateRange: "all",
     });
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const formatReadTime = (seconds: number) => {
-    if (seconds === 0) return 'Not read';
+    if (seconds === 0) return "Not read";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     if (minutes > 0) {
@@ -186,7 +218,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
   }
 
   // Detail view for selected item
-  if (currentView === 'details' && selectedHistoryItem) {
+  if (currentView === "details" && selectedHistoryItem) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-4xl mx-auto">
@@ -214,16 +246,16 @@ const CurrentAffairsFullHistory: React.FC = () => {
                   {formatDate(selectedHistoryItem.timestamp)}
                 </div>
               </div>
-              
+
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 {selectedHistoryItem.title}
               </h1>
-              
+
               <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
-                <div className="flex items-center gap-1">
+                {/* <div className="flex items-center gap-1">
                   <FaEye className="text-xs" />
                   Read time: {formatReadTime(selectedHistoryItem.readTime || 0)}
-                </div>
+                </div> */}
                 {selectedHistoryItem.sourceUrl && (
                   <a
                     href={selectedHistoryItem.sourceUrl}
@@ -240,14 +272,18 @@ const CurrentAffairsFullHistory: React.FC = () => {
 
             <div className="prose dark:prose-invert max-w-none">
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Summary</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Summary
+                </h3>
                 <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                   {selectedHistoryItem.summary}
                 </p>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Full Content</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Full Content
+                </h3>
                 <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                   {selectedHistoryItem.fullContent}
                 </div>
@@ -269,14 +305,16 @@ const CurrentAffairsFullHistory: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between mb-8"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center flex-col sm:flex-row gap-4 justify-between w-[100%]">
+            <div className="flex items-center gap-2">
             <motion.button
               onClick={handleBackToDashboard}
               className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
               whileHover={{ x: -5 }}
             >
               <FaArrowLeft />
-              Go Back
+              <span className="hidden sm:inline">Go</span>
+              Back
             </motion.button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -286,11 +324,39 @@ const CurrentAffairsFullHistory: React.FC = () => {
                 Complete history of your current affairs reading
               </p>
             </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex justify-center items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              <motion.svg
+                animate={{ rotate: isRefreshing ? 360 : 0 }}
+                transition={{
+                  duration: 0.5,
+                  repeat: isRefreshing ? Infinity : 0,
+                }}
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </motion.svg>
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </motion.button>
           </div>
         </motion.div>
 
         {/* Statistics */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -351,7 +417,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Filters */}
         <motion.div
@@ -370,7 +436,11 @@ const CurrentAffairsFullHistory: React.FC = () => {
                 className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
               >
                 <FaFilter />
-                <FaChevronDown className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                <FaChevronDown
+                  className={`transform transition-transform ${
+                    showFilters ? "rotate-180" : ""
+                  }`}
+                />
               </button>
             </div>
 
@@ -378,7 +448,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
               {showFilters && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-4"
                 >
@@ -393,7 +463,12 @@ const CurrentAffairsFullHistory: React.FC = () => {
                         <input
                           type="text"
                           value={filters.search}
-                          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              search: e.target.value,
+                            }))
+                          }
                           className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="Search articles..."
                         />
@@ -407,12 +482,19 @@ const CurrentAffairsFullHistory: React.FC = () => {
                       </label>
                       <select
                         value={filters.category}
-                        onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            category: e.target.value,
+                          }))
+                        }
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="all">All Categories</option>
-                        {categories.map(category => (
-                          <option key={category} value={category}>{category}</option>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -424,7 +506,12 @@ const CurrentAffairsFullHistory: React.FC = () => {
                       </label>
                       <select
                         value={filters.dateRange}
-                        onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value as any }))}
+                        onChange={(e) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            dateRange: e.target.value as any,
+                          }))
+                        }
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="all">All Time</option>
@@ -486,26 +573,26 @@ const CurrentAffairsFullHistory: React.FC = () => {
                           {formatDate(item.timestamp)}
                         </div>
                       </div>
-                      
+
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                         {item.title}
                       </h3>
-                      
+
                       <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                         {item.summary}
                       </p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+
+                      {/* <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
                           <FaEye className="text-xs" />
                           Read time: {formatReadTime(item.readTime || 0)}
                         </div>
-                      </div>
+                      </div> */}
                     </div>
-                    
-                    <div className="ml-4 flex-shrink-0">
+
+                    {/* <div className="ml-4 flex-shrink-0">
                       <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    </div>
+                    </div> */}
                   </div>
                 </motion.div>
               ))
@@ -518,10 +605,11 @@ const CurrentAffairsFullHistory: React.FC = () => {
                   No Articles Found
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  {filters.search || filters.category !== 'all' || filters.dateRange !== 'all'
-                    ? 'Try adjusting your filters to see more results'
-                    : 'Start reading current affairs to see your history here'
-                  }
+                  {filters.search ||
+                  filters.category !== "all" ||
+                  filters.dateRange !== "all"
+                    ? "Try adjusting your filters to see more results"
+                    : "Start reading current affairs to see your history here"}
                 </p>
               </div>
             )}

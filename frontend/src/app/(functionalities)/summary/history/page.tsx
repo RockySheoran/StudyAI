@@ -2,7 +2,7 @@
 
 import { Delete_summary } from "@/Actions/Delete/Delete-summary";
 import { useUserStore } from "@/lib/Store/userStore";
-import { useSummaryHistoryStore } from "@/lib/Store/History/Summary_history_store";
+import { useSummaryHistoryStore } from "@/lib/Store/Summary/Summary_history_store";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +22,6 @@ export default function Summary_history() {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [deletingItems, setDeletingItems] = useState<Set<string>>(new Set());
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
 
   // Fetch summary history when token is available
   useEffect(() => {
@@ -51,30 +50,13 @@ export default function Summary_history() {
   };
 
   const toggleExpanded = (id: string) => {
-    const isExpanding = !expandedItems.has(id);
-    
-    if (isExpanding) {
-      // Only animate when expanding
-      setAnimatingItems(prev => new Set(prev).add(id));
-      
-      const newExpanded = new Set(expandedItems);
-      newExpanded.add(id);
-      setExpandedItems(newExpanded);
-      
-      // Remove from animating after animation completes
-      setTimeout(() => {
-        setAnimatingItems(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(id);
-          return newSet;
-        });
-      }, 300);
-    } else {
-      // No animation when collapsing - immediate state change
-      const newExpanded = new Set(expandedItems);
+    const newExpanded = new Set(expandedItems);
+    if (expandedItems.has(id)) {
       newExpanded.delete(id);
-      setExpandedItems(newExpanded);
+    } else {
+      newExpanded.add(id);
     }
+    setExpandedItems(newExpanded);
   };
 
   const handleDelete = async (id: string) => {
@@ -162,8 +144,8 @@ export default function Summary_history() {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Summary History</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Summary History</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
                 Manage and review all your generated summaries
               </p>
             </div>
@@ -172,7 +154,7 @@ export default function Summary_history() {
               whileTap={{ scale: 0.98 }}
               onClick={refreshHistory}
               disabled={loading}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <motion.svg 
                 animate={{ rotate: isRefreshing ? 360 : 0 }}
@@ -193,23 +175,23 @@ export default function Summary_history() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4"
+            className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
           >
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{summaries.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Total Summaries</div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{summaries.length}</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Summaries</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
                 {summaries.filter(s => s.status === 'completed').length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Completed</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Completed</div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                 {summaries.filter(s => s.status === 'pending').length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Pending</div>
             </div>
           </motion.div>
         </motion.div>
@@ -284,7 +266,6 @@ export default function Summary_history() {
               {summaries.map((summary) => {
                 const isExpanded = expandedItems.has(summary._id);
                 const isDeleting = deletingItems.has(summary._id);
-                const isAnimating = animatingItems.has(summary._id);
                 const truncatedContent = summary?.content?.length > 200 
                   ? `${summary?.content?.substring(0, 200)}...` 
                   : summary?.content;
@@ -292,68 +273,50 @@ export default function Summary_history() {
                 return (
                   <motion.div
                     key={summary._id}
-                    layout
-                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                    animate={{ 
-                      opacity: isDeleting ? 0.6 : 1, 
-                      y: 0, 
-                      scale: 1,
-                    }}
-                    exit={{ 
-                      opacity: 0, 
-                      scale: 0.95,
-                      transition: { duration: 0.2 }
-                    }}
-                    transition={{ 
-                      duration: 0.3,
-                      ease: "easeOut",
-                      layout: { 
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 30,
-                        duration: 0.3
-                      }
-                    }}
-                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                  
+                    
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden mx-2 sm:mx-0"
                   >
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       {/* Header */}
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
                         <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2 flex-wrap">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(summary.status)}`}>
+                          <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                            <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(summary.status)}`}>
                               {summary.status.charAt(0).toUpperCase() + summary.status.slice(1)}
                             </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                               {formatDate(summary.generatedAt)}
                             </span>
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-all">
                             ID: {summary._id}
                           </div>
                         </div>
                         
                         {/* Action Buttons */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => toggleExpanded(summary._id)}
-                            className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-3 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
+                            className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-2 sm:px-3 py-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors text-xs sm:text-sm font-medium"
                           >
                             {isExpanded ? (
                               <>
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                                 </svg>
-                                Show Less
+                                <span className="hidden sm:inline">Show Less</span>
+                                <span className="sm:hidden">Less</span>
                               </>
                             ) : (
                               <>
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
-                                See More
+                                <span className="hidden sm:inline">See More</span>
+                                <span className="sm:hidden">More</span>
                               </>
                             )}
                           </motion.button>
@@ -363,23 +326,23 @@ export default function Summary_history() {
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleDelete(summary._id)}
                             disabled={isDeleting}
-                            className="flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-3 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-2 sm:px-3 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors text-xs sm:text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isDeleting ? (
                               <>
                                 <motion.div 
                                   animate={{ rotate: 360 }}
                                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                  className="rounded-full h-4 w-4 border-b-2 border-red-600"
+                                  className="rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-red-600"
                                 ></motion.div>
-                                Deleting...
+                                <span className="hidden sm:inline">Deleting...</span>
                               </>
                             ) : (
                               <>
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                Delete
+                                <span className="hidden sm:inline">Delete</span>
                               </>
                             )}
                           </motion.button>
@@ -387,33 +350,19 @@ export default function Summary_history() {
                       </div>
                       
                       {/* Content */}
-                      <div className="relative bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                        {/* Only animate when expanding, not when collapsing */}
-                        {isAnimating ? (
-                          <motion.div 
-                            initial={{ height: 100 }}
-                            animate={{ height: 'auto' }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                          >
-                            <div className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                              {summary?.content}
-                            </div>
-                          </motion.div>
-                        ) : (
-                          <div 
-                            className="overflow-hidden"
-                            style={{ height: isExpanded ? 'auto' : '100px' }}
-                          >
-                            <div className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                              {isExpanded ? summary?.content : truncatedContent}
-                            </div>
+                      <div className="relative bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4">
+                        <div 
+                          className="overflow-hidden transition-all duration-200 ease-in-out"
+                          style={{ height: isExpanded ? 'auto' : '100px' }}
+                        >
+                          <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
+                            {isExpanded ? summary?.content : truncatedContent}
                           </div>
-                        )}
+                        </div>
                         
                         {/* Gradient fade for truncated content */}
                         {!isExpanded && summary?.content?.length > 200 && (
-                          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-700 pointer-events-none" />
+                          <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-gradient-to-t from-gray-50 to-transparent dark:from-gray-700 pointer-events-none" />
                         )}
                       </div>
                     </div>

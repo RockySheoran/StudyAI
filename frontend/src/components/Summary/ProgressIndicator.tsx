@@ -125,17 +125,32 @@ const ProgressIndicator: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+          className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
         >
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-red-600 dark:text-red-400 flex-1">{error}</p>
+          <div className="flex items-start space-x-3">
+            <FaTimesCircle className="text-red-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h4 className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
+                Processing Failed
+              </h4>
+              <p className="text-sm text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+              
+              {/* Special handling for large file errors */}
+              {error.includes('too large') && (
+                <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                    💡 <strong>Tip:</strong> Try uploading a smaller document (under 50 pages) for faster processing.
+                  </p>
+                </div>
+              )}
+            </div>
             <motion.button
               onClick={() => window.location.reload()}
-              className="ml-3 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"
+              className="px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200 flex-shrink-0"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              Refresh Page
+              Try Again
             </motion.button>
           </div>
         </motion.div>

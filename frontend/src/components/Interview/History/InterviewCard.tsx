@@ -160,7 +160,7 @@ const InterviewCard: React.FC<InterviewCardProps> = ({
             </Button>
           ) : (
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              No feedback yet
+              No feedback available
             </div>
           )}
           <Button

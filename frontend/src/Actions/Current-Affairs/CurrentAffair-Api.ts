@@ -35,8 +35,7 @@ export const fetchHistory = async (page: number = 1, token?: string): Promise<Cu
   }
   
   console.log(token , "token from store");
-  console.log(API_BASE_URL);
-  console.log("11")
+
   try {
     const response = await axios.get(`${API_BASE_URL}/current-affairs/history`, {
       params: { page },
@@ -45,7 +44,6 @@ export const fetchHistory = async (page: number = 1, token?: string): Promise<Cu
     console.log(response.data);
     return response.data;
   } catch (error:any) {
-    console.log(error.response.data);
     throw error;
   }
 };

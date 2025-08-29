@@ -40,6 +40,7 @@ export const checkSummaryStatus = async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
     const status = await getSummaryStatus(fileId);
+    console.log(status,"statusassdfdgsfdgsrdgdsfgdsfggsfdggf")
 
     if (status.status === 'not_found') {
       return res.json({status: 'failed', error: 'File or summary not found' });

@@ -1,11 +1,12 @@
 "use client";
-import { useSummaryHistoryStore } from "@/lib/Store/History/Summary_history_store";
+import { useSummaryHistoryStore } from "@/lib/Store/Summary/Summary_history_store";
 import { useUserStore } from "@/lib/Store/userStore";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FaFileAlt, FaHistory } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 export const Summary_history = () => {
     const { token } = useUserStore();
@@ -24,7 +25,7 @@ export const Summary_history = () => {
     }, [token, fetchSummaries]);
 
     // Get only the latest 3 summaries for dashboard
-    const recentSummaries = summaries.slice(0, 3);
+    const recentSummaries = summaries.slice(0, 2);
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString('en-US', {
@@ -68,27 +69,27 @@ export const Summary_history = () => {
         );
     }
 
-    // if (error) {
-    //     return (
-    //         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-    //             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
-    //                 <div className="text-red-600 dark:text-red-400 mb-4">
-    //                     <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    //                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-    //                     </svg>
-    //                 </div>
-    //                 <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Error Loading Summary History</h3>
-    //                 <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-    //                 <button
-    //                     onClick={() => token && fetchSummaries(token)}
-    //                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-    //                 >
-    //                     Try Again
-    //                 </button>
-    //             </div>
-    //         </div>
-    //     );
-    // }
+    if (error) {
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+                    <div className="text-red-600 dark:text-red-400 mb-4">
+                        <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Error Loading Summary History</h3>
+                    <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+                    <button
+                        onClick={() => token && fetchSummaries(token)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -104,7 +105,7 @@ export const Summary_history = () => {
                         <FaFileAlt className="text-indigo-600 dark:text-indigo-400 text-lg" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Summaries</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Summary History</h2>
                         <p className="text-gray-600 dark:text-gray-400 mt-1">
                             Your latest {recentSummaries.length} summaries
                         </p>
@@ -118,11 +119,12 @@ export const Summary_history = () => {
                     >
                         <Button
                             onClick={handleSeeAll}
-                            variant="outline"
-                            className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
-                        >
-                            <FaHistory className="h-4 w-4" />
-                            See All
+                            variant="ghost"
+                            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
+                          >
+                          
+                            See More
+                            <ExternalLink className="w-4 h-4" />
                         </Button>
                     </motion.div>
                 )}

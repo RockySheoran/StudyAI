@@ -1,5 +1,6 @@
 // frontend/src/components/Quiz-Qna/Qna/QnAQuestions.tsx
 import { QnAData } from '@/types/Qna-Quiz/qna';
+import { Loader2 } from 'lucide-react';
 
 interface QnAQuestionsProps {
   qnaData: QnAData;
@@ -83,7 +84,7 @@ export default function QnAQuestions({
           Cancel
         </button>
         
-        <div className="space-x-2">
+        <div className="space-x-2 flex">
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
@@ -105,7 +106,7 @@ export default function QnAQuestions({
               disabled={loading}
               className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors duration-200"
             >
-              {loading ? 'Submitting...' : 'Submit Answers'}
+              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : 'Submit'}
             </button>
           )}
         </div>

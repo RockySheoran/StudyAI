@@ -26,7 +26,7 @@ interface CurrentAffairsHistoryState {
   setSelectedHistoryItem: (item: CurrentAffairsHistoryItem | null) => void;
   setCurrentView: (view: 'history' | 'details') => void;
   getLatestHistory: (count?: number) => CurrentAffairsHistoryItem[];
-  refreshHistory: (params: {token: string}) => Promise<void>;
+  refreshHistory: (token: string,refresh?: boolean) => Promise<void>;
   addToHistory: (affair: CurrentAffair, readTime?: number) => void;
   clearAllHistory: () => void;
 }
@@ -60,13 +60,13 @@ export const useCurrentAffairsHistoryStore = create<CurrentAffairsHistoryState>(
             .slice(0, count);
         },
 
-        refreshHistory: async ({token}: {token: string}) => {
+        refreshHistory: async (token,refresh=false) => {
           if (!token) {
             return;
           }
 
           // Check if we already have data to avoid unnecessary API calls
-          if (get().allHistory?.length > 0) {
+          if (get().allHistory?.length > 0 && !refresh) {
             return;
           }
           

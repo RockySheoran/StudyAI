@@ -67,7 +67,7 @@ interface QuizQnAHistoryState {
   getLatestHistory: (count?: number) => HistoryItem[];
   getQuizHistory: (count?: number) => QuizHistoryItem[];
   getQnAHistory: (count?: number) => QnAHistoryItem[];
-  refreshHistory: (params: {token: string}) => Promise<void>;
+  refreshHistory: (token:string,refresh?: boolean) => Promise<void>;
   clearAllHistory: () => void;
 }
 
@@ -121,15 +121,16 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
             .slice(0, count);
         },
 
-        refreshHistory: async ({token }: {token: string}) => {
+        refreshHistory: async (token:string,refresh = false ) => {
           if(!token){
             return;
           }
-
-           if(get().allHistory?.length > 0){
-            return;
-           }
           
+          // console.log(refresh)
+          if(get().allHistory?.length > 0 && !refresh){
+            return;
+          }
+       
             // Fetch data from APIs
             const [quizResponse, qnaResponse] = await Promise.all([
               Quiz_history_get({ token }),

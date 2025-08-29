@@ -1,37 +1,6 @@
 import axios from 'axios';
-// import { promisify } from 'util';
-// import { exec } from 'child_process';
-// const execAsync = promisify(exec);
-// import fs from 'fs';
-// import path from 'path';
-// import { v4 as uuidv4 } from 'uuid';
-
-// export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
-//   try {
-//     // Download the PDF
-//     const response = await axios.get(pdfUrl, { responseType: 'arraybuffer' });
-//     const tempDir = path.join(__dirname, '../../temp');
-//     if (!fs.existsSync(tempDir)) {
-//       fs.mkdirSync(tempDir, { recursive: true });
-//     }
-
-//     const tempFilePath = path.join(tempDir, `${uuidv4()}.pdf`);
-//     fs.writeFileSync(tempFilePath, response.data);
-
-//     // Use pdftotext to extract text (ensure pdftotext is installed on your system)
-//     const { stdout } = await execAsync(`pdftotext "${tempFilePath}" -`);
-
-//     // Clean up
-//     fs.unlinkSync(tempFilePath);
-
-//     return stdout;
-//   } catch (error) {
-//     console.error('Error extracting text from PDF:', error);
-//     throw error;
-//   }
-// };
-
 import pdf from 'pdf-parse';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
 export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
   try {
@@ -41,6 +10,23 @@ export const extractTextFromPdf = async (pdfUrl: string): Promise<string> => {
     return data.text;
   } catch (error) {
     console.error('Error extracting text from PDF:', error);
+    throw error;
+  }
+};
+
+export const chunkTextForProcessing = async (text: string): Promise<string[]> => {
+  try {
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 4000, // Optimal size for Gemini processing
+      chunkOverlap: 200, // Overlap to maintain context between chunks
+      separators: ['\n\n', '\n', '. ', '! ', '? ', ' ', ''], // Smart splitting on natural boundaries
+    });
+
+    const chunks = await textSplitter.splitText(text);
+    console.log(`Text split into ${chunks.length} chunks`);
+    return chunks;
+  } catch (error) {
+    console.error('Error chunking text:', error);
     throw error;
   }
 };

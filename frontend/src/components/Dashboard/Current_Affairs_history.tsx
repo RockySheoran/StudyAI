@@ -1,11 +1,18 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaNewspaper, FaClock, FaExternalLinkAlt, FaEye, FaHistory } from 'react-icons/fa';
+"use client";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  FaNewspaper,
+  FaClock,
+  FaExternalLinkAlt,
+  FaEye,
+  FaHistory,
+} from "react-icons/fa";
 import { useUserStore } from "@/lib/Store/userStore";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useCurrentAffairsHistoryStore } from '@/lib/Store/Current-Affairs/currentAffairsHistoryStore';
+import { useCurrentAffairsHistoryStore } from "@/lib/Store/Current-Affairs/currentAffairsHistoryStore";
+import { ExternalLink } from "lucide-react";
 
 const Current_Affairs_History: React.FC = () => {
   const router = useRouter();
@@ -14,7 +21,7 @@ const Current_Affairs_History: React.FC = () => {
     getLatestHistory,
     refreshHistory,
     setSelectedHistoryItem,
-    setCurrentView
+    setCurrentView,
   } = useCurrentAffairsHistoryStore();
 
   const [mounted, setMounted] = useState(false);
@@ -29,9 +36,9 @@ const Current_Affairs_History: React.FC = () => {
       if (token && mounted) {
         setLoading(true);
         try {
-          await refreshHistory({ token });
+          await refreshHistory(token);
         } catch (error) {
-          console.error('Failed to load current affairs history:', error);
+          console.error("Failed to load current affairs history:", error);
         } finally {
           setLoading(false);
         }
@@ -45,25 +52,25 @@ const Current_Affairs_History: React.FC = () => {
 
   const handleItemClick = (item: any) => {
     setSelectedHistoryItem(item);
-    setCurrentView('details');
-    router.push('/current-affairs/history');
+    setCurrentView("details");
+    router.push("/current-affairs/history");
   };
 
   const handleSeeAll = () => {
-    router.push('/current-affairs/history');
+    router.push("/current-affairs/history");
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getReadTimeDisplay = (readTime?: number) => {
-    if (!readTime || readTime === 0) return 'Not read';
+    if (!readTime || readTime === 0) return "Not read";
     const minutes = Math.floor(readTime / 60);
     const seconds = readTime % 60;
     if (minutes > 0) {
@@ -93,19 +100,16 @@ const Current_Affairs_History: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         {latestHistory.length > 0 && (
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               onClick={handleSeeAll}
-              variant="outline"
-              className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
+              variant="ghost"
+              className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
             >
-              <FaHistory className="h-4 w-4" />
-              See All
+              See More
+              <ExternalLink className="w-4 h-4" />
             </Button>
           </motion.div>
         )}
@@ -141,15 +145,15 @@ const Current_Affairs_History: React.FC = () => {
                       {formatDate(item.timestamp)}
                     </div>
                   </div>
-                  
+
                   <h4 className="font-medium text-gray-900 dark:text-white mb-2 line-clamp-2">
                     {item.title}
                   </h4>
-                  
+
                   <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-2">
                     {item.summary}
                   </p>
-                  
+
                   <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <FaEye className="text-xs" />
@@ -157,7 +161,7 @@ const Current_Affairs_History: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="ml-4 flex-shrink-0">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
