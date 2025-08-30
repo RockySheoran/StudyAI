@@ -59,21 +59,20 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
     });
 
     const { code, error: oauthError, error_description } = req.query;
-    const code1 = req.params.code;
-    const mainCode  = code1 || code;
-    return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
+    
+    
 
     if (oauthError) {
         console.error('OAuth callback error:', { oauthError, error_description });
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
     }
 
-    if (!mainCode || typeof mainCode !== 'string') {
-        console.error('Invalid authorization code:', mainCode);
+    if (!code || typeof code !== 'string') {
+        console.error('Invalid authorization code:', code);
         return res.redirect(`${process.env.CLIENT_URL}/login?error=invalid_auth_code`);
     }
     try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(mainCode as string);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
             console.error('OAuth callback error:', error);
             return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);
