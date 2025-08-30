@@ -21,6 +21,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
                     access_type: 'offline',
                     prompt: 'consent',
                 },
+                skipBrowserRedirect: false,
             },
         })
 
