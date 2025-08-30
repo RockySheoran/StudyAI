@@ -1,6 +1,6 @@
 "use client";
 
-import { Delete_summary } from "@/actions/Delete/Delete_summary";
+import { Delete_summary } from "@/Actions/Delete/Delete_summary";
 import { useUserStore } from "@/lib/Store/userStore";
 import { useSummaryHistoryStore } from "@/lib/Store/Summary/Summary_history_store";
 import { useState, useEffect } from "react";

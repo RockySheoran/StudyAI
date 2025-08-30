@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { ISummary } from "@/types/Summary-type";
-import { Summary_history_get } from "@/actions/Get_History/Get_summary";
+import { Summary_history_get } from "@/Actions/Get_History/Get_summary";
 
 interface SummaryHistoryState {
   summaries: ISummary[];

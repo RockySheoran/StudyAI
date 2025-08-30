@@ -1,6 +1,6 @@
 "use client";
 
-import { Token_get } from "@/actions/Auth/User_get";
+import { Token_get } from "@/Actions/Auth/User_get";
 
 import { useState, useEffect } from "react";
 import { Dashboard_hero } from "./Dashboard_hero";

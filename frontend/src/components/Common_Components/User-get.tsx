@@ -3,7 +3,7 @@
 
 import { useUserStore } from "@/lib/Store/userStore";
 import { useEffect } from "react";
-import { GetMe_action } from "@/actions/Auth/GetMe_action";
+import { GetMe_action } from "@/Actions/Auth/GetMe_action";
 import { toast } from "sonner";
 
 const User_get = ({ initialToken, loading, setLoading }: { initialToken?: string, loading?: boolean, setLoading: (loading: boolean) => void }) => {
