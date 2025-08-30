@@ -1,9 +1,9 @@
 
-# 🎓 AI Personal Tutor
+# 🎓 StudyAI
 
 <div align="center">
 
-![AI Personal Tutor Logo](./frontend/public/Logo.jpg)
+<!-- ![AI Personal Tutor Logo](./frontend/public/Logo.jpg) -->
 
 **An intelligent learning companion powered by AI to enhance your educational journey**
 
@@ -14,7 +14,7 @@
 [![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
+[![Gemini](https://img.shields.io/badge/Gemini-412991?style=for-the-badge&logo=openai&logoColor=white)](https://gemini.com/)
 
 </div>
 
@@ -72,7 +72,7 @@ AI Personal Tutor/
 ### Frontend Stack
 - **Framework**: Next.js 15.4.2 with React 19
 - **Styling**: Tailwind CSS with custom components
-- **UI Components**: Radix UI, Material-UI
+- **UI Components**: Shadcn UI
 - **Animations**: Framer Motion
 - **State Management**: Zustand
 - **Authentication**: NextAuth.js
@@ -84,8 +84,7 @@ AI Personal Tutor/
 - **Database**: MongoDB with Mongoose
 - **Cache**: Redis
 - **Authentication**: JWT with bcrypt
-- **File Storage**: AWS S3
-- **AI Integration**: OpenAI API, LangChain
+- **AI Integration**: Gemini API
 - **Security**: Helmet, CORS, Rate Limiting
 
 ## 🚀 Getting Started
@@ -96,9 +95,8 @@ AI Personal Tutor/
 - **npm** or **yarn**
 - **MongoDB** instance
 - **Redis** server
-- **OpenAI API** key
+- **Gemini API** key
 - **Supabase** account (optional)
-- **AWS S3** credentials (for file storage)
 
 ### Installation
 
@@ -155,7 +153,7 @@ SUPABASE_ANON_KEY=your_supabase_anon_key
 PORT=5002
 FRONTEND_URL=http://localhost:3000
 MONGODB_URI=your_mongodb_connection_string
-OPENAI_API_KEY=your_openai_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 #### Interview Microservice
@@ -163,11 +161,7 @@ OPENAI_API_KEY=your_openai_api_key
 PORT=5003
 CLIENT_URL=http://localhost:3000
 REDIS_URL=your_redis_connection_string
-OPENAI_API_KEY=your_openai_api_key
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_REGION=your_aws_region
-AWS_S3_BUCKET=your_s3_bucket_name
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 #### Frontend
