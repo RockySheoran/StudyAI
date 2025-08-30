@@ -58,39 +58,52 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         url: req.url
     });
 
-    const { code, error: oauthError, error_description } = req.query;
+    const { code, access_token, refresh_token, error: oauthError, error_description } = req.query;
     
-    
-
     if (oauthError) {
         console.error('OAuth callback error:', { oauthError, error_description });
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
     }
 
-    if (!code || typeof code !== 'string') {
-        console.error('Invalid authorization code:', code);
-        return res.redirect(`${process.env.CLIENT_URL}/login?error=invalid_auth_code`);
+    // Handle both code flow and implicit flow
+    if (!code && !access_token) {
+        console.error('No authorization code or access token received');
+        return res.redirect(`${process.env.CLIENT_URL}/login?error=invalid_auth_response`);
     }
+
     try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-            console.error('OAuth callback error:', error);
-            return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);
+        let sessionData;
+        let userData;
+
+        if (code && typeof code === 'string') {
+            // PKCE flow - exchange code for session
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) {
+                console.error('OAuth callback error:', error);
+                return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);
+            }
+            sessionData = data;
+            userData = data.user;
+        } else if (access_token && typeof access_token === 'string') {
+            // Implicit flow - get user from access token
+            const { data: userResponse, error: userError } = await supabase.auth.getUser(access_token);
+            if (userError || !userResponse.user) {
+                console.error('Failed to get user from access token:', userError);
+                return res.redirect(`${process.env.CLIENT_URL}/login?error=user_not_found`);
+            }
+            userData = userResponse.user;
+            sessionData = { user: userData };
         }
 
-        const { data: userData, error: userError } = await supabase.auth.getUser(data.session.access_token);
-
-        if (userError || !userData.user) {
-            console.error('Failed to get user:', userError);
+        if (!userData) {
+            console.error('No user data available');
             return res.redirect(`${process.env.CLIENT_URL}/login?error=user_not_found`);
         }
-        let user = userData.user;
 
 
 
         const token = generateToken({
-            email: data.user.email || "", id: data.user.id
-
+            email: userData.email || "", id: userData.id
         });
         //  console.log(token)
         res.cookie('token', token, {

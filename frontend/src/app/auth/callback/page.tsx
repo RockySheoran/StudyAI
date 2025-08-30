@@ -8,16 +8,20 @@ export default function AuthCallback() {
 
     useEffect(() => {
         const handleCallback = async () => {
-            // Get code from URL (either as query param or hash)
+            // Get parameters from URL (either as query param or hash fragment)
             const urlParams = new URLSearchParams(window.location.search);
             const hashParams = new URLSearchParams(window.location.hash.substring(1));
             
             const code = urlParams.get('code') || hashParams.get('code');
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
             const error = urlParams.get('error') || hashParams.get('error');
             const errorDescription = urlParams.get('error_description') || hashParams.get('error_description');
 
             console.log('Frontend callback received:', { 
-                code: code ? 'present' : 'missing', 
+                code: code ? 'present' : 'missing',
+                accessToken: accessToken ? 'present' : 'missing',
+                refreshToken: refreshToken ? 'present' : 'missing',
                 error, 
                 errorDescription,
                 fullUrl: window.location.href 
@@ -29,21 +33,34 @@ export default function AuthCallback() {
                 return;
             }
 
-            if (!code) {
-                console.error('No authorization code received');
-                router.push('/login?error=invalid_auth_code');
+            // Handle both code flow and implicit flow (access_token)
+            if (!code && !accessToken) {
+                console.error('No authorization code or access token received');
+                router.push('/login?error=invalid_auth_response');
                 return;
             }
 
             try {
-                // Forward the callback to your backend
                 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://study-ai-mpot.vercel.app');
-                const callbackUrl = `${backendUrl}/api/auth/callback?code=${code}`;
+                
+                let callbackUrl;
+                if (code) {
+                    // PKCE flow with authorization code
+                    callbackUrl = `${backendUrl}/api/auth/callback?code=${code}`;
+                } else if (accessToken) {
+                    // Implicit flow with access token
+                    callbackUrl = `${backendUrl}/api/auth/callback?access_token=${accessToken}`;
+                    if (refreshToken) {
+                        callbackUrl += `&refresh_token=${refreshToken}`;
+                    }
+                }
                 
                 console.log('Forwarding to backend callback:', callbackUrl);
                 
                 // Use window.location to ensure cookies are set properly
-                window.location.href = callbackUrl;
+                if (callbackUrl) {
+                    window.location.href = callbackUrl;
+                }
                 
             } catch (error) {
                 console.error('Callback forwarding error:', error);
