@@ -124,10 +124,11 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         console.log('JWT token generated successfully');
         //  console.log(token)
         // Try multiple cookie strategies for cross-domain compatibility
+        const frontendDomain = process.env.CLIENT_URL;
         const cookieOptions = {
             secure: true,
-            Domain:process.env.CLIENT_URL ,
-            sameSite: 'none' as const,
+            domain: frontendDomain,
+            sameSite: 'lax' as const,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: '/',
         };
@@ -144,7 +145,6 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         res.cookie('auth-token', token, cookieOptions);
 
         // Also try setting with explicit domain
-        const frontendDomain = process.env.CLIENT_URL?.replace(/https?:\/\//, '').replace(/:\d+$/, '');
         if (frontendDomain) {
             res.cookie('auth-token-domain', token, {
                 ...cookieOptions,
