@@ -37,7 +37,7 @@ export default function AuthCallback() {
 
             try {
                 // Forward the callback to your backend
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://study-ai-mpot.vercel.app';
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://study-ai-mpot.vercel.app');
                 const callbackUrl = `${backendUrl}/api/auth/callback?code=${code}`;
                 
                 console.log('Forwarding to backend callback:', callbackUrl);
