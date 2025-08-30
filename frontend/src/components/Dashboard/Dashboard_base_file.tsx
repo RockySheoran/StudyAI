@@ -20,10 +20,30 @@ export const Dashboard_base_file = () => {
       try {
         if (token) {
           setLoading(false);
-        } else {
-          const fetchedToken = await Token_get();
-          setToken(fetchedToken ?? null);
-          }
+          return;
+        }
+
+        // Check for token in URL parameters (OAuth fallback)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlToken = urlParams.get('token');
+        
+        if (urlToken) {
+          console.log('Found token in URL parameters');
+          setToken(urlToken);
+          
+          // Clean up URL by removing token parameter
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('token');
+          newUrl.searchParams.delete('auth');
+          window.history.replaceState({}, '', newUrl.toString());
+          
+          setLoading(false);
+          return;
+        }
+
+        // Fallback to server-side token retrieval
+        const fetchedToken = await Token_get();
+        setToken(fetchedToken ?? null);
       } catch (error) {
         console.error("Error fetching token:", error);
       } finally {

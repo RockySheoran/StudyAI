@@ -122,30 +122,54 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         });
         console.log('JWT token generated successfully');
         //  console.log(token)
+        // Try multiple cookie strategies for cross-domain compatibility
         const cookieOptions = {
-            secure: true, // Always true for production HTTPS
-            sameSite: 'none' as const, // Required for cross-domain
+            secure: true,
+            sameSite: 'none' as const,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: '/',
         };
 
         console.log('Setting cookies with options:', cookieOptions);
 
+        // Set httpOnly cookie for server-side access
         res.cookie('token', token, {
             ...cookieOptions,
             httpOnly: true,
         });
+
+        // Set non-httpOnly cookie for client-side access
         res.cookie('auth-token', token, cookieOptions);
 
+        // Also try setting with explicit domain
+        const frontendDomain = process.env.CLIENT_URL?.replace(/https?:\/\//, '').replace(/:\d+$/, '');
+        if (frontendDomain) {
+            res.cookie('auth-token-domain', token, {
+                ...cookieOptions,
+                domain: `.${frontendDomain}`,
+            });
+        }
+
+        // Set a simple test cookie to verify cookie setting works
+        res.cookie('test-cookie', 'working', {
+            secure: true,
+            sameSite: 'none' as const,
+            maxAge: 60000, // 1 minute
+            path: '/',
+        });
+
         console.log('Cookies set successfully, redirecting to dashboard');
-        console.log('Redirect URL:', `${process.env.CLIENT_URL}/dashboard`);
+        
+        // Fallback: Pass token in URL if cookies fail
+        const redirectUrl = `${process.env.CLIENT_URL}/dashboard?token=${encodeURIComponent(token)}&auth=success`;
+        console.log('Redirect URL:', redirectUrl);
 
         // Set additional headers for better redirect handling
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');
 
-        return res.redirect(302, `${process.env.CLIENT_URL}/dashboard`);
+        return res.redirect(302, redirectUrl);
     } catch (error: any) {
         console.error('OAuth callback error:', error);
         console.error('Error stack:', error.stack);
