@@ -51,6 +51,12 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
 
 
 export const Login_callback = async (req: Request, res: Response): Promise<any> => {
+    console.log('OAuth callback received:', {
+        query: req.query,
+        headers: req.headers,
+        url: req.url
+    });
+
     const { code, error: oauthError, error_description } = req.query;
 
     if (oauthError) {
@@ -84,29 +90,24 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
 
         });
         //  console.log(token)
-        // res.cookie('token', token, {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
-        //     sameSite: 'lax',
-        // });
-        res.cookie('token', token, {
+        // Cookie configuration for cross-domain production deployment
+        const cookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true, // Always secure for production
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: 'lax',
-
+            sameSite: 'none' as const, // Required for cross-domain cookies
             path: '/',
-        });
+        };
 
-        // Set additional cookie for Next.js middleware if needed
-        res.cookie('auth-token', token, {
-            secure: process.env.NODE_ENV === 'production',
+        const publicCookieOptions = {
+            secure: true, // Always secure for production
             maxAge: 7 * 24 * 60 * 60 * 1000,
-            sameSite: 'lax',
+            sameSite: 'none' as const, // Required for cross-domain cookies
             path: '/',
+        };
 
-        });
+        res.cookie('token', token, cookieOptions);
+        res.cookie('auth-token', token, publicCookieOptions);
         // let user_Login_Data = {
         //     id: data.user.id,
         //     email: data.user.email,

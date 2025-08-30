@@ -22,12 +22,17 @@ app.use(cookieParser());
 app.use(helmet())
 
 
-// cores integration
+// CORS configuration for production deployment
 app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: [
+        process.env.CLIENT_URL || "http://localhost:3000",
+        "https://study-ai-assist.vercel.app", // Add your frontend domain
+        /\.vercel\.app$/, // Allow all Vercel app domains
+    ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
 }))
 
 // express rate limit 
