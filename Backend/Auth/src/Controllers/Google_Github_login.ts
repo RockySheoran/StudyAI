@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { supabase } from "../Config/supabaseClient";
 import { generateToken } from "../Utils/generateToken";
+import { Domain } from "domain";
 
 export const Google_Github_login = async (req: Request, res: Response): Promise<any> => {
 
@@ -125,6 +126,7 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         // Try multiple cookie strategies for cross-domain compatibility
         const cookieOptions = {
             secure: true,
+            Domain:process.env.CLIENT_URL ,
             sameSite: 'none' as const,
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: '/',
