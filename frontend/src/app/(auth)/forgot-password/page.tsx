@@ -22,6 +22,8 @@ export default function ForgotPassword() {
     setIsSubmitted(true);
   };
 
+
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 dark:bg-[#0a0a12] bg-gray-50">
       <div className="w-full max-w-md p-8 rounded-xl shadow-lg dark:bg-[#161626] bg-white dark:text-gray-100 text-gray-900">
