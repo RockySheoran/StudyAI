@@ -16,7 +16,7 @@ export const Google_Github_login = async (req: Request, res: Response): Promise<
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: provider as 'google' | 'github',
             options: {
-                redirectTo: `${process.env.BACKEND_URL}/api/auth/callback`,
+                redirectTo: `${process.env.CLIENT_URL}/auth/callback`,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
