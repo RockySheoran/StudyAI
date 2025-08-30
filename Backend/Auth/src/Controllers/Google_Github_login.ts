@@ -55,11 +55,20 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
     console.log('OAuth callback received:', {
         query: req.query,
         headers: req.headers,
-        url: req.url
+        url: req.url,
+        method: req.method
     });
 
     const { code, access_token, refresh_token, error: oauthError, error_description } = req.query;
     
+    console.log('Extracted parameters:', {
+        code: code ? 'present' : 'missing',
+        access_token: access_token ? 'present' : 'missing',
+        refresh_token: refresh_token ? 'present' : 'missing',
+        oauthError,
+        error_description
+    });
+
     if (oauthError) {
         console.error('OAuth callback error:', { oauthError, error_description });
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error_description as string || 'OAuth failed')}`);
@@ -75,7 +84,10 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         let sessionData;
         let userData;
 
+        console.log('Processing authentication flow...');
+
         if (code && typeof code === 'string') {
+            console.log('Using PKCE flow with authorization code');
             // PKCE flow - exchange code for session
             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
             if (error) {
@@ -84,7 +96,9 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             }
             sessionData = data;
             userData = data.user;
+            console.log('PKCE flow successful, user data:', { id: userData?.id, email: userData?.email });
         } else if (access_token && typeof access_token === 'string') {
+            console.log('Using implicit flow with access token');
             // Implicit flow - get user from access token
             const { data: userResponse, error: userError } = await supabase.auth.getUser(access_token);
             if (userError || !userResponse.user) {
@@ -93,19 +107,28 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             }
             userData = userResponse.user;
             sessionData = { user: userData };
+            console.log('Implicit flow successful, user data:', { id: userData?.id, email: userData?.email });
         }
 
         if (!userData) {
-            console.error('No user data available');
+            console.error('No user data available after authentication');
             return res.redirect(`${process.env.CLIENT_URL}/login?error=user_not_found`);
         }
 
-
-
+        console.log('Generating JWT token for user:', userData.id);
         const token = generateToken({
-            email: userData.email || "", id: userData.id
+            email: userData.email || "", 
+            id: userData.id
         });
+        console.log('JWT token generated successfully');
         //  console.log(token)
+        console.log('Setting cookies with options:', {
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? undefined : undefined
+        });
+
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -119,17 +142,14 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             path: '/',
         });
-        // let user_Login_Data = {
-        //     id: data.user.id,
-        //     email: data.user.email,
-        //     name: data.user.user_metadata.name,
-        //     accessToken: token
-        // }
+
+        console.log('Cookies set successfully, redirecting to dashboard');
+        console.log('Redirect URL:', `${process.env.CLIENT_URL}/dashboard`);
 
         return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
-        // return res.status(200).json({ message: "Login successful", user_Login_Data });
     } catch (error: any) {
         console.error('OAuth callback error:', error);
+        console.error('Error stack:', error.stack);
         return res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(error.message)}`);
     }
 }
