@@ -1,7 +1,7 @@
 import { Dashboard_hero } from "./Dashboard_hero";
 import { Interview_history } from "./Interview_history";
 import { Summary_history   } from "./Summary_history";
-import { Quiz_Qna_History } from "./Quiz_Qna_history";
+import { Quiz_Qna_History } from "./Quiz_Qna_History";
 import { Topic_History } from "./Topic_history";
 import Current_Affairs_History from "./Current_Affairs_history";
 import { motion } from "framer-motion";
