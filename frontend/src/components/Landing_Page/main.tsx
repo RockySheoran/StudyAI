@@ -2,7 +2,8 @@
 import Header from "./header";
 import FeaturesSection from "./feature_section";
 import Footer from "./footer";
-import { ThemeToggle } from "../common-Components/Theme-toggle";
+import { ThemeToggle } from "../Common_Components/Theme-toggle";
+
 export default function LandingPage() {
   
   return (

@@ -3,8 +3,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
 import { useQuizStore } from './quizStore';
 import { useQnAStore } from './qnaStore';
-import { Quiz_history_get } from '@/Actions/Get-History/Get_Quiz_history';
-import { Qna_history_get } from '@/Actions/Get-History/Get_Qna_history';
+import { Quiz_history_get } from '@/actions/Get_History/Get_Quiz_history';
+import { Qna_history_get } from '@/actions/Get_History/Get_Qna_history';
 
 export interface QuizResult {
   question: string;

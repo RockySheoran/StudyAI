@@ -1,13 +1,14 @@
 "use client";
 
-import { Token_get } from "@/Actions/Auth/User-get";
-import User_get from "../common-Components/User-get";
+import { Token_get } from "@/actions/Auth/User_get";
+
 import { useState, useEffect } from "react";
-import { Dashboard_hero } from "./Dashboard-hero";
-import { Summary_history } from "./Summary-history";
-import { Dashboard_file_section_file_import } from "./Dashboard-file-section-file-import";
+import { Dashboard_hero } from "./Dashboard_hero";
+import { Summary_history } from "./Summary_history";
+import { Dashboard_file_section_file_import } from "./Dashboard_file_section_file_import";
 import { motion } from "framer-motion";
 import { useUserStore } from "@/lib/Store/userStore";
+import User_get from "../Common_Components/User-get";
 
 export const Dashboard_base_file = () => {
   const [loading, setLoading] = useState(true);

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { ISummary } from "@/types/Summary-type";
-import { Summary_history_get } from "@/Actions/Get-History/Get-summary";
+import { Summary_history_get } from "@/actions/Get_History/Get_summary";
 
 interface SummaryHistoryState {
   summaries: ISummary[];
@@ -71,7 +71,7 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
           const { summaries, isDataStale, setLoading, setSummaries, setError } = get();
           
           // Return cached data if available and not stale, unless force refresh
-          if (!forceRefresh && summaries.length > 0 && !isDataStale()) {
+          if (!forceRefresh && summaries.length > 0) {
             console.log("Using cached summary data");
             setError(null);
             return;

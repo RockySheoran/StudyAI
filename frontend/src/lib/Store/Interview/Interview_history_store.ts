@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { IInterview } from "@/types/Interview-type";
-import { Interview_history_get } from "@/Actions/Get-History/Get_Interview_history";
+import { Interview_history_get } from "@/actions/Get_History/Get_Interview_history";
 
 interface InterviewHistoryState {
   interviews: IInterview[];

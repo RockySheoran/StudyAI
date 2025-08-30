@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 
 import { QuizData, QuizResult } from '@/types/Qna-Quiz/quiz';
-import { api } from '@/Actions/Quiz-Qna/Quiz-Qna-api';
+import { api } from '@/actions/Quiz-Qna/Quiz_Qna_api';
 import QuizQuestions from '@/components/Quiz-Qna/Quiz/QuizQuestions';
 import QuizResults from '@/components/Quiz-Qna/Quiz/QuizResults';
 import QuizForm from '@/components/Quiz-Qna/Quiz/QuizForm';

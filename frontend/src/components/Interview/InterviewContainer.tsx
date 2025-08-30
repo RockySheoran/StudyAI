@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useParams } from 'next/navigation';
 import { BiCaretDownCircle } from "react-icons/bi";
-import { FeedbackService } from '@/services/interviewService';
+import { FeedbackService } from '@/actions/Interview/interviewService';
 import { motion } from 'framer-motion';
 import {
   Dialog,

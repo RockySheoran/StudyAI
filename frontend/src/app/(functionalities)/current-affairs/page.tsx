@@ -1,4 +1,4 @@
-import CurrentAffairs from "@/components/Current-Affairs/CurrentAffairs"
+import CurrentAffairs from "@/components/Current_Affairs/CurrentAffairs"
 const page = () => {
     return (
         <div>

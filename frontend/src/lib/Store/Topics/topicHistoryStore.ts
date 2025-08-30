@@ -1,7 +1,7 @@
 // frontend/src/lib/Store/Topics/topicHistoryStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
-const { Get_Topic_history } = await import('@/Actions/Get-History/Get_Topic_history');
+const { Get_Topic_history } = await import('@/actions/Get_History/Get_Topic_history');
 
 export interface TopicHistoryItem {
   id: string;

@@ -1,7 +1,7 @@
 // frontend/src/lib/Store/Current-Affairs/currentAffairsHistoryStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
-import { fetchHistory } from '@/Actions/Current-Affairs/CurrentAffair-Api';
+import { fetchHistory } from '@/actions/Current_Affairs/CurrentAffair_Api';
 import { CurrentAffair } from '@/types/Current-Affairs/CurrentAffair-types';
 
 export interface CurrentAffairsHistoryItem {
