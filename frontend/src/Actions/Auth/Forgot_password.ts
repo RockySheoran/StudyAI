@@ -3,6 +3,10 @@ import axios from "axios"
 import { api_forgot_url } from "../../lib/apiEnd_Point_Call"
 
 
+
+
+
+
 export const Forgot_pass_action = async ({email}:{email:string}) =>{
     try {
         const res  = await axios.post (api_forgot_url,{email})
