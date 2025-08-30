@@ -30,6 +30,7 @@ export const Quiz_Qna_History = () => {
     const quizHistory = getQuizHistory(2);
     const qnaHistory = getQnAHistory(2);
 
+    
     const formatDate = (timestamp: Date) => {
         return new Date(timestamp).toLocaleDateString('en-US', {
             month: 'short',
