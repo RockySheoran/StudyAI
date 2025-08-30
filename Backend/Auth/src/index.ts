@@ -31,8 +31,10 @@ app.use(cors({
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With"],
     exposedHeaders: ["Set-Cookie"],
+    optionsSuccessStatus: 200,
+    preflightContinue: false,
 }))
 
 // express rate limit 

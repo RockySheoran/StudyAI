@@ -15,19 +15,18 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
             return res.status(400).json({ message: "Invalid credentials" });
         }
         const token = generateToken({ email: email, id: data.user.id });
+        const cookieOptions = {
+            secure: true, // Always true for production HTTPS
+            sameSite: 'none' as const, // Required for cross-domain
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            path: '/',
+        };
+
         res.cookie('token', token, {
+            ...cookieOptions,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000 * 7, // 7 days
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
         });
-        res.cookie('auth-token', token, {
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
-        });
+        res.cookie('auth-token', token, cookieOptions);
         const userData = {
             id: data.user.id,
             email: data.user.email,

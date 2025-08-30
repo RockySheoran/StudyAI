@@ -122,26 +122,20 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         });
         console.log('JWT token generated successfully');
         //  console.log(token)
-        console.log('Setting cookies with options:', {
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        const cookieOptions = {
+            secure: true, // Always true for production HTTPS
+            sameSite: 'none' as const, // Required for cross-domain
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? undefined : undefined
-        });
+        };
+
+        console.log('Setting cookies with options:', cookieOptions);
 
         res.cookie('token', token, {
+            ...cookieOptions,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
         });
-        res.cookie('auth-token', token, {
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
-        });
+        res.cookie('auth-token', token, cookieOptions);
 
         console.log('Cookies set successfully, redirecting to dashboard');
         console.log('Redirect URL:', `${process.env.CLIENT_URL}/dashboard`);
