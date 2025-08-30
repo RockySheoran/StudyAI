@@ -113,15 +113,50 @@ const FileUploadComponent: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-3 sm:p-4"
         >
-          <div className="flex items-center justify-between">
+          {/* Mobile Layout - Stacked */}
+          <div className="flex flex-col sm:hidden space-y-3">
             <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <FaFile className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white break-all" title={selectedFile.name}>
+                  {selectedFile.name.length > 30 
+                    ? `${selectedFile.name.substring(0, 25)}...${selectedFile.name.substring(selectedFile.name.lastIndexOf('.'))}`
+                    : selectedFile.name
+                  }
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatFileSize(selectedFile.size)}
+                </p>
+              </div>
+            </div>
+            
+            {!isDisabled && (
+              <div className="flex justify-end">
+                <motion.button
+                  onClick={handleRemoveFile}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <FaTimes className="h-3 w-3" />
+                  Remove
+                </motion.button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Layout - Horizontal */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
               <div className="flex-shrink-0">
                 <FaFile className="h-8 w-8 text-red-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={selectedFile.name}>
                   {selectedFile.name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -133,7 +168,7 @@ const FileUploadComponent: React.FC = () => {
             {!isDisabled && (
               <motion.button
                 onClick={handleRemoveFile}
-                className="flex-shrink-0 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
+                className="flex-shrink-0 ml-4 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >

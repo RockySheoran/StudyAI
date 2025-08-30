@@ -1,6 +1,7 @@
 // frontend/src/lib/Store/Topics/topicHistoryStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
+const { Get_Topic_history } = await import('@/actions/Get_History/Get_Topic_history');
 
 export interface TopicHistoryItem {
   id: string;
@@ -21,7 +22,7 @@ interface TopicHistoryState {
   addTopicHistory: (item: Omit<TopicHistoryItem, 'id' | 'timestamp'>) => void;
   setAllHistory: (history: TopicHistoryItem[]) => void;
   setSelectedHistoryItem: (item: TopicHistoryItem | null) => void;
-  refreshHistory: (params: { token: string }) => Promise<void>;
+  refreshHistory: (token:string,refresh? : boolean ) => Promise<void>;
   getLatestHistory: (limit?: number) => TopicHistoryItem[];
   clearHistory: () => void;
   setLoading: (loading: boolean) => void;
@@ -57,17 +58,18 @@ export const useTopicHistoryStore = create<TopicHistoryState>()(
           set({ selectedHistoryItem: item });
         },
 
-        refreshHistory: async ({ token }) => {
+        refreshHistory: async ( token:string ,refresh=false) => {
           if (!token) return;
           
           set({ isLoading: true, error: null });
 
-          if(get().allHistory?.length > 0){
+          if(get().allHistory?.length > 0 && !refresh){
+            set({ isLoading: false });
             return;
           }
           
           try {
-            const { Get_Topic_history } = await import('@/Actions/Get-History/Get_Topic_history');
+
             const response = await Get_Topic_history({ token });
             
             if (response.status === 200 && response.data) {

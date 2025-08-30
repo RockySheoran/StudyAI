@@ -1,6 +1,6 @@
 
 
-import { Dashboard_base_file } from '@/components/Dashboard/Dashboard-base-file';
+import { Dashboard_base_file } from '@/components/Dashboard/Dashboard_base_file';
 
 
 export default function Page() {

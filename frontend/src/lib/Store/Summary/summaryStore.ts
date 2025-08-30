@@ -60,6 +60,7 @@ interface SummaryState {
   pollSummaryStatus: (summaryId: string, token: string) => Promise<void>;
   cancelOperation: () => void;
   resetSession: () => void;
+  startNewSummary: () => void;
   
   // History actions
   addToHistory: (result: SummaryResult) => void;
@@ -125,8 +126,6 @@ export const useSummaryStore = create<SummaryState>()(
                 'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${token}`
               },
-        
-              
               onUploadProgress: (progressEvent) => {
                 if (progressEvent.total) {
                   const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -173,10 +172,11 @@ export const useSummaryStore = create<SummaryState>()(
                   const statusResponse = await axios.get(`${api_file_upload_url}/file/${fileId}/status`, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
+                  console.log(statusResponse,"statusResponse")
                   
 
                   console.log('Polling response:', statusResponse.data);
-                  const { status: summaryStatus, content } = statusResponse.data;
+                  const { status: summaryStatus, content ,message ,error } = statusResponse.data;
 
                   if (summaryStatus === 'completed' && content) {
                     const processingTime = pollState.processingStartTime 
@@ -215,7 +215,7 @@ export const useSummaryStore = create<SummaryState>()(
 
                     set({ 
                       status: 'failed',
-                      error: 'Summary generation failed',
+                      error: message || 'Summary generation failed  ',
                       isProcessing: false,
                       processingStartTime: null,
                       pollingInterval: null
@@ -402,6 +402,29 @@ export const useSummaryStore = create<SummaryState>()(
           });
         },
 
+        // Start new summary (keeps completed result accessible but allows new upload)
+        startNewSummary: () => {
+          const state = get();
+          
+          // Clear polling interval if it exists
+          if (state.pollingInterval) {
+            clearInterval(state.pollingInterval);
+          }
+          
+          set({
+            selectedFile: null,
+            status: 'idle',
+            progress: 0,
+            error: null,
+            isUploading: false,
+            isProcessing: false,
+            uploadStartTime: null,
+            processingStartTime: null,
+            pollingInterval: null
+            // Keep summaryContent, summaryId, fileId so user can still view previous result
+          });
+        },
+
         // Add to history
         addToHistory: (result: SummaryResult) => {
           const state = get();
@@ -423,6 +446,11 @@ export const useSummaryStore = create<SummaryState>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           summaryHistory: state.summaryHistory,
+          summaryContent: state.summaryContent,
+          summaryId: state.summaryId,
+          fileId: state.fileId,
+          status: state.status === 'completed' ? state.status : 'idle', // Only persist completed status
+          selectedFile: null, // Don't persist File object as it's not serializable
         }),
       }
     )

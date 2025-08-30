@@ -39,36 +39,42 @@ const SummaryPage = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-8 text-center relative"
+          className="mb-8"
         >
-          {/* History Button */}
-          <motion.button
-            onClick={() => router.push('/summary/history')}
-            className="absolute top-0 right-0 flex items-center px-4 py-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors duration-200 font-medium"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <FaHistory className="mr-2 text-sm" />
-            History
-          </motion.button>
+          {/* Mobile-First Header Layout */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            {/* Title Section */}
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start mb-4">
+                <div className="p-2 sm:p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mr-3 sm:mr-4">
+                  <FaRobot className="text-indigo-600 dark:text-indigo-400 text-2xl sm:text-3xl" />
+                </div>
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                  <FaFileAlt className="text-blue-600 dark:text-blue-400 text-2xl sm:text-3xl" />
+                </div>
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                AI Document Summarizer
+              </h1>
+              <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto sm:mx-0">
+                Transform your lengthy documents into concise, intelligent summaries with our advanced AI technology
+              </p>
+            </div>
 
-          <div className="flex items-center justify-center mb-4">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-full mr-4">
-              <FaRobot className="text-indigo-600 dark:text-indigo-400 text-3xl" />
-            </div>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-              <FaFileAlt className="text-blue-600 dark:text-blue-400 text-3xl" />
-            </div>
+            {/* History Button - Responsive */}
+            <motion.button
+              onClick={() => router.push('/summary/history')}
+              className="flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors duration-200 font-medium text-sm sm:text-base whitespace-nowrap flex-shrink-0 w-full sm:w-auto"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <FaHistory className="text-sm sm:text-base" />
+              <span className="sm:inline">History</span>
+            </motion.button>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3">
-            AI Document Summarizer
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Transform your lengthy documents into concise, intelligent summaries with our advanced AI technology
-          </p>
         </motion.div>
 
         {/* Main Content */}
@@ -151,7 +157,7 @@ const SummaryPage = () => {
                   Multiple Formats
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Support for PDF, DOCX, and TXT files up to 10MB in size for maximum flexibility.
+                  Support for PDF, DOCX, and TXT files up to 10MB. Recommended: under 50 pages for optimal processing.
                 </p>
               </div>
 

@@ -10,6 +10,7 @@ const SummaryDisplay: React.FC = () => {
     selectedFile, 
     status,
     resetSession,
+    startNewSummary,
     summaryHistory 
   } = useSummaryStore();
   
@@ -172,24 +173,26 @@ const SummaryDisplay: React.FC = () => {
       </motion.div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <motion.button
-          onClick={resetSession}
-          className="flex-1 bg-indigo-600 dark:bg-indigo-700 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200 font-medium"
+          onClick={startNewSummary}
+          className="flex-1 bg-indigo-600 dark:bg-indigo-700 text-white py-3 px-4 sm:px-6 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200 font-medium text-sm sm:text-base"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          Summarize Another Document
+          New Summary
         </motion.button>
         
         <motion.button
           onClick={() => setShowHistory(!showHistory)}
-          className="flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 font-medium"
+          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 font-medium text-sm sm:text-base"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
           <FaHistory />
-          View History ({summaryHistory.length})
+          <span className="hidden sm:inline">View History</span>
+          <span className="sm:hidden">History</span>
+          <span className="ml-1">({summaryHistory.length})</span>
         </motion.button>
       </div>
 

@@ -5,7 +5,7 @@ import { IInterview, feedback } from '@/types/Interview-type';
 import { useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui/Loading';
 import { useUserStore } from '@/lib/Store/userStore';
-import { useInterviewHistoryStore } from '@/lib/Store/History/Interview_history_store';
+import { useInterviewHistoryStore } from '@/lib/Store/Interview/Interview_history_store';
 import { AnimatePresence } from 'framer-motion';
 
 // Import new components
