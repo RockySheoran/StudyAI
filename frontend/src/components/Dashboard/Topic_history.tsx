@@ -22,13 +22,13 @@ export const Topic_History = () => {
     useEffect(() => {
         const loadHistory = async () => {
             if (!token) return;
-            await refreshHistory({ token });
+            await refreshHistory(token );
         };
         loadHistory();
     }, [refreshHistory, token]);
 
     // Get latest 3 items
-    const topicHistory = getLatestHistory(3);
+    const topicHistory = getLatestHistory(2);
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString('en-US', {
@@ -176,21 +176,7 @@ export const Topic_History = () => {
                             </div>
                         ))}
                         
-                        {topicHistory.length > 0 && (
-                            <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Button
-                                    onClick={handleSeeAll}
-                                    variant="outline"
-                                    className="flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-700 hover:bg-indigo-200 dark:hover:bg-indigo-900/50"
-                                >
-                                    <FaHistory className="h-4 w-4" />
-                                    See All
-                                </Button>
-                            </motion.div>
-                        )}
+                
                     </div>
                 )}
             </div>

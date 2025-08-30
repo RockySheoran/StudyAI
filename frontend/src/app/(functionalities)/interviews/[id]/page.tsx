@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { InterviewContainer } from '@/components/Interview/InterviewContainer';
-import { fetchInterview, sendInterviewMessage } from '@/services/interviewService';
+import { FeedbackService, fetchInterview, sendInterviewMessage } from '@/actions/Interview/interviewService';
 import { Loading } from '@/components/ui/Loading';
 import { IInterview } from '@/types/Interview-type';
 import { Button } from '@/components/ui/button';
@@ -89,6 +89,7 @@ export default function InterviewPage() {
 
     try {
       setIsCompleting(true);
+      const response = await FeedbackService(id);
       
       router.push(`/interviews/history`);
     } catch (err) {
@@ -139,7 +140,7 @@ export default function InterviewPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Something went wrong</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-4">{error || 'Interview not found'}</p>
               <Button 
-                onClick={() => router.push('/interviews')}
+                onClick={() => router.push('/interviews/history')}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -220,6 +221,7 @@ export default function InterviewPage() {
           interview={interview}
           onSendMessage={handleSendMessage}
           onComplete={handleComplete}
+          isCompleting={isCompleting}
           error={error}
           isLoading={isSubmitting}
         />

@@ -3,8 +3,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
 import { useQuizStore } from './quizStore';
 import { useQnAStore } from './qnaStore';
-import { Quiz_history_get } from '@/Actions/Get-History/Get_Quiz_history';
-import { Qna_history_get } from '@/Actions/Get-History/Get_Qna_history';
+import { Quiz_history_get } from '@/actions/Get_History/Get_Quiz_history';
+import { Qna_history_get } from '@/actions/Get_History/Get_Qna_history';
 
 export interface QuizResult {
   question: string;
@@ -67,7 +67,7 @@ interface QuizQnAHistoryState {
   getLatestHistory: (count?: number) => HistoryItem[];
   getQuizHistory: (count?: number) => QuizHistoryItem[];
   getQnAHistory: (count?: number) => QnAHistoryItem[];
-  refreshHistory: (params: {token: string}) => Promise<void>;
+  refreshHistory: (token:string,refresh?: boolean) => Promise<void>;
   clearAllHistory: () => void;
 }
 
@@ -121,15 +121,16 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
             .slice(0, count);
         },
 
-        refreshHistory: async ({token }: {token: string}) => {
+        refreshHistory: async (token:string,refresh = false ) => {
           if(!token){
             return;
           }
-
-           if(get().allHistory?.length > 0){
-            return;
-           }
           
+          // console.log(refresh)
+          if(get().allHistory?.length > 0 && !refresh){
+            return;
+          }
+       
             // Fetch data from APIs
             const [quizResponse, qnaResponse] = await Promise.all([
               Quiz_history_get({ token }),

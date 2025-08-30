@@ -87,24 +87,24 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="max-w-md mx-auto mb-5"
+      className="w-full max-w-lg mx-auto"
     >
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-        <div className="p-8 text-center">
-          <div className="bg-indigo-100 dark:bg-indigo-900 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-            <FileText className="text-indigo-600 dark:text-indigo-400 text-2xl" />
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+        <div className="p-4 sm:p-6 text-center">
+          <div className="bg-indigo-100 dark:bg-indigo-900 p-2 sm:p-3 rounded-full w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+            <FileText className="text-indigo-600 dark:text-indigo-400 text-lg sm:text-xl" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3">
             Upload Your Resume
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 px-2">
             Upload your resume to personalize your interview experience (optional)
           </p>
         </div>
         
-        <div className="px-8 pb-8">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
           <div
-            className={`flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-8 mb-6 ${
+            className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg sm:rounded-xl p-4 sm:p-6 mb-4 sm:mb-6 ${
               isDragging 
                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
                 : 'border-gray-300 dark:border-gray-600'
@@ -123,29 +123,30 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
               onChange={handleFileChange}
               disabled={isLoading}
             />
-            <UploadCloud className={`h-12 w-12 mb-4 ${
+            <UploadCloud className={`h-8 w-8 sm:h-10 sm:w-10 mb-3 sm:mb-4 ${
               isDragging ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'
             }`} />
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-2">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center mb-2 px-2">
               {isDragging ? 'Drop your resume here' : 'Drag & drop your resume here or click to browse'}
             </p>
             <Button 
               variant="outline" 
               type="button"
+              size="sm"
               disabled={isLoading}
               onClick={(e) => {
                 e.stopPropagation();
                 triggerFileInput();
               }}
-              className="mt-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="mt-1 sm:mt-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs sm:text-sm"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-1 sm:mr-2" />
               ) : (
                 'Select File'
               )}
             </Button>
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2 sm:mt-3">
               PDF, DOC, or DOCX (max 5MB)
             </p>
           </div>
@@ -154,37 +155,39 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-700/30 mb-6"
+              className="flex items-center justify-between p-3 sm:p-4 border border-gray-200 dark:border-gray-700 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-700/30 mb-4 sm:mb-6"
             >
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-sm text-gray-800 dark:text-gray-200 truncate max-w-xs">
-                  {resume.name}
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-gray-800 dark:text-gray-200 truncate" title={resume.name}>
+                  {resume.name.length > 25 
+                    ? `${resume.name.substring(0, 20)}...${resume.name.substring(resume.name.lastIndexOf('.'))}`
+                    : resume.name
+                  }
                 </span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                className="h-6 w-6 sm:h-8 sm:w-8 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex-shrink-0 ml-2"
                 onClick={removeFile}
                 disabled={isLoading}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </motion.div>
           )}
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <Button
-              size="lg"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-semibold py-3 rounded-xl transition duration-300"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-medium py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition duration-300 text-sm sm:text-base"
               onClick={handleUpload}
               disabled={(!resume || isLoading)}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Starting Interview...
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
+                  <span className="text-xs sm:text-sm">Starting Interview...</span>
                 </>
               ) : (
                 'Start Interview with Resume'
@@ -193,8 +196,7 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
             
             <Button
               variant="outline"
-              size="lg"
-              className="w-full border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold py-3 rounded-xl transition duration-300"
+              className="w-full border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition duration-300 text-sm sm:text-base"
               onClick={handleSkip}
               disabled={isLoading}
             >
@@ -203,7 +205,7 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
             
             <Button
               variant="ghost"
-              className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 py-2 sm:py-2.5 text-sm sm:text-base"
               onClick={onBack}
               disabled={isLoading}
             >

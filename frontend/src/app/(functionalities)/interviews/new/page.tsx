@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { uploadResume, startInterview } from '@/services/interviewService';
+import { uploadResume, startInterview } from '@/actions/Interview/interviewService';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -191,7 +191,7 @@ export default function NewInterviewPage() {
                       <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
                         Master coding challenges, system design, and technical problem-solving
                       </p>
-                      <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                      {/* <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center justify-center space-x-2">
                           <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>Algorithm & Data Structures</span>
@@ -200,7 +200,7 @@ export default function NewInterviewPage() {
                           <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>30-45 minutes</span>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </motion.div>
@@ -225,7 +225,7 @@ export default function NewInterviewPage() {
                       <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
                         Practice behavioral questions and showcase your soft skills
                       </p>
-                      <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                      {/* <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center justify-center space-x-2">
                           <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>Behavioral & Situational</span>
@@ -234,7 +234,7 @@ export default function NewInterviewPage() {
                           <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>20-30 minutes</span>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </motion.div>
@@ -250,7 +250,7 @@ export default function NewInterviewPage() {
               className="max-w-2xl mx-auto px-4"
             >
               <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl border border-gray-100 dark:border-gray-700">
-                <div className="text-center mb-6 sm:mb-8">
+                {/* <div className="text-center mb-6 sm:mb-8">
                   <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4">
                     <FileText className="text-white w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
                   </div>
@@ -260,7 +260,7 @@ export default function NewInterviewPage() {
                   <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
                     Upload your resume for personalized questions, or skip to continue with general interview practice
                   </p>
-                </div>
+                </div> */}
 
                 <ResumeUpload
                   onUpload={handleResumeUpload}

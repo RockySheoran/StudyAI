@@ -18,7 +18,7 @@ import {
 } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
-import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
+import { Google_Login_Action } from '@/actions/Auth/ProviderAction';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
