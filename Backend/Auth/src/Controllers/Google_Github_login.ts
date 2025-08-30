@@ -140,7 +140,12 @@ export const Login_callback = async (req: Request, res: Response): Promise<any> 
         console.log('Cookies set successfully, redirecting to dashboard');
         console.log('Redirect URL:', `${process.env.CLIENT_URL}/dashboard`);
 
-        return res.redirect(`${process.env.CLIENT_URL}/dashboard`);
+        // Set additional headers for better redirect handling
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+
+        return res.redirect(302, `${process.env.CLIENT_URL}/dashboard`);
     } catch (error: any) {
         console.error('OAuth callback error:', error);
         console.error('Error stack:', error.stack);

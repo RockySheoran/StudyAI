@@ -11,6 +11,9 @@ import { rateLimit } from 'express-rate-limit'
 // call the function of express
 const app = express();
 
+// Trust proxy for Vercel deployment
+app.set('trust proxy', 1);
+
 // Port 
 
 const Port = process.env.PORT;
