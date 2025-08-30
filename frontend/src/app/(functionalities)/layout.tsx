@@ -31,6 +31,7 @@ export default function Layout({
         <Navbar isOpen={isOpen} setIsOpen={setIsOpen} />
       </div>
       
+      
       {/* Content container - flex-1 to take remaining space */}
       <div className="flex-1 overflow-hidden transition-all duration-300 mt-16 md:mt-0 ">
         {children}
