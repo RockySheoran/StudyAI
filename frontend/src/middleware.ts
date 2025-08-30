@@ -5,8 +5,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPublicPath = path === '/login' || path === '/signup' || path==='/' || path === '/resetpassword' || path === '/forgot-password';
 
-  // Check for token in cookies (from backend)
-  const tokenFromCookie = request.cookies.get('token')?.value || '';
+ 
  
 
   // Also check for NextAuth token
@@ -17,7 +16,7 @@ export async function middleware(request: NextRequest) {
 
 
 
-  const hasToken = tokenFromCookie || nextAuthToken?.accessToken;
+  const hasToken = nextAuthToken?.accessToken;
 
 
   // Handle Google auth callback

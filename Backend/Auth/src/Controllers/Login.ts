@@ -1,20 +1,28 @@
 import { Request, Response } from "express";
-import { supabase } from "../Config/supabaseClient";
+import { UserModel } from "../Models/UserModel";
+import bcrypt from "bcrypt";
 import { generateToken } from "../Utils/generateToken";
 
 export const Login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
     console.log(email, password)
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        })
+        const findUser = await UserModel.findOne({ email: email })
         
-        if (error) {
+        if (!findUser) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        if(!findUser?.password){
             return res.status(400).json({ message: "Invalid credentials" });
         }
-        const token = generateToken({ email: email, id: data.user.id });
+        
+        const isPasswordValid = await bcrypt.compare(password, findUser?.password);
+        
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+        const token = generateToken({ email: email, id: findUser._id.toString() });
         const cookieOptions = {
             secure: true, // Always true for production HTTPS
             sameSite: 'none' as const, // Required for cross-domain
@@ -26,11 +34,11 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
             ...cookieOptions,
             httpOnly: true,
         });
-        res.cookie('auth-token', token, cookieOptions);
+    
         const userData = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata.name,
+            id: findUser._id.toString(),
+            email: findUser.email,
+            name: findUser.name,
             accessToken: token
         }
         return res.status(200).json({ message: "Login successful", userData });

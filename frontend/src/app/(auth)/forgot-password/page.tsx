@@ -30,7 +30,7 @@ export default function ForgotPassword() {
         <div className="mb-8">
           <Link href="/">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              Stellar
+              StudyAI
             </h1>
           </Link>
         </div>

@@ -1,20 +1,15 @@
-import express, { Request, Response } from "express"
-import dotenv from "dotenv"
+import express,{Request,Response} from "express";
+import dotenv from "dotenv";
 dotenv.config();
 import { AuthRoute } from "./Routes/Auth.Routes";
-
-import { supabase } from "./Config/supabaseClient";
+import { connectDatabase } from "./Config/database";
 import cors from "cors";
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit'
+
 // call the function of express
 const app = express();
-
-// Trust proxy for Vercel deployment
-app.set('trust proxy', 1);
-
-// Port 
 
 const Port = process.env.PORT;
 
@@ -28,16 +23,12 @@ app.use(helmet())
 // CORS configuration for production deployment
 app.use(cors({
     origin: [
-        process.env.CLIENT_URL || "http://localhost:3000",
-        "https://study-ai-assist.vercel.app", // Add your frontend domain
-        /\.vercel\.app$/, // Allow all Vercel app domains
+        process.env.CLIENT_URL || "http://localhost:3000",   
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With"],
-    exposedHeaders: ["Set-Cookie"],
-    optionsSuccessStatus: 200,
-    preflightContinue: false,
+   
 }))
 
 // express rate limit 
@@ -63,7 +54,13 @@ app.get("/", (req: Request, res: Response) => {
 })
 
 
-app.listen(Port, () => {
-    console.log(`server run on the port http://localhost:${Port}`)
+// Connect to database before starting server
+connectDatabase().then(() => {
+    app.listen(Port, () => {
+        console.log(`🚀 Server running on http://localhost:${Port}`)
+    })
+}).catch((error) => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
 })
 

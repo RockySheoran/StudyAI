@@ -81,45 +81,45 @@ export const Interview_history = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center"
-        >
-          <div className="text-red-600 dark:text-red-400 mb-4">
-            <svg
-              className="mx-auto h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
-            Error Loading Interview History
-          </h3>
-          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={() => token && fetchInterviews(token)}
-              variant="destructive"
-            >
-              Try Again
-            </Button>
-          </motion.div>
-        </motion.div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+  //       <motion.div
+  //         initial={{ opacity: 0, y: 20 }}
+  //         animate={{ opacity: 1, y: 0 }}
+  //         className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center"
+  //       >
+  //         <div className="text-red-600 dark:text-red-400 mb-4">
+  //           <svg
+  //             className="mx-auto h-12 w-12"
+  //             fill="none"
+  //             viewBox="0 0 24 24"
+  //             stroke="currentColor"
+  //           >
+  //             <path
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               strokeWidth={2}
+  //               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+  //             />
+  //           </svg>
+  //         </div>
+  //         <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
+  //           Error Loading Interview History
+  //         </h3>
+  //         <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+  //         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+  //           <Button
+  //             onClick={() => token && fetchInterviews(token)}
+  //             variant="destructive"
+  //           >
+  //             Try Again
+  //           </Button>
+  //         </motion.div>
+  //       </motion.div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">

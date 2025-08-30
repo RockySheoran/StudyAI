@@ -18,7 +18,6 @@ import {
 } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
-import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -62,7 +61,8 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        throw new Error(result.error);
+        // throw new Error(result.error);
+        toast.error(result.error);
       }
       
       toast.success("Login successful");
@@ -80,16 +80,20 @@ export default function LoginPage() {
   };
 
   // Handle social login (Google, GitHub, etc.)
-  const handleProviderLogin = async ({provider}: {provider: string}) => {
+  const handleProviderLogin = async (provider: string) => {
     try {
       setIsLoading(true);
-      const result = await Google_Login_Action({provider});
+      toast.success(`Signing in with ${provider}`);
       
-      if (result?.success) {
-        toast.success(`Signing in with ${provider}`);
-        window.location.href = result.data.url;
-      } else {
-        throw new Error(`Failed to initiate ${provider} login`);
+      const result = await signIn(provider, {
+        callbackUrl: "/dashboard",
+        redirect: true,
+      });
+      
+      
+      
+      if (result?.error) {
+        toast.error(result.error);
       }
     } catch (error) {
       console.error("Provider login error:", error);
@@ -292,7 +296,7 @@ export default function LoginPage() {
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <motion.button
-                onClick={() => handleProviderLogin({provider: 'google'})}
+                onClick={() => handleProviderLogin('google')}
                 disabled={isLoading}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
@@ -305,7 +309,7 @@ export default function LoginPage() {
               </motion.button>
 
               <motion.button
-                onClick={() => handleProviderLogin({provider: 'github'})}
+                onClick={() => handleProviderLogin('github')}
                 disabled={isLoading}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"

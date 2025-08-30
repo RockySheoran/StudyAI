@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -18,22 +18,29 @@ import {
 } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
-import { Google_Login_Action } from '@/Actions/Auth/ProviderAction';
+import { signIn } from 'next-auth/react';
+import axios from 'axios';
+import { api_Signup_url } from '@/lib/apiEnd_Point_Call';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { SignUp_Actions } from '@/Actions/Auth/SignUp';
+import { useActionState } from 'react';
 
 // Define Zod schema for form validation
 const signUpSchema = z.object({
   name: z.string()
     .min(1, 'Name is required')
-    .max(50, 'Name must be less than 50 characters'),
+    .max(50, 'Name must be less than 50 characters')
+    .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces'),
   email: z.string()
     .min(1, 'Email is required')
-    .email('Invalid email address'),
+    .email('Please enter a valid email address')
+    .toLowerCase(),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
-    .max(50, 'Password must be less than 50 characters'),
+    .max(50, 'Password must be less than 50 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
   confirmPassword: z.string()
     .min(1, 'Please confirm your password')
 }).refine(data => data.password === data.confirmPassword, {
@@ -48,50 +55,115 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValue, setPasswordValue] = useState("");
+
+  // Password strength checker
+  const checkPasswordStrength = (password: string) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password)
+    };
+    return checks;
+  };
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setError,
-    reset
+    reset,
+    watch
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema)
   });
 
-  // Handle form submission
+  // Handle client-side validation before server action
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
     
-    // Simulate signup process (replace with actual signup logic)
     try {
-      // Your signup logic here
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success("Account created successfully!");
-      reset();
-      router.push("/dashboard");
+      // Create FormData for server action
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+      
+      // Call server action
+      await formAction(formData);
     } catch (error) {
-      setError("root", {
-        type: "manual",
-        message: error instanceof Error ? error.message : "Signup failed. Please try again."
-      });
-      toast.error("Signup failed");
+      console.error('Form submission error:', error);
     } finally {
       setIsLoading(false);
     }
   };
+const [state, formAction] = useActionState(SignUp_Actions, {
+    errors: {},
+    message: "",
+    status: 0,
+    data: null
+  })
+
+  useEffect(() => {
+    if (state.status === 200) {
+      toast.success(state.message);
+      reset();
+      router.push("/login");
+    }
+    if (state.status === 400 || state.status === 500) {
+      toast.error(state.message);
+      // Set form-level error for server errors
+      setError("root", {
+        type: "manual",
+        message: state.message
+      });
+    }
+  }, [state, reset, router, setError])
+
+  // Handle form submission
+  // const onSubmit = async (data: SignUpFormData) => {
+  //   setIsLoading(true);
+    
+  //   try {
+  //     const response = await axios.post(api_Signup_url, {
+  //       name: data.name,
+  //       email: data.email,
+  //       password: data.password
+  //     });
+
+  //     if (response.data?.user) {
+  //       toast.success("Account created successfully!");
+  //       reset();
+  //       router.push("/login");
+  //     } else {
+  //       toast.error("Failed to create account");
+  //     }
+  //   } catch (error: any) {
+  //     const errorMessage = error.response?.data?.message || error.message || "Signup failed. Please try again.";
+  //     setError("root", {
+  //       type: "manual",
+  //       message: errorMessage
+  //     });
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Handle provider login (Google, GitHub, etc.)
-  const handleProviderLogin = async ({provider}: {provider: string}) => {
+  const handleProviderLogin = async (provider: string) => {
     try {
       setIsLoading(true);
-      const result = await Google_Login_Action({provider});
+      toast.success(`Signing in with ${provider}`);
       
-      if (result?.success) {
-        toast.success(`Signing in with ${provider}`);
-        window.location.href = result.data.url;
-      } else {
-        throw new Error(`Failed to initiate ${provider} login`);
+      const result = await signIn(provider, {
+        callbackUrl: "/dashboard",
+        redirect: true,
+      });
+      
+      if (result?.error) {
+        toast.error(result.error);
       }
     } catch (error) {
       console.error("Provider login error:", error);
@@ -232,7 +304,9 @@ export default function SignupPage() {
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  {...register('password')}
+                  {...register('password', {
+                    onChange: (e) => setPasswordValue(e.target.value)
+                  })}
                   className={`w-full pl-10 px-4 py-3 pr-10 bg-gray-50 dark:bg-[#161622] border ${
                     errors.password
                       ? "border-red-500 focus:ring-red-500"
@@ -260,6 +334,26 @@ export default function SignupPage() {
                   <FiAlertCircle className="flex-shrink-0" />
                   {errors.password.message}
                 </p>
+              )}
+              
+              {/* Password Strength Indicator */}
+              {passwordValue && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Password requirements:</p>
+                  <div className="space-y-1">
+                    {Object.entries(checkPasswordStrength(passwordValue)).map(([key, isValid]) => (
+                      <div key={key} className="flex items-center gap-2 text-xs">
+                        <div className={`w-2 h-2 rounded-full ${isValid ? 'bg-green-500' : 'bg-gray-300'}`} />
+                        <span className={isValid ? 'text-green-600 dark:text-green-400' : 'text-gray-500'}>
+                          {key === 'length' && 'At least 8 characters'}
+                          {key === 'uppercase' && 'One uppercase letter'}
+                          {key === 'lowercase' && 'One lowercase letter'}
+                          {key === 'number' && 'One number'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -343,7 +437,7 @@ export default function SignupPage() {
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <motion.button
-                onClick={() => handleProviderLogin({provider: 'google'})}
+                onClick={() => handleProviderLogin('google')}
                 disabled={isLoading}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
@@ -356,7 +450,7 @@ export default function SignupPage() {
               </motion.button>
 
               <motion.button
-                onClick={() => handleProviderLogin({provider: 'github'})}
+                onClick={() => handleProviderLogin('github')}
                 disabled={isLoading}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"

@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCurrentAffairsHistoryStore } from "@/lib/Store/Current-Affairs/currentAffairsHistoryStore";
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 const Current_Affairs_History: React.FC = () => {
   const router = useRouter();
@@ -101,26 +102,24 @@ const Current_Affairs_History: React.FC = () => {
           </div>
         </div>
 
-        {latestHistory.length > 0 && (
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              onClick={handleSeeAll}
-              variant="ghost"
-              className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
-            >
-              See More
-              <ExternalLink className="w-4 h-4" />
-            </Button>
-          </motion.div>
-        )}
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            onClick={handleSeeAll}
+            variant="ghost"
+            className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-700 dark:hover:text-blue-300"
+          >
+            See More
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        </motion.div>
       </div>
 
       {/* Loading State */}
-      {loading && (
+      {/* {loading && (
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
-      )}
+      )} */}
 
       {/* History Items */}
       {!loading && latestHistory.length > 0 && (
@@ -172,7 +171,7 @@ const Current_Affairs_History: React.FC = () => {
       )}
 
       {/* Empty State */}
-      {!loading && latestHistory.length === 0 && (
+      { latestHistory.length === 0 && (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
             <FaNewspaper className="text-gray-400 dark:text-gray-500 text-2xl" />
@@ -183,6 +182,13 @@ const Current_Affairs_History: React.FC = () => {
           <p className="text-gray-500 dark:text-gray-400 text-sm">
             Start reading current affairs to see your history here
           </p>
+          <Button
+            onClick={() => router.push("/current-affairs")}
+            className="bg-indigo-600 mt-2 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl"
+            size="lg"
+          >
+           Start reading
+          </Button>
         </div>
       )}
     </div>

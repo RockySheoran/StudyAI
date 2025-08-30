@@ -109,7 +109,7 @@ export const Topic_History = () => {
                     <div className="text-center py-8">
                         <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500 dark:text-gray-400">No topic history available</p>
-                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="text-sm mb-2 text-gray-400 dark:text-gray-500 mt-1">
                             Search for topics to see your history here
                         </p>
                         <motion.div
@@ -118,7 +118,7 @@ export const Topic_History = () => {
                         >
                             <Button
                                 onClick={() => router.push('/topics')}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl"
+                                className="bg-indigo-600 mt-2 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl"
                                 size="lg"
                             >
                                 Explore Your First Topic

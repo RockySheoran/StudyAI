@@ -30,7 +30,7 @@ const LogoutButton = () => {
     setIsLoading(true);
     
     try {
-      const res = await Logout_Action({ token: token || "" });
+      const res = await Logout_Action({ token: token!});
       console.log("res:", res);
       
       if (res.status === 200) {

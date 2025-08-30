@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/lib/Store/userStore';
 import { useQuizQnAHistoryStore, HistoryItem, QuizHistoryItem, QnAHistoryItem } from '@/lib/Store/Quiz-Qna/quizQnaHistoryStore';
+import { Button } from '../ui/button';
 
 export const Quiz_Qna_History = () => {
     const router = useRouter();
@@ -107,6 +108,13 @@ export const Quiz_Qna_History = () => {
                                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                                     Complete a quiz to see your history here
                                 </p>
+                                <Button
+                                    onClick={() => router.push("/quiz_qna/quiz")}
+                                    className="bg-indigo-600 mt-2 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl"
+                                    size="lg"
+                                >
+                                    Start Quiz
+                                </Button> 
                             </div>
                         ) : (
                             quizHistory.map((item) => (
@@ -158,6 +166,13 @@ export const Quiz_Qna_History = () => {
                                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                                     Complete a Q&A session to see your history here
                                 </p>
+                                <Button
+                                    onClick={() => router.push("/quiz_qna/qna")}
+                                    className="bg-indigo-600 mt-2 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl"
+                                    size="lg"
+                                >
+                                    Start Q&A
+                                </Button>
                             </div>
                         ) : (
                             qnaHistory.map((item) => (

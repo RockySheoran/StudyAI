@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { supabase } from "../Config/supabaseClient";
+import { UserModel } from "../Models/UserModel";
 export interface AuthRequest extends Request {
   user?: {
     id:string,
@@ -16,20 +16,20 @@ export const getProfile = async (req: AuthRequest, res: Response): Promise<any> 
 
 
   try {
-       const { data, error } = await supabase.auth.admin.getUserById(req.user.id);
-    if (error) {
-      console.error('Failed to get user:', error);
+       const user = await UserModel.findById(req.user.id);
+    if (!user) {
+    
       return res.status(404).json({
         success: false,
         message: 'User not found',
       });
     }
     
-    console.log("user:", data.user.user_metadata);
+    console.log("user:", user);
     const userData = {
-      name : data.user.user_metadata.name,
-      email : data.user.email,
-      avatar : data.user.user_metadata.avatar_url,
+      name : user.name,
+      email : user.email,
+      avatar : user.profile,
     }
     return res.status(200).json({
       success: true,

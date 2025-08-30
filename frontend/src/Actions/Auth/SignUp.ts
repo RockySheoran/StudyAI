@@ -25,7 +25,7 @@ export const SignUp_Actions = async (prevState: FormState, formData: FormData): 
                 "Content-Type": "application/json",
             }
         });
-        console.log(response.data);
+        // console.log(response.data);
 
         return {
             errors: {},
@@ -34,11 +34,11 @@ export const SignUp_Actions = async (prevState: FormState, formData: FormData): 
             data: response.data
         };
     } catch (error: any) {
-        console.error("Signup error:", error.response.data);
+        // console.error("Signup error:", error.response.data);
         
         return {
             errors: { general: error.response?.data?.message || "Signup failed" },
-            message: "Signup failed",
+            message: error.response?.data?.message || "Signup failed",
             status: error.response?.status || 500,
             data: null
         };
