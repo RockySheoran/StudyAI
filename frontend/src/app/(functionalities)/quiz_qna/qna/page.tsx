@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { QnAData, QnAResult } from '@/types/Qna-Quiz/qna';
-import { api } from '@/actions/Quiz-Qna/Quiz_Qna_api';
+import { api } from '@/Actions/Quiz-Qna/Quiz_Qna_api';
 import QnAForm from '@/components/Quiz-Qna/Qna/QnAForm';
 import QnAQuestions from '@/components/Quiz-Qna/Qna/QnAQuestions';
 import QnAResults from '@/components/Quiz-Qna/Qna/QnAResults';

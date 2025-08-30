@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Reset_pass_action } from '@/actions/Auth/Reset_password';
+import { Reset_pass_action } from '@/Actions/Auth/Reset_password';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 

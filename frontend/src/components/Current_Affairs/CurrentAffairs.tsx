@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ArticleModal from './ArticleModal';
 import { AffairType, CurrentAffair, PaginationInfo } from '@/types/Current-Affairs/CurrentAffair-types';
-import { fetchCurrentAffairs } from '@/actions/Current_Affairs/CurrentAffair_Api';
+import { fetchCurrentAffairs } from '@/Actions/Current_Affairs/CurrentAffair_Api';
 import { FaHistory, FaSearch, FaChevronRight, FaSpinner, FaTimesCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';

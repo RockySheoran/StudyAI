@@ -12,7 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Logout_Action } from "@/actions/Auth/Logout_Action";
+import { Logout_Action } from "@/Actions/Auth/Logout_Action";
 import { useUserStore } from "@/lib/Store/userStore";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";

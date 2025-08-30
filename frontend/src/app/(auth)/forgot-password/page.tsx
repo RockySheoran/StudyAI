@@ -1,6 +1,6 @@
 'use client';
 
-import { Forgot_pass_action } from '@/actions/Auth/Forgot_password';
+import { Forgot_pass_action } from '@/Actions/Auth/Forgot_password';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
