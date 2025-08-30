@@ -8,7 +8,8 @@
     "build:watch": "tsc -w",
     "start": "node dist/index.js",
     "start:watch": "nodemon dist/index.js",
-    "dev": "npm-run-all --parallel build:watch start:watch"
+    "dev": "npm-run-all --parallel build:watch start:watch",
+    "vercel-build": "npm install && npm run build"
   },
   "keywords": [],
   "author": "",
