@@ -38,11 +38,11 @@ export default function QuizResults({ result, onRestart, showRestartButton = tru
       
       <div className="grid grid-cols-3 gap-4 mb-8">
         <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{result.correctAnswers}</div>
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{result.score}</div>
           <div className="text-sm text-green-800 dark:text-green-200">Correct</div>
         </div>
         <div className="bg-red-50 dark:bg-red-900/20 p-3 py-4 sm:p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{result.incorrectAnswers}</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">{result.totalQuestions - result.score}</div>
           <div className="text-sm text-red-800 dark:text-red-200">Incorrect</div>
         </div>
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">

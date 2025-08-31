@@ -1,21 +1,35 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import ArticleModal from './ArticleModal';
-import { AffairType, CurrentAffair, PaginationInfo } from '@/types/Current-Affairs/CurrentAffair-types';
-import { fetchCurrentAffairs } from '@/Actions/Current_Affairs/CurrentAffair_Api';
-import { FaHistory, FaSearch, FaChevronRight, FaSpinner, FaTimesCircle } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useUserStore } from '@/lib/Store/userStore';
+"use client";
+import React, { useState, useEffect } from "react";
+import ArticleModal from "./ArticleModal";
+import {
+  AffairType,
+  CurrentAffair,
+  PaginationInfo,
+} from "@/types/Current-Affairs/CurrentAffair-types";
+import { fetchCurrentAffairs } from "@/Actions/Current_Affairs/CurrentAffair_Api";
+import {
+  FaHistory,
+  FaSearch,
+  FaChevronRight,
+  FaSpinner,
+  FaTimesCircle,
+} from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUserStore } from "@/lib/Store/userStore";
+import axios from "axios";
+import { current_affairs_url } from "@/lib/apiEnd_Point_Call";
 
 const CurrentAffairs: React.FC = () => {
-  const [type, setType] = useState<AffairType>('random');
-  const [customCategory, setCustomCategory] = useState('');
+  const [type, setType] = useState<AffairType>("random");
+  const [customCategory, setCustomCategory] = useState("");
   const [affairs, setAffairs] = useState<CurrentAffair[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [selectedAffair, setSelectedAffair] = useState<CurrentAffair | null>(null);
+  const [error, setError] = useState("");
+  const [selectedAffair, setSelectedAffair] = useState<CurrentAffair | null>(
+    null
+  );
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -24,19 +38,27 @@ const CurrentAffairs: React.FC = () => {
     setMounted(true);
   }, []);
 
-  const {token} = useUserStore();
+  const { token } = useUserStore();
   const handleSubmit = async (e: React.FormEvent, page: number = 1) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
-      const category = type === 'custom' ? customCategory : undefined;
-      const result = await fetchCurrentAffairs(type, category, page , token!);
+      const category = type === "custom" ? customCategory : undefined;
+      // const result = await fetchCurrentAffairs(type, category, page , token!);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL}/api/current-affairs`,
+        {
+          params: { type, category, page },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const result = response.data;
       setAffairs(result.affairs);
       setPagination(result.pagination);
     } catch (err) {
-      setError('Failed to fetch current affairs. Please try again.');
+      setError("Failed to fetch current affairs. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -45,15 +67,20 @@ const CurrentAffairs: React.FC = () => {
 
   const loadMore = async () => {
     if (!pagination || !pagination.hasNext) return;
-    
+
     setLoading(true);
     try {
-      const category = type === 'custom' ? customCategory : undefined;
-      const result = await fetchCurrentAffairs(type, category, pagination.currentPage + 1 , token!);
+      const category = type === "custom" ? customCategory : undefined;
+      const result = await fetchCurrentAffairs(
+        type,
+        category,
+        pagination.currentPage + 1,
+        token!
+      );
       setAffairs([...affairs, ...result.affairs]);
       setPagination(result.pagination);
     } catch (err) {
-      setError('Failed to load more articles. Please try again.');
+      setError("Failed to load more articles. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -71,7 +98,7 @@ const CurrentAffairs: React.FC = () => {
   };
 
   const goToHistory = () => {
-    router.push('/current-affairs/history');
+    router.push("/current-affairs/history");
   };
 
   if (!mounted) {
@@ -124,25 +151,29 @@ const CurrentAffairs: React.FC = () => {
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
-                      checked={type === 'random'}
-                      onChange={() => setType('random')}
+                      checked={type === "random"}
+                      onChange={() => setType("random")}
                       className="form-radio h-5 w-5 text-indigo-600 dark:text-indigo-400"
                     />
-                    <span className="ml-2 text-gray-700 dark:text-gray-300">Random</span>
+                    <span className="ml-2 text-gray-700 dark:text-gray-300">
+                      Random
+                    </span>
                   </label>
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
-                      checked={type === 'custom'}
-                      onChange={() => setType('custom')}
+                      checked={type === "custom"}
+                      onChange={() => setType("custom")}
                       className="form-radio h-5 w-5 text-indigo-600 dark:text-indigo-400"
                     />
-                    <span className="ml-2 text-gray-700 dark:text-gray-300">Custom</span>
+                    <span className="ml-2 text-gray-700 dark:text-gray-300">
+                      Custom
+                    </span>
                   </label>
                 </div>
               </div>
-              
-              {type === 'custom' && (
+
+              {type === "custom" && (
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Enter Category
@@ -160,7 +191,7 @@ const CurrentAffairs: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
               <motion.button
                 type="submit"
                 disabled={loading}
@@ -174,7 +205,7 @@ const CurrentAffairs: React.FC = () => {
                     Loading...
                   </>
                 ) : (
-                  'Get Current Affairs'
+                  "Get Current Affairs"
                 )}
               </motion.button>
             </form>
@@ -193,8 +224,12 @@ const CurrentAffairs: React.FC = () => {
             >
               <FaTimesCircle className="flex-shrink-0 mt-0.5 text-red-500 mr-3" />
               <div>
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-                <p className="text-sm text-red-700 dark:text-red-300 mt-1">{error}</p>
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Error
+                </h3>
+                <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                  {error}
+                </p>
               </div>
             </motion.div>
           )}
@@ -204,15 +239,19 @@ const CurrentAffairs: React.FC = () => {
         <div className="space-y-6">
           <AnimatePresence>
             {affairs?.map((affair, index) => (
-              <motion.div 
-                key={index} 
+              <motion.div
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700"
               >
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{affair.title}</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{affair.summary}</p>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  {affair.title}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  {affair.summary}
+                </p>
                 <motion.button
                   onClick={() => openModal(affair)}
                   className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-700 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
@@ -243,7 +282,7 @@ const CurrentAffairs: React.FC = () => {
                   Loading...
                 </>
               ) : (
-                'Load More'
+                "Load More"
               )}
             </motion.button>
           </div>
@@ -263,7 +302,7 @@ const CurrentAffairs: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {showModal && selectedAffair && (
           <ArticleModal affair={selectedAffair} onClose={closeModal} />
         )}

@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
 import { fetchHistory } from '@/Actions/Current_Affairs/CurrentAffair_Api';
 import { CurrentAffair } from '@/types/Current-Affairs/CurrentAffair-types';
+import axios from 'axios';
 
 export interface CurrentAffairsHistoryItem {
   id: string;
@@ -61,6 +62,7 @@ export const useCurrentAffairsHistoryStore = create<CurrentAffairsHistoryState>(
         },
 
         refreshHistory: async (token,refresh=false) => {
+          console.log(token,refresh)
           if (!token) {
             return;
           }
@@ -72,10 +74,14 @@ export const useCurrentAffairsHistoryStore = create<CurrentAffairsHistoryState>(
           
           try {
             // Fetch data from API
-            const response = await fetchHistory(1, token);
+            // const response = await fetchHistory(1, token);
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL}/api/current-affairs/history`, {
+              params: { page: 1 },
+              headers: { Authorization: `Bearer ${token}` },
+            });
             
-            if (response && response.affairs) {
-              const historyItems: CurrentAffairsHistoryItem[] = response.affairs.map((affair: CurrentAffair): CurrentAffairsHistoryItem => ({
+            if (response && response.data.affairs) {
+              const historyItems: CurrentAffairsHistoryItem[] = response.data.affairs.map((affair: CurrentAffair): CurrentAffairsHistoryItem => ({
                 id: affair._id || `${affair.title}-${Date.now()}`,
                 type: 'current-affairs',
                 title: affair.title,
@@ -90,7 +96,9 @@ export const useCurrentAffairsHistoryStore = create<CurrentAffairsHistoryState>(
               // Update the store with fetched data
               set({ allHistory: historyItems });
             }
-          } catch (error) {
+          } catch (error:any) {
+            
+           
             console.error('Failed to fetch current affairs history:', error);
           }
         },
