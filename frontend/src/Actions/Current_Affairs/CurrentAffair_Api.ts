@@ -1,8 +1,8 @@
-'use server';
+
 import { useUserStore } from '@/lib/Store/userStore';
 import { CurrentAffairsResponse } from '@/types/Current-Affairs/CurrentAffair-types';
 import axios from 'axios';
-import { headers } from 'next/headers';
+
 
 const API_BASE_URL = `${process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL}/api` || 'http://localhost:5000/api';
 
@@ -42,9 +42,7 @@ export const fetchHistory = async (page: number = 1, token?: string): Promise<Cu
    
     return response.data;
   } catch (error:any) {
-    return {
-      status:500,
-      
-    }
+    console.error('Failed to fetch history:', error);
+    throw error;
   }
 };

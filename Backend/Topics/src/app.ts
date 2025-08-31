@@ -22,6 +22,17 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
+// Database connection middleware
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    res.status(503).json({ error: 'Database connection failed. Please try again.' });
+  }
+});
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -52,15 +63,14 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
+// Initialize database connection
+connectDB().catch(error => {
+  console.error('Initial database connection failed:', error);
+});
+
 // Start server
-app.listen(PORT, async () => {
-  try {
-    await connectDB();
-    console.log(`Server is running on port ${PORT}`);
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 export default app;

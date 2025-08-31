@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { uploadFileController, checkSummaryStatus } from '../controllers/file.controller';
 import { getSummaryController, getSummaryHistory, deleteSummary } from '../controllers/summary.controller';
 import multer from 'multer';
-import path from 'path';
 import { middleware } from '../Middlewares/auth.middleware';
 
 const router = Router();
@@ -29,7 +28,7 @@ router.get("/summary-history", middleware, getSummaryHistory);
 router.delete("/summary/:summaryId", middleware, deleteSummary);
 
 router.get('/check', (req : Request, res : Response) => {
-  res.send('List of all summaries');
+  res.send('Summary service running with memory storage');
 });
 
 export default router;

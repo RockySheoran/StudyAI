@@ -5,7 +5,14 @@ export const connectToDatabase = async (): Promise<void> => {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/quiz-qna-app';
     
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 50000, // 50 seconds
+      connectTimeoutMS: 50000, // 50 seconds
+      socketTimeoutMS: 50000, // 50 seconds
+      maxPoolSize: 10,
+      retryWrites: true,
+      w: 'majority'
+    });
     console.log('Connected to MongoDB successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);

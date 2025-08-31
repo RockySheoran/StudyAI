@@ -1,7 +1,5 @@
 import { File } from '../models/file.model';
-import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
-import { unlink } from 'fs/promises';
-
+import { uploadToCloudinary, deleteFromCloudinary, CloudinaryUploadResult } from '../config/cloudinary';
 import { Summary } from '../models/summary.model';
 
 
@@ -17,8 +15,8 @@ export const uploadFile = async (file: Express.Multer.File, userId?: string) => 
     // Save to database
     const newFile = new File({
       originalName: file.originalname,
-      cloudinaryId: result.public_id,
-      cloudinaryUrl: result.secure_url,
+      cloudinaryId: result?.public_id,
+      cloudinaryUrl: result?.secure_url,
       size: file.size,
       mimetype: file.mimetype,
       deleteAt,
