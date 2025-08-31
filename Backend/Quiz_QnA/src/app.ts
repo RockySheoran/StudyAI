@@ -42,6 +42,10 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Quiz QnA API!');
+})
+
 
 // Error handling middleware
 app.use(errorHandler);

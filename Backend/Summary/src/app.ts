@@ -34,6 +34,10 @@ export const createApp = () => {
     res.status(200).json({ status: 'ok' });
   });
 
+  app.get('/', (req, res) => {
+    res.send('Welcome to the Summary API!');
+  })
+
   // Initialize services
   const initializeServices = async () => {
     await connectDB();

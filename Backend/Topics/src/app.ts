@@ -25,6 +25,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Topics API!');
+})
+
 // Routes
 app.use('/api/topic', topicRoutes);
 

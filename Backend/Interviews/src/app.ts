@@ -28,6 +28,9 @@ startCleanupJob()
 app.use('/api/interview', interviewRoutes);
 app.use('/api/resume', resumeRoutes);
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Interview API!');
+})
 
 
 export default app;
