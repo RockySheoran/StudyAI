@@ -8,7 +8,15 @@ import { middleware } from '../Middlewares/auth.middleware';
 const router = Router();
 const upload = multer({
   dest: path.join(__dirname, '../../uploads'),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    // Accept only PDF and DOCX files
+    if (file.mimetype === 'application/pdf' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  }
 });
 
 // File routes
