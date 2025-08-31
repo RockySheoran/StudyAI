@@ -12,8 +12,7 @@ const apiClient = axios.create({
   baseURL:  `${process.env.NEXT_PUBLIC_INTERVIEW_BACKEND_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
-  },
-  timeout: 30000, // 10 seconds timeout
+  }
 });
 
 // Add request interceptor for auth token

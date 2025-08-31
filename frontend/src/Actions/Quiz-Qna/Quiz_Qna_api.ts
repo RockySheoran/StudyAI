@@ -6,6 +6,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_URL || 'htt
 interface UserStorage {
   state: {
     token?: string;
+    refreshToken?: string;
     // Add other user state properties if needed
   };
 }
@@ -15,9 +16,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    
-  },
-  timeout: 30000, // 30 seconds timeout
+  }
 });
 
 // Request interceptor for adding auth tokens if needed

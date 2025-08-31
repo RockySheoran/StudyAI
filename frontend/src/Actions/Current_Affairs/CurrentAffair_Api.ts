@@ -1,10 +1,11 @@
 
-import { useUserStore } from '@/lib/Store/userStore';
+"use server"
+import { current_affairs_url } from '@/lib/apiEnd_Point_Call';
 import { CurrentAffairsResponse } from '@/types/Current-Affairs/CurrentAffair-types';
 import axios from 'axios';
 
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL}/api` || 'http://localhost:5000/api';
+
 
 export const fetchCurrentAffairs = async (
   type: 'random' | 'custom', 
@@ -15,11 +16,12 @@ export const fetchCurrentAffairs = async (
   
   try {
     console.log(token , "token from store");
-    console.log(API_BASE_URL , "API_BASE_URL");
-    const response = await axios.get(`${API_BASE_URL}/current-affairs`, {
+    console.log(current_affairs_url , "API_BASE_URL");
+    const response = await axios.get(`${current_affairs_url}/api/current-affairs`, {
       params: { type, category, page },
       headers: { Authorization: `Bearer ${token}` }
     });
+    console.log(response.data , "response data");
     return response.data;
   } catch (error) {
     console.log(error);
@@ -35,9 +37,9 @@ export const fetchHistory = async (page: number = 1, token?: string): Promise<Cu
   console.log(token , "token from store");
 
   try {
-    const response = await axios.get(`${API_BASE_URL}/current-affairs/history`, {
+    const response = await axios.get(`${current_affairs_url}/api/current-affairs/history`, {
       params: { page },
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
    
     return response.data;

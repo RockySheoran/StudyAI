@@ -25,3 +25,5 @@ export const api_quiz_history_url = `${process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_
 export const api_qna_history_url = `${process.env.NEXT_PUBLIC_QUIZ_QNA_BACKEND_URL}/api/qna/history`
 export const api_topic_history_url = `${process.env.NEXT_PUBLIC_TOPIC_BACKEND_URL}/api/topic/history`
 
+export const current_affairs_url = process.env.NEXT_PUBLIC_CURRENT_AFFAIRS_BACKEND_URL 
+
