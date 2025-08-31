@@ -39,17 +39,7 @@ const LogoutButton = () => {
       
       // Clear user store
       clearUser();
-      clearToken();
-      
-      // Call custom logout API to clear NextAuth cookies
-      try {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          credentials: 'include'
-        });
-      } catch (logoutError) {
-        console.warn('Custom logout API failed:', logoutError);
-      }
+      clearToken(); 
       
       // Close dialog
       setIsOpen(false);

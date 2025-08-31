@@ -51,7 +51,7 @@ const GeminiTopicExplorer: React.FC = () => {
       };
 
       const result = await axios.post(
-        'http://localhost:8005/api/topic/definition',
+        `${process.env.NEXT_PUBLIC_TOPIC_BACKEND_URL}/api/topic/definition`,
         requestData,{ headers: { Authorization: `Bearer ${token}` } }
       );
 

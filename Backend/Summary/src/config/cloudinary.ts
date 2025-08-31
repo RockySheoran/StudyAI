@@ -10,12 +10,27 @@ export const configureCloudinary = () => {
   return cloudinary;
 };
 
-export const uploadToCloudinary = async (filePath: string, folder = 'pdf_summaries') => {
+export const uploadToCloudinary = async (file: Buffer | string, folder = 'pdf_summaries') => {
   try {
-    const result = await cloudinary.uploader.upload(filePath, {
+    let uploadOptions: any = {
       folder,
       resource_type: 'auto',
-    });
+    };
+
+    let result;
+    if (Buffer.isBuffer(file)) {
+      // Upload from buffer (memory storage)
+      result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }).end(file);
+      });
+    } else {
+      // Upload from file path (fallback)
+      result = await cloudinary.uploader.upload(file, uploadOptions);
+    }
+    
     return result;
   } catch (error) {
     console.error('Cloudinary upload error:', error);

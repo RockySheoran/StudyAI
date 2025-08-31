@@ -203,7 +203,7 @@ const CurrentAffairs: React.FC = () => {
         {/* Articles List */}
         <div className="space-y-6">
           <AnimatePresence>
-            {affairs.map((affair, index) => (
+            {affairs?.map((affair, index) => (
               <motion.div 
                 key={index} 
                 initial={{ opacity: 0, y: 20 }}
@@ -251,7 +251,7 @@ const CurrentAffairs: React.FC = () => {
 
         {/* Empty state when no articles */}
         <AnimatePresence>
-          {affairs.length === 0 && !loading && (
+          {affairs?.length === 0 && !loading && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -7,8 +7,8 @@ import { Summary } from '../models/summary.model';
 
 export const uploadFile = async (file: Express.Multer.File, userId?: string) => {
   try {
-    // Upload to Cloudinary
-    const result = await uploadToCloudinary(file.path);
+    // Upload to Cloudinary using buffer from memory storage
+    const result = await uploadToCloudinary(file.buffer);
     
     // Set deletion time (4 days from now)
     const deleteAt = new Date();
@@ -26,12 +26,6 @@ export const uploadFile = async (file: Express.Multer.File, userId?: string) => 
     });
 
     await newFile.save();
-
-
-    console.log(file.path,"file path")
-    // Delete local file
-    await unlink(file.path);
-    
 
     return newFile;
   } catch (error) {
