@@ -12,14 +12,7 @@ export async function middleware(request: NextRequest) {
   });
 
   // Enhanced token validation
-  const hasValidToken = Boolean(
-    nextAuthToken && 
-    nextAuthToken.accessToken && 
-    nextAuthToken.email && 
-    nextAuthToken.id &&
-    typeof nextAuthToken.exp === 'number' && 
-    nextAuthToken.exp > Date.now() / 1000
-  );
+ 
 
   // Check for NextAuth session cookie
   const sessionToken = request.cookies.get('next-auth.session-token') || 
@@ -33,20 +26,9 @@ export async function middleware(request: NextRequest) {
   
   // Final validation: require both valid JWT and session cookie
   // If cookies are manually deleted, hasSessionCookie will be false
-  const hasToken = hasValidToken && hasSessionCookie;
+  const hasToken = nextAuthToken && hasSessionCookie;
 
-  // Debug logging (remove in production)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Middleware Debug:', {
-      path,
-      hasValidToken,
-      hasSessionCookie,
-      hasToken,
-      tokenExists: !!nextAuthToken,
-      tokenExp: nextAuthToken?.exp,
-      currentTime: Date.now() / 1000
-    });
-  }
+ 
 
   // Handle auth-related API routes
   if (path.startsWith('/api/auth/')) {

@@ -5,7 +5,6 @@ import { ThemeProvider } from "./Provider/ThemeProvider";
 import ClientSessionProvider from "./Provider/ClientSessionProvider";
 import { Toaster } from "sonner";
 import StoreProvider from "@/components/Common_Components/StoreProvider";
-import SessionValidator from "@/components/Auth-com/SessionValidator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,20 +28,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ClientSessionProvider> 
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <StoreProvider>
-            <SessionValidator />
-            {children}
-          </StoreProvider>
-          <Toaster />
-        </ThemeProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <ClientSessionProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <StoreProvider>{children}</StoreProvider>
+
+            <Toaster />
+          </ThemeProvider>
         </ClientSessionProvider>
       </body>
     </html>
