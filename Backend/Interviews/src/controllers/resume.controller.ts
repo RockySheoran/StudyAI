@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
 import { Resume } from '../models/resume.model';
 import { AuthenticatedRequest } from '../types/custom-types';
-import { unlink } from 'fs/promises';
 
 export class ResumeController {
   async uploadResume(req: AuthenticatedRequest, res: Response) {
@@ -14,15 +13,20 @@ export class ResumeController {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
+      if (!file.buffer) {
+        return res.status(400).json({ error: 'File buffer not available' });
+      }
 
+      // Upload buffer directly to Cloudinary (no local file system needed)
+      const result = await uploadToCloudinary(file.buffer, userId || '');
+      
+      // Extract public ID from Cloudinary URL for deletion purposes
+      const urlParts = result.split('/');
+      const publicIdWithExtension = urlParts[urlParts.length - 1];
+      const publicId = `resumes/${userId}/${publicIdWithExtension.split('.')[0]}`;
 
-      const result = await uploadToCloudinary(file.path, userId || '');
-      const publicId = result.split('/').pop()?.split('.')[0] || '';
-
-      await unlink(file.path);
-
-      // Delete previous resumes
-      // await Resume.deleteMany({ userId: userId });
+      // Delete previous resumes for this user
+      await Resume.deleteMany({ userId: userId });
 
       const resume = new Resume({
         userId: userId || '',

@@ -10,13 +10,28 @@ cloudinary.config({
   secure: true,
 });
 
-export const uploadToCloudinary = async (file: string, folder: string): Promise<string> => {
+export const uploadToCloudinary = async (file: Buffer | string, folder: string): Promise<string> => {
   try {
-    const result = await cloudinary.uploader.upload(file, {
+    let uploadOptions: any = {
       folder: `resumes/${folder}`,
       resource_type: 'auto',
-    });
-    return result.secure_url;
+    };
+
+    let result;
+    if (Buffer.isBuffer(file)) {
+      // Upload from buffer (memory storage)
+      result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }).end(file);
+      });
+    } else {
+      // Upload from file path (fallback)
+      result = await cloudinary.uploader.upload(file, uploadOptions);
+    }
+    
+    return (result as any).secure_url;
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
     throw new Error('Failed to upload file to Cloudinary');
