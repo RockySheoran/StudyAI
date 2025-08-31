@@ -8,7 +8,7 @@ import { generateInterviewFeedback } from '../services/gemini.service';
 import { redisClient } from '../config/redis';
 
 
-export const startInterview = async (req: AuthenticatedRequest, res: Response) => {
+export const startInterview = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
     const { type, resumeId } = req.body;
     const userId = req.user?.id;
@@ -31,12 +31,10 @@ export const startInterview = async (req: AuthenticatedRequest, res: Response) =
   }
 }
 
-export const fetchInterview = async (req: Request, res: Response) => {
+export const fetchInterview = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    console.log(id)
-    const findInterview = await Interview.findOne({ _id: id });
-    console.log(findInterview)
+    const findInterview = await Interview.findById(id);
 
     if (!findInterview) {
       return res.status(404).json({ error: 'Interview not found' })
@@ -53,9 +51,6 @@ export const continueInterview = async (req: AuthenticatedRequest, res: Response
   try {
     const { interviewId, message } = req.body;
     const userId = req.user?.id;
-    console.log(interviewId)
-
-
 
     if (!interviewId || !message) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -76,11 +71,8 @@ export const continueInterview = async (req: AuthenticatedRequest, res: Response
 
 export const getInterviewHistory = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
-    console.log("first")
     const userId = req.user?.id;
-    console.log(userId, "sdcvsdcvefdfvfvef")
     const interviews = await getInterviewHistoryService(userId!);
-    console.log(interviews)
     res.status(200).json(interviews);
   } catch (error) {
     console.error('Error fetching interview history:', error);
@@ -92,17 +84,33 @@ export const getInterviewHistory = async (req: AuthenticatedRequest, res: Respon
 export const feedbackController = async (req: Request, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    console.log(id)
-    const interview: any = await Interview.findById({ _id: id });
+    const interview: any = await Interview.findById(id);
 
+    if (!interview) {
+      return res.status(404).json({ error: 'Interview not found' });
+    }
 
-    let resumeText = await redisClient.get(`resume/${interview?.resumeId}`);
-    if (!resumeText) {
-
-      // Get resume text (in a real app, you'd extract text from the resume)
-      const resume = await Resume.findById({ _id: interview?.resumeId });
-      resumeText = await extractTextFromPdf(resume?.url!);
-      await redisClient.set(`resume/${interview?.resumeId}`, resumeText, { EX: 172800 });
+    let resumeText = '';
+    
+    // Check if interview has a valid resumeId
+    if (interview.resumeId) {
+      resumeText = await redisClient.get(`resume/${interview.resumeId}`) || "";
+      
+      if (!resumeText) {
+        // Get resume text (in a real app, you'd extract text from the resume)
+        const resume = await Resume.findById(interview.resumeId);
+        
+        if (resume && resume.url) {
+          resumeText = await extractTextFromPdf(resume.url);
+          await redisClient.set(`resume/${interview.resumeId}`, resumeText, { EX: 172800 });
+        } else {
+          console.warn('Resume not found or has no URL for interview:', id);
+          resumeText = 'No resume available';
+        }
+      }
+    } else {
+      console.warn('No resumeId found for interview:', id);
+      resumeText = 'No resume available';
     }
     const { response, feedback } = await generateInterviewFeedback(
       interview.type,

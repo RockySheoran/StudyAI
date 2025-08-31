@@ -1,5 +1,3 @@
-
-"use server"
 import { current_affairs_url } from '@/lib/apiEnd_Point_Call';
 import { CurrentAffairsResponse } from '@/types/Current-Affairs/CurrentAffair-types';
 import axios from 'axios';
