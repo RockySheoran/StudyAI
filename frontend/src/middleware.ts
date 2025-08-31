@@ -20,9 +20,7 @@ export async function middleware(request: NextRequest) {
   
   const hasSessionCookie = Boolean(sessionToken?.value);
   
-  // Check for CSRF token (additional security)
-  const csrfToken = request.cookies.get('next-auth.csrf-token') || 
-                    request.cookies.get('__Host-next-auth.csrf-token');
+  
   
   // Final validation: require both valid JWT and session cookie
   // If cookies are manually deleted, hasSessionCookie will be false
