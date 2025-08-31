@@ -85,6 +85,9 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
   try {
     const { id } = req.params;
     const interview: any = await Interview.findById(id);
+    if(interview.feedback){
+      return res.status(200).json(interview.feedback)
+    }
 
     if (!interview) {
       return res.status(404).json({ error: 'Interview not found' });
