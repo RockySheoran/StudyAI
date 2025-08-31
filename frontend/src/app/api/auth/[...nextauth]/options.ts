@@ -119,23 +119,40 @@ export const authOptions: NextAuthOptions = {
     ],
   
     callbacks: {
-      async jwt({ token, user, account }) {
+      async jwt({ token, user, account, trigger }) {
         // Initial sign in - store user data in token
         if (user) {
           token.accessToken = user.accessToken;
           token.id = user.id;
           token.profile = user.profile;
+          token.iat = Math.floor(Date.now() / 1000);
+          token.exp = Math.floor(Date.now() / 1000) + SESSION_DURATION;
         }
+
+        // Validate token on each request
+        if (token.exp && typeof token.exp === 'number' && token.exp < Math.floor(Date.now() / 1000)) {
+          // Token expired, return empty token to force logout
+          return {};
+        }
+
         return token;
       },
       
-      async session({ session, token }) {
-        // Send properties to the client
-        if (token) {
-          session.accessToken = token.accessToken as string;
-          session.user.id = token.id as string;
-          session.user.profile = token.profile as string;
+      async session({ session, token, trigger }) {
+
+        // Validate token exists and has required properties
+        if (!token || !token.accessToken || !token.id || !token.email) {
+          // Invalid token, return null session to force logout
+          throw new Error("Invalid session");
         }
+
+        // Send properties to the client
+        session.accessToken = token.accessToken as string;
+        session.user.id = token.id as string;
+        session.user.profile = token.profile as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+
         return session;
       },
       async signIn({ user, account, profile }) {
@@ -200,11 +217,57 @@ export const authOptions: NextAuthOptions = {
     session: {
       strategy: "jwt",
       maxAge: SESSION_DURATION,
+      updateAge: 24 * 60 * 60, // Update session every 24 hours
     },
   
     jwt: {
       secret: getEnvVar("NEXTAUTH_SECRET"),
       maxAge: SESSION_DURATION,
+    },
+
+    cookies: {
+      sessionToken: {
+        name: `next-auth.session-token`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: SESSION_DURATION
+        }
+      },
+      callbackUrl: {
+        name: `next-auth.callback-url`,
+        options: {
+          sameSite: 'lax',
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: SESSION_DURATION
+        }
+      },
+      csrfToken: {
+        name: `next-auth.csrf-token`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: SESSION_DURATION
+        }
+      }
+    },
+
+    events: {
+      async signOut({ token }) {
+        // Log the sign out event
+        console.log('User signed out:', token?.email);
+      },
+      async session({ session, token }) {
+        // Validate session on each request
+        if (!token?.accessToken) {
+          throw new Error('Invalid session token');
+        }
+      }
     },
   
     secret: getEnvVar("NEXTAUTH_SECRET"),

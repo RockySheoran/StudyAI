@@ -30,32 +30,39 @@ const LogoutButton = () => {
     setIsLoading(true);
     
     try {
+      // First, call your backend logout
       const res = await Logout_Action({ token: token!});
-      console.log("res:", res);
+      console.log("Backend logout res:", res);
       
-      if (res.status === 200) {
-        // Clear all storage data when logout is successful
-        await performCompleteCleanup();
-        
-        // Clear user store
-        clearUser();
-        clearToken();
-        
-        // Close dialog
-        setIsOpen(false);
-        
-        // Show success message
-        toast.success("Logout successfully");
-        
-        // Sign out from NextAuth and redirect
-        await signOut({ redirect: true, callbackUrl: "/login" });
-        
-        // Navigate to login page
-        router.push("/login");
-      } else {
-        toast.error("Logout failed");
-        setIsOpen(false);
+      // Clear all storage data
+      await performCompleteCleanup();
+      
+      // Clear user store
+      clearUser();
+      clearToken();
+      
+      // Call custom logout API to clear NextAuth cookies
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (logoutError) {
+        console.warn('Custom logout API failed:', logoutError);
       }
+      
+      // Close dialog
+      setIsOpen(false);
+      
+      // Show success message
+      toast.success("Logout successfully");
+      
+      // Sign out from NextAuth with redirect disabled to prevent conflicts
+      await signOut({ redirect: false });
+      
+      // Force navigate to login page
+      router.push("/login");
+      
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("An error occurred during logout");

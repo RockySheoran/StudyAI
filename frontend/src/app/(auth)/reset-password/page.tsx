@@ -6,197 +6,320 @@ import { useSearchParams } from 'next/navigation';
 import { Reset_pass_action } from '@/Actions/Auth/Reset_password';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { FiLock, FiEye, FiEyeOff, FiArrowLeft, FiCheck, FiLoader, FiAlertCircle } from 'react-icons/fi';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
+// Define Zod schema for password validation
+const resetPasswordSchema = z.object({
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(50, 'Password must be less than 50 characters')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  confirmPassword: z.string()
+    .min(1, 'Please confirm your password')
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+});
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
-  const code = searchParams.get('code');
+  const token = searchParams.get('token');
   const router = useRouter();
-  if(!code){
+  if(!token){
     router.push('/login')
   }
   
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [passwordValue, setPasswordValue] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-   
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+  // Password strength checker
+  const checkPasswordStrength = (password: string) => {
+    const checks = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password)
+    };
+    return checks;
+  };
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    reset
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema)
+  });
 
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
     
-   
-      const res = await Reset_pass_action({code : code!, password});
+    try {
+      const res = await Reset_pass_action({token : token!, password: data.password, email});
       console.log(res)
       if(res.status == 200){
         toast.success(res.message)
         setIsSuccess(true);
+        reset();
       }else{
         toast.error(res.message)
+        // Set form-level error for server errors
+        setError("root", {
+          type: "manual",
+          message: res.message
+        });
       }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || "Password reset failed. Please try again.";
+      setError("root", {
+        type: "manual",
+        message: errorMessage
+      });
+      toast.error(errorMessage);
+    } finally {
       setIsLoading(false);
-   
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 dark:bg-[#0a0a12] bg-gray-50">
-      <div className="w-full max-w-md p-8 rounded-xl shadow-lg dark:bg-[#161626] bg-white dark:text-gray-100 text-gray-900">
-        <div className="mb-8">
-          <Link href="/">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              Stellar
-            </h1>
-          </Link>
-        </div>
-
-        {isSuccess ? (
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 dark:bg-[#1e1e3a] bg-green-100">
-              <svg className="h-6 w-6 dark:text-purple-400 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-lg font-medium mb-2">Password reset successful</h2>
-            <p className="mb-6 dark:text-gray-400 text-gray-600">
-              Your password has been successfully updated.
-            </p>
-            <Link
-              href="/login"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-400"
-            >
-              Return to Login
-            </Link>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-[#0a0a12] dark:to-[#161622] text-gray-800 dark:text-[#e0e0e0] transition-colors duration-300 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Mobile Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="md:hidden flex justify-center mb-6"
+        >
+          <div className="w-16 h-16 relative">
+            <Image
+              src="/Logo2.jpg"
+              alt="StudyAI Logo"
+              fill
+              className="rounded-full object-cover border-4 border-white dark:border-[#2e2e3a] shadow-md"
+            />
           </div>
-        ) : (
-          <>
-            <h2 className="text-2xl font-bold mb-2">Reset your password</h2>
-            <p className="mb-6 dark:text-gray-400 text-gray-600">
-              {email && <>For <span className="font-medium">{email}</span></>}
-            </p>
-            
-            {error && (
-              <div className="mb-4 p-3 rounded-md dark:bg-[#2e1a1a] bg-red-50 dark:text-red-300 text-red-800">
-                {error}
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium dark:text-gray-300 text-gray-700">
-                  New Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-[#1e1e3a] bg-white dark:border-gray-600 border-gray-300"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <svg className="h-5 w-5 dark:text-gray-400 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5 dark:text-gray-400 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
+        </motion.div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium dark:text-gray-300 text-gray-700">
-                  Confirm Password
-                </label>
-                <div className="mt-1 relative">
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-[#1e1e3a] bg-white dark:border-gray-600 border-gray-300"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <svg className="h-5 w-5 dark:text-gray-400 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5 dark:text-gray-400 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+        {/* Reset Password Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full p-6 rounded-2xl shadow-xl bg-white dark:bg-[#1e1e2a] border border-indigo-100 dark:border-[#2e2e3a]"
+        >
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="hidden md:flex justify-center mb-4">
+              <div className="w-16 h-16 relative">
+                <Image
+                  src="/Logo2.jpg"
+                  alt="StudyAI Logo"
+                  fill
+                  className="rounded-full object-cover border-4 border-white dark:border-[#2e2e3a] shadow-md"
+                />
               </div>
+            </div>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+              StudyAI
+            </h1>
+          </div>
 
-              <div>
-                <button
+          {isSuccess ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center"
+            >
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg">
+                <FiCheck className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-xl font-bold mb-3 text-gray-900 dark:text-[#e0e0e0]">Password Reset Successful!</h2>
+              <p className="mb-6 text-gray-600 dark:text-[#8a8a9b]">
+                Your password has been successfully updated. You can now sign in with your new password.
+              </p>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-indigo-500/30"
+                >
+                  <FiArrowLeft className="mr-2 h-5 w-5" />
+                  Return to Login
+                </Link>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold mb-3 text-gray-900 dark:text-[#e0e0e0]">Reset your password</h2>
+              <p className="mb-6 text-gray-600 dark:text-[#8a8a9b]">
+                {email && <>Create a new password for <span className="font-semibold text-indigo-600 dark:text-indigo-400">{email}</span></>}
+              </p>
+              
+              {/* Error Message */}
+              {errors.root && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 rounded-lg flex items-center gap-2 text-sm"
+                >
+                  <FiAlertCircle className="flex-shrink-0" />
+                  {errors.root.message}
+                </motion.div>
+              )}
+              
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e0e0e0]">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiLock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      {...register('password', {
+                        onChange: (e) => setPasswordValue(e.target.value)
+                      })}
+                      className={`w-full pl-10 px-4 py-3 pr-10 bg-gray-50 dark:bg-[#161622] border ${
+                        errors.password
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
+                      } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors"
+                      disabled={isLoading}
+                    >
+                      {showPassword ? (
+                        <FiEyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      ) : (
+                        <FiEye className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                      <FiAlertCircle className="flex-shrink-0" />
+                      {errors.password.message}
+                    </p>
+                  )}
+                  
+                  {/* Password Strength Indicator */}
+                  {passwordValue && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">Password requirements:</p>
+                      <div className="space-y-1">
+                        {Object.entries(checkPasswordStrength(passwordValue)).map(([key, isValid]) => (
+                          <div key={key} className="flex items-center gap-2 text-xs">
+                            <div className={`w-2 h-2 rounded-full ${isValid ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            <span className={isValid ? 'text-green-600 dark:text-green-400' : 'text-gray-500'}>
+                              {key === 'length' && 'At least 8 characters'}
+                              {key === 'uppercase' && 'One uppercase letter'}
+                              {key === 'lowercase' && 'One lowercase letter'}
+                              {key === 'number' && 'One number'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e0e0e0]">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiLock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...register('confirmPassword')}
+                      className={`w-full pl-10 px-4 py-3 pr-10 bg-gray-50 dark:bg-[#161622] border ${
+                        errors.confirmPassword
+                          ? "border-red-500 focus:ring-red-500"
+                          : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
+                      } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors"
+                      disabled={isLoading}
+                    >
+                      {showConfirmPassword ? (
+                        <FiEyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      ) : (
+                        <FiEye className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-400 flex items-center gap-1">
+                      <FiAlertCircle className="flex-shrink-0" />
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+
+                <motion.button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-purple-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                  whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Resetting...
+                      <FiLoader className="animate-spin mr-2 h-5 w-5 text-white" />
+                      Resetting Password...
                     </>
                   ) : (
-                    'Reset Password'
+                    <>
+                      <FiLock className="mr-2 h-5 w-5" />
+                      Reset Password
+                    </>
                   )}
-                </button>
-              </div>
-            </form>
+                </motion.button>
+              </form>
 
-            <div className="mt-4 text-center">
-              <Link
-                href="/login"
-                className="text-sm font-medium dark:text-indigo-400 text-indigo-600 hover:dark:text-indigo-300 hover:text-indigo-500"
-              >
-                Remember your password? Sign in
-              </Link>
-            </div>
-          </>
-        )}
+              <div className="mt-6 text-center">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                >
+                  <FiArrowLeft className="mr-1 h-4 w-4" />
+                  Remember your password? Sign in
+                </Link>
+              </div>
+            </>
+          )}
+        </motion.div>
       </div>
     </div>
   );

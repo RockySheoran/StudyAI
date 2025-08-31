@@ -8,6 +8,7 @@ import { middleware } from "../Middlewares/Auth.middleware";
 import { Forgot_Password } from "../Controllers/Forgot-Password";
 import { Reset_Password } from "../Controllers/Reset-Password";
 import { Logout } from "../Controllers/Logout";
+import { Verify_Email, Resend_Verification } from "../Controllers/Verify-Email";
 export const AuthRoute = express.Router();
 
 AuthRoute.post("/signUp", SignUp)
@@ -18,6 +19,8 @@ AuthRoute.get("/me",middleware,getProfile)
 AuthRoute.post("/forgot-password", Forgot_Password);   
 AuthRoute.post("/reset-password", Reset_Password);   
 AuthRoute.get("/logout",middleware,Logout);
+AuthRoute.get("/verify-email", Verify_Email);
+AuthRoute.post("/resend-verification", Resend_Verification);
 
 
 

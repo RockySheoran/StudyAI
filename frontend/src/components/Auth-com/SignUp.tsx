@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -54,7 +54,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [passwordValue, setPasswordValue] = useState("");
 
   // Password strength checker
@@ -81,22 +81,16 @@ export default function SignupPage() {
 
   // Handle client-side validation before server action
   const onSubmit = async (data: SignUpFormData) => {
-    setIsLoading(true);
+    // Create FormData for server action
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
     
-    try {
-      // Create FormData for server action
-      const formData = new FormData();
-      formData.append('name', data.name);
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      
-      // Call server action
-      await formAction(formData);
-    } catch (error) {
-      console.error('Form submission error:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Call server action inside transition
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 const [state, formAction] = useActionState(SignUp_Actions, {
     errors: {},
@@ -153,24 +147,26 @@ const [state, formAction] = useActionState(SignUp_Actions, {
 
   // Handle provider login (Google, GitHub, etc.)
   const handleProviderLogin = async (provider: string) => {
-    try {
-      setIsLoading(true);
-      toast.success(`Signing in with ${provider}`);
-      
-      const result = await signIn(provider, {
-        callbackUrl: "/dashboard",
-        redirect: true,
-      });
-      
-      if (result?.error) {
-        toast.error(result.error);
+    startTransition(async () => {
+      try {
+        toast.success(`Signing in with ${provider}`);
+        
+        const result = await signIn(provider, {
+          callbackUrl: "/dashboard",
+          redirect: false,
+        });
+        
+        if (result?.error) {
+          toast.error(result.error);
+        } else if (result?.url) {
+          // Successful login, redirect manually
+          router.push(result.url);
+        }
+      } catch (error) {
+        console.error("Provider login error:", error);
+        toast.error(`Failed to sign in with ${provider}`);
       }
-    } catch (error) {
-      console.error("Provider login error:", error);
-      toast.error(`Failed to sign in with ${provider}`);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   return (
@@ -251,7 +247,7 @@ const [state, formAction] = useActionState(SignUp_Actions, {
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
                   } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="John Doe"
-                  disabled={isLoading}
+                  disabled={isPending}
                 />
               </div>
               {errors.name && (
@@ -281,7 +277,7 @@ const [state, formAction] = useActionState(SignUp_Actions, {
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
                   } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="john@example.com"
-                  disabled={isLoading}
+                  disabled={isPending}
                 />
               </div>
               {errors.email && (
@@ -313,14 +309,14 @@ const [state, formAction] = useActionState(SignUp_Actions, {
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
                   } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="••••••••"
-                  disabled={isLoading}
+                  disabled={isPending}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors cursor-pointer"
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  disabled={isLoading}
+                  disabled={isPending}
                 >
                   {showPassword ? (
                     <FiEyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -376,14 +372,14 @@ const [state, formAction] = useActionState(SignUp_Actions, {
                       : "border-gray-200 dark:border-[#2e2e3a] focus:ring-indigo-500"
                   } rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all`}
                   placeholder="••••••••"
-                  disabled={isLoading}
+                  disabled={isPending}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors cursor-pointer"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                  disabled={isLoading}
+                  disabled={isPending}
                 >
                   {showConfirmPassword ? (
                     <FiEyeOff className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -403,12 +399,12 @@ const [state, formAction] = useActionState(SignUp_Actions, {
             {/* Submit Button */}
             <motion.button
               type="submit"
-              disabled={isLoading}
-              whileHover={{ scale: isLoading ? 1 : 1.02 }}
-              whileTap={{ scale: isLoading ? 1 : 0.98 }}
+              disabled={isPending}
+              whileHover={{ scale: isPending ? 1 : 1.02 }}
+              whileTap={{ scale: isPending ? 1 : 0.98 }}
               className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <FiLoader className="animate-spin mr-2 h-5 w-5 text-white" />
                   Creating account...
@@ -438,7 +434,7 @@ const [state, formAction] = useActionState(SignUp_Actions, {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <motion.button
                 onClick={() => handleProviderLogin('google')}
-                disabled={isLoading}
+                disabled={isPending}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
                 aria-label="Sign in with Google"
@@ -451,7 +447,7 @@ const [state, formAction] = useActionState(SignUp_Actions, {
 
               <motion.button
                 onClick={() => handleProviderLogin('github')}
-                disabled={isLoading}
+                disabled={isPending}
                 whileHover={{ y: -2 }}
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-200 dark:border-[#2e2e3a] bg-white dark:bg-[#161622] p-3 text-sm font-medium shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[#2a2a3a] cursor-pointer"
                 aria-label="Sign in with GitHub"

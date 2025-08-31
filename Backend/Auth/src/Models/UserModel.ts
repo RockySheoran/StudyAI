@@ -10,6 +10,9 @@ interface User {
     provider: ("google" | "github" | "email")[];
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
+    isEmailVerified?: boolean;
+    emailVerificationToken?: string;
+    emailVerificationExpires?: Date;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -28,6 +31,9 @@ const userSchema = new mongoose.Schema({
     },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String },
+    emailVerificationExpires: { type: Date },
 }, {
     timestamps: true
 });

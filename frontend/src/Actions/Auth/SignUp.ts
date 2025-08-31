@@ -29,7 +29,7 @@ export const SignUp_Actions = async (prevState: FormState, formData: FormData): 
 
         return {
             errors: {},
-            message: "Signup successful",
+            message: response.data.message || "Signup successful",
             status: 200,
             data: response.data
         };

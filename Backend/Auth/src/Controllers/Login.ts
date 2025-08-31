@@ -16,11 +16,22 @@ export const Login = async (req: Request, res: Response): Promise<any> => {
         if(!findUser?.password){
             return res.status(400).json({ message: "Invalid credentials" });
         }
+        if(findUser.isEmailVerified == false){
+            return res.status(400).json({ message: "User email is not verified please SignUp" });
+        }
         
         const isPasswordValid = await bcrypt.compare(password, findUser?.password);
         
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // Check if email is verified for email provider users
+        if (findUser.provider.includes("email") && !findUser.isEmailVerified) {
+            return res.status(400).json({ 
+                message: "Please verify your email address before logging in. Check your inbox for the verification link.",
+                requiresVerification: true 
+            });
         }
         const token = generateToken({ email: email, id: findUser._id.toString() });
         const cookieOptions = {

@@ -1,26 +1,55 @@
 import { NextResponse, NextRequest } from "next/server";
-import {  getToken } from "next-auth/jwt";
+import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPublicPath = path === '/login' || path === '/signup' || path==='/' || path === '/resetpassword' || path === '/forgot-password';
 
- 
- 
-
-  // Also check for NextAuth token
+  // Get NextAuth token
   const nextAuthToken = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET
   });
 
+  // Enhanced token validation
+  const hasValidToken = Boolean(
+    nextAuthToken && 
+    nextAuthToken.accessToken && 
+    nextAuthToken.email && 
+    nextAuthToken.id &&
+    typeof nextAuthToken.exp === 'number' && 
+    nextAuthToken.exp > Date.now() / 1000
+  );
 
+  // Check for NextAuth session cookie
+  const sessionToken = request.cookies.get('next-auth.session-token') || 
+                       request.cookies.get('__Secure-next-auth.session-token');
+  
+  const hasSessionCookie = Boolean(sessionToken?.value);
+  
+  // Check for CSRF token (additional security)
+  const csrfToken = request.cookies.get('next-auth.csrf-token') || 
+                    request.cookies.get('__Host-next-auth.csrf-token');
+  
+  // Final validation: require both valid JWT and session cookie
+  // If cookies are manually deleted, hasSessionCookie will be false
+  const hasToken = hasValidToken && hasSessionCookie;
 
-  const hasToken = nextAuthToken?.accessToken;
+  // Debug logging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Middleware Debug:', {
+      path,
+      hasValidToken,
+      hasSessionCookie,
+      hasToken,
+      tokenExists: !!nextAuthToken,
+      tokenExp: nextAuthToken?.exp,
+      currentTime: Date.now() / 1000
+    });
+  }
 
-
-  // Handle Google auth callback
-  if (path.startsWith('/api/auth/callback')) {
+  // Handle auth-related API routes
+  if (path.startsWith('/api/auth/')) {
     return NextResponse.next();
   }
 
