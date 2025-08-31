@@ -94,11 +94,10 @@ export const InterviewContainer = ({
     }));
   };
 
-  
-  // Handle getting feedback
   const getFeedback = useCallback(async () => {
     setIsFeedbackSubmitting(true);
     try {
+      //get feedback
       const response = await FeedbackService(id);
       setFeedback(response.feedback);
       setShowFeedbackModal(true);
