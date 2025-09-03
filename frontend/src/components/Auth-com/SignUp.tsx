@@ -145,6 +145,7 @@ const [state, formAction] = useActionState(SignUp_Actions, {
   //   }
   // };
 
+  
   // Handle provider login (Google, GitHub, etc.)
   const handleProviderLogin = async (provider: string) => {
     startTransition(async () => {
