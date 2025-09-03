@@ -1,29 +1,27 @@
-'use client';
-import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { FaUpload, FaFile, FaTimes } from 'react-icons/fa';
-import { useSummaryStore } from '@/lib/Store/Summary/summaryStore';
+"use client";
+import React, { useRef } from "react";
+import { motion } from "framer-motion";
+import { FaUpload, FaFile, FaTimes } from "react-icons/fa";
+import { useSummaryStore } from "@/lib/Store/Summary/summaryStore";
+import { toast } from "sonner";
 
 const FileUploadComponent: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { 
-    selectedFile, 
-    status, 
-    error, 
-    setSelectedFile, 
-    resetSession 
-  } = useSummaryStore();
+  const { selectedFile, status, error, setSelectedFile, resetSession } =
+    useSummaryStore();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (!file) return;
+      validateAndSetFile(file);
     }
   };
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -45,38 +43,57 @@ const FileUploadComponent: React.FC = () => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       const file = files[0];
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        setSelectedFile(file);
-      }
+      if (file) validateAndSetFile(file);
     }
+  };
+  const validateAndSetFile = (file: File) => {
+    const validTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/octet-stream", // Google Drive sometimes sends this
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!validTypes.includes(file.type)) {
+      toast.error("Invalid file type. Please upload a PDF, DOC, or DOCX file.");
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toast.error("File size exceeds 5MB limit.");
+      return;
+    }
+
+    setSelectedFile(file);
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const isDisabled = status === 'uploading' || status === 'processing';
+  const isDisabled = status === "uploading" || status === "processing";
 
   return (
     <div className="mb-6">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         Document to summarize
       </label>
-      
+
       {!selectedFile ? (
         <motion.div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-200 ${
-            isDisabled 
-              ? 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 cursor-not-allowed'
-              : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+            isDisabled
+              ? "border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 cursor-not-allowed"
+              : "border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer bg-gray-50 dark:bg-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-700/50"
           }`}
           onClick={() => !isDisabled && fileInputRef.current?.click()}
           onDragOver={handleDragOver}
@@ -86,24 +103,38 @@ const FileUploadComponent: React.FC = () => {
           whileHover={!isDisabled ? { scale: 1.01 } : {}}
           whileTap={!isDisabled ? { scale: 0.99 } : {}}
         >
-          <FaUpload className={`mx-auto h-12 w-12 mb-4 ${
-            isDisabled ? 'text-gray-300 dark:text-gray-600' : 'text-gray-400 dark:text-gray-500'
-          }`} />
-          <p className={`text-lg font-medium mb-2 ${
-            isDisabled ? 'text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-300'
-          }`}>
-            {isDisabled ? 'Processing...' : 'Drop your PDF here or click to browse'}
+          <FaUpload
+            className={`mx-auto h-12 w-12 mb-4 ${
+              isDisabled
+                ? "text-gray-300 dark:text-gray-600"
+                : "text-gray-400 dark:text-gray-500"
+            }`}
+          />
+          <p
+            className={`text-lg font-medium mb-2 ${
+              isDisabled
+                ? "text-gray-400 dark:text-gray-600"
+                : "text-gray-700 dark:text-gray-300"
+            }`}
+          >
+            {isDisabled
+              ? "Processing..."
+              : "Drop your PDF here or click to browse"}
           </p>
-          <p className={`text-sm ${
-            isDisabled ? 'text-gray-400 dark:text-gray-600' : 'text-gray-500 dark:text-gray-400'
-          }`}>
-            Supports PDF files up to 10MB
+          <p
+            className={`text-sm ${
+              isDisabled
+                ? "text-gray-400 dark:text-gray-600"
+                : "text-gray-500 dark:text-gray-400"
+            }`}
+          >
+            Supports PDF and Docx files up to 5MB
           </p>
-          
+
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,application/pdf"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleFileChange}
             className="hidden"
             disabled={isDisabled}
@@ -122,18 +153,25 @@ const FileUploadComponent: React.FC = () => {
                 <FaFile className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white break-all" title={selectedFile.name}>
-                  {selectedFile.name.length > 30 
-                    ? `${selectedFile.name.substring(0, 25)}...${selectedFile.name.substring(selectedFile.name.lastIndexOf('.'))}`
-                    : selectedFile.name
-                  }
+                <p
+                  className="text-sm font-medium text-gray-900 dark:text-white break-all"
+                  title={selectedFile.name}
+                >
+                  {selectedFile.name.length > 30
+                    ? `${selectedFile.name.substring(
+                        0,
+                        25
+                      )}...${selectedFile.name.substring(
+                        selectedFile.name.lastIndexOf(".")
+                      )}`
+                    : selectedFile.name}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {formatFileSize(selectedFile.size)}
                 </p>
               </div>
             </div>
-            
+
             {!isDisabled && (
               <div className="flex justify-end">
                 <motion.button
@@ -156,7 +194,10 @@ const FileUploadComponent: React.FC = () => {
                 <FaFile className="h-8 w-8 text-red-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate" title={selectedFile.name}>
+                <p
+                  className="text-sm font-medium text-gray-900 dark:text-white truncate"
+                  title={selectedFile.name}
+                >
                   {selectedFile.name}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -164,7 +205,7 @@ const FileUploadComponent: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             {!isDisabled && (
               <motion.button
                 onClick={handleRemoveFile}
@@ -186,7 +227,9 @@ const FileUploadComponent: React.FC = () => {
           className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm text-red-600 dark:text-red-400 flex-1">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 flex-1">
+              {error}
+            </p>
             <motion.button
               onClick={resetSession}
               className="ml-3 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-600 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"

@@ -44,7 +44,8 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
     const validTypes = [
       'application/pdf',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/octet-stream', // Google Drive sometimes sends this
     ];
     const maxSize = 5 * 1024 * 1024; // 5MB
 

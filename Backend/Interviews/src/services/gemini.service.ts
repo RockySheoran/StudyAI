@@ -32,6 +32,7 @@ Focus on evaluating their technical competency through:
 - Code quality and best practices
 - Technical challenges they've faced
 - Depth of understanding in their stated technologies
+-A random DSA question after asking if the interviewer is comfortable with it
 
 DO NOT ask personal or behavioral questions. Ask progressively challenging questions.
 Include follow-up questions to verify depth of knowledge.

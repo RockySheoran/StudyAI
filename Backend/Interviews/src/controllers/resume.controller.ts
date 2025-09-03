@@ -9,12 +9,37 @@ export class ResumeController {
       const userId = req.user?.id;
       const file = req.file;
 
+      console.log('Resume upload attempt:', {
+        userId,
+        hasFile: !!file,
+        fileDetails: file ? {
+          originalname: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+          hasBuffer: !!file.buffer
+        } : null
+      });
+
       if (!file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ 
+          error: 'No file uploaded',
+          message: 'Please select a valid PDF, DOC, or DOCX file'
+        });
       }
 
-      if (!file.buffer) {
-        return res.status(400).json({ error: 'File buffer not available' });
+      if (!file.buffer || file.buffer.length === 0) {
+        return res.status(400).json({ 
+          error: 'File buffer not available or empty',
+          message: 'The uploaded file appears to be corrupted or empty. Please try uploading again.'
+        });
+      }
+
+      // Additional validation for mobile uploads
+      if (file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({ 
+          error: 'File too large',
+          message: 'File size must be less than 10MB'
+        });
       }
 
       // Upload buffer directly to Cloudinary (no local file system needed)

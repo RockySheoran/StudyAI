@@ -18,25 +18,63 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Personal Tutor - Personalized Learning with AI",
-  description: "Advanced AI-powered personal tutor offering interactive quizzes, Q&A sessions, current affairs updates, and interview preparation. Enhance your learning experience with personalized education technology.",
-  keywords: ["AI tutor","AI Personal Tutor","StudyAI","personalized learning", "online education", "quiz platform", "interview preparation", "current affairs", "educational technology", "AI learning assistant"],
-  authors: [{ name: "StudyAI Team" }],
-  creator: "StudyAI",
+  title: "StudyAI - AI-Powered Educational Platform | Smart Learning Assistant",
+  description: "StudyAI is an advanced AI-powered educational platform offering personalized learning through interactive quizzes, interview preparation, current affairs, and PDF summarization. Transform your learning experience with intelligent tutoring powered by Gemini AI.",
+  keywords: [
+    "StudyAI", "Study AI", "AI tutor", "AI Personal Tutor", "AI educational platform",
+    "personalized learning", "online education", "AI learning assistant", "smart tutor",
+    "quiz platform", "interview preparation", "current affairs", "PDF summarization",
+    "educational technology", "AI-powered learning", "intelligent tutoring system",
+    "Gemini AI education", "adaptive learning", "speech recognition learning",
+    "educational AI assistant", "study platform", "learning analytics"
+  ],
+  authors: [ { name: "StudyAI Team" }],
   publisher: "StudyAI",
-  robots: "index, follow",
+  applicationName: "StudyAI",
+  generator: "Next.js",
+  referrer: "origin-when-cross-origin",
+  robots: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
   viewport: "width=device-width, initial-scale=1",
+
+  // Open Graph
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://study-ai-assist.vercel.app/",
+    siteName: "StudyAI",
+    title: "StudyAI - AI-Powered Educational Platform",
+    description: "Transform your learning with StudyAI's intelligent tutoring system. Features AI-powered quizzes, interview prep, current affairs, and personalized learning experiences.",
+    images: [
+      {
+        url: "https://study-ai-assist.vercel.app/Logo2.jpg",
+        width: 1200,
+        height: 630,
+        alt: "StudyAI - AI-Powered Educational Platform",
+      },
+    ],
+  },
+
+  
 
   // Icons
   icons: {
-    icon: "/Logo2.jpg",
+    icon: [
+      { url: "/Logo2.jpg", sizes: "32x32", type: "image/jpeg" },
+      { url: "/Logo2.jpg", sizes: "16x16", type: "image/jpeg" },
+    ],
     shortcut: "/Logo2.jpg",
-    apple: "/Logo2.jpg",
+    apple: [
+      { url: "/Logo2.jpg", sizes: "180x180", type: "image/jpeg" },
+    ],
   },
   
   // Additional SEO
   category: "Education",
-  classification: "Educational Technology",
+  classification: "Educational Technology Platform",
+  other: {
+    "google-site-verification": "your-google-verification-code", // Add your actual verification code
+    "msvalidate.01": "your-bing-verification-code", // Add your actual verification code
+  },
 };
 
 export default function RootLayout({
@@ -52,13 +90,43 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "EducationalOrganization",
+              "@type": "WebApplication",
               "name": "StudyAI",
-              "description": "Advanced AI-powered personal tutor offering interactive quizzes, Q&A sessions, current affairs updates, and interview preparation.",
+              "alternateName": ["Study AI", "AI Personal Tutor", "StudyAI Platform"],
+              "description": "StudyAI is an advanced AI-powered educational platform offering personalized learning through interactive quizzes, interview preparation, current affairs, and PDF summarization. Transform your learning experience with intelligent tutoring powered by Gemini AI.",
               "url": "https://study-ai-assist.vercel.app/",
               "logo": "https://study-ai-assist.vercel.app/Logo2.jpg",
-              "educationalCredentialAwarded": "Learning Certificates",
-              "hasCredential": "AI-Powered Learning Platform"
+              "image": "https://study-ai-assist.vercel.app/Logo2.jpg",
+              "applicationCategory": "EducationalApplication",
+              "operatingSystem": "Web Browser",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "author": {
+                "@type": "Person",
+                "name": "Rocky Sheoran and Sahil Sharma",
+                "url": "https://github.com/RockySheoran"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "StudyAI",
+                "logo": "https://study-ai-assist.vercel.app/Logo2.jpg"
+              },
+              "dateCreated": "2024",
+              "dateModified": "2025",
+              "inLanguage": "en-US",
+              "isAccessibleForFree": true,
+              "keywords": "StudyAI, AI tutor, educational platform, personalized learning, quiz platform, interview preparation, current affairs, PDF summarization, AI learning assistant",
+              "featureList": [
+                "AI-Powered Quiz Generation",
+                "Interview Preparation with Speech Recognition",
+                "Current Affairs Updates",
+                "PDF Summarization",
+                "Personalized Learning Analytics",
+                "Voice-Enabled Learning"
+              ]
             })
           }}
         />

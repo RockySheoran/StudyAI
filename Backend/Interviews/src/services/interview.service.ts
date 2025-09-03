@@ -26,12 +26,12 @@ import {  generateInterviewResponse } from './gemini.service';
       }
     } else {
       // Try to find latest resume for user
-      const latestResume = await Resume.findOne({ userId }).sort({ uploadDate: -1 });
-      if (latestResume) {
-        selectedResumeId = latestResume._id;
-        resumeText = await extractTextFromPdf(latestResume.url);
-        await redisClient.set(`resume/${latestResume._id}`, resumeText, { EX: 172800 });
-      }
+      // const latestResume = await Resume.findOne({ userId }).sort({ uploadDate: -1 });
+      // if (latestResume) {
+      //   selectedResumeId = latestResume._id;
+      //   resumeText = await extractTextFromPdf(latestResume.url);
+      //   await redisClient.set(`resume/${latestResume._id}`, resumeText, { EX: 172800 });
+      // }
     }
 
     // Generate personalized initial message based on interview type and resume
@@ -39,15 +39,15 @@ import {  generateInterviewResponse } from './gemini.service';
     
     if (type === 'personal') {
       if (resumeText) {
-        initialContent = `Welcome to your personal interview! I've reviewed your resume and I'm excited to learn more about your background and experiences. Let's start with: Can you tell me about yourself and what motivated you to pursue your current career path?`;
+        initialContent = `Welcome to your personal interview! I've reviewed your resume and I'm excited to learn more about your background and experiences. Let's start with: give me your introduction in about 90 to 120 seconds`;
       } else {
-        initialContent = `Welcome to your personal interview! Since we don't have your resume, let's start by getting to know you better. Can you tell me about yourself, your background, and what kind of role you're looking for?`;
+        initialContent = `Welcome to your personal interview! Since we don't have your resume, let's start by getting to know you better.  Let's start with: give me your introduction in about 90 to 120 seconds`;
       }
     } else {
       if (resumeText) {
-        initialContent = `Welcome to your technical interview! I've reviewed your resume and I'm impressed by your technical background. Let's dive into some technical questions. First, can you walk me through a challenging technical problem you've solved recently?`;
+        initialContent = `Welcome to your technical interview! I've reviewed your resume and I'm impressed by your technical background. Let's start with: Give me a technical introduction in about 90 to 120 seconds.`;
       } else {
-        initialContent = `Welcome to your technical interview! Let's explore your technical skills and problem-solving abilities. To start, can you tell me about your technical background and the programming languages or technologies you're most comfortable with?`;
+        initialContent = `Welcome to your technical interview! Let's explore your technical skills and problem-solving abilities. Let's start with: Give me a technical introduction in about 90 to 120 seconds. `;
       }
     }
 

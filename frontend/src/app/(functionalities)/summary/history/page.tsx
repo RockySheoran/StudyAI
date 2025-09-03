@@ -154,7 +154,7 @@ export default function Summary_history() {
               whileTap={{ scale: 0.98 }}
               onClick={refreshHistory}
               disabled={loading}
-              className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <motion.svg 
                 animate={{ rotate: isRefreshing ? 360 : 0 }}

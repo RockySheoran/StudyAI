@@ -99,6 +99,8 @@ export const SignUp = async (req: Request, res: Response): Promise<any> => {
         const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
         if (findUser?.isEmailVerified == false && findUser?.provider.includes("email")) {
             const user = await UserModel.findByIdAndUpdate(findUser._id, {
+                password: hashedPassword,
+                name: name,
                 isEmailVerified: false,
                 emailVerificationToken: hashedVerificationToken,
                 emailVerificationExpires: verificationExpires

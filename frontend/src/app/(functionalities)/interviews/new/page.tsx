@@ -48,9 +48,9 @@ export default function NewInterviewPage() {
           const resumeResponse: any = await uploadResume(resumeFile);
           resumeId = resumeResponse?._id;
           toast.success('Resume uploaded successfully');
-        } catch (error) {
+        } catch (error:any) {
           console.error('Resume upload error:', error);
-          toast.error('Failed to upload resume. Starting without resume...');
+          toast.error(error.respone.data.message || 'Failed to upload resume. Starting without resume...');
         }
       }
 

@@ -157,7 +157,7 @@ const SummaryPage = () => {
                   Multiple Formats
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  Support for PDF, DOCX, and TXT files up to 10MB. Recommended: under 50 pages for optimal processing.
+                  Support for PDF and DOCX files up to 5MB. Recommended: under 50 pages for optimal processing.
                 </p>
               </div>
 
