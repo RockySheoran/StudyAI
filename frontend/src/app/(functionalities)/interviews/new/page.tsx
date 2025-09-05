@@ -190,7 +190,7 @@ export default function NewInterviewPage() {
                         Technical Interview
                       </h3>
                       <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
-                        Master coding challenges, system design, and technical problem-solving
+                        Master coding challenges and technical problem-solving
                       </p>
                       {/* <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center justify-center space-x-2">
