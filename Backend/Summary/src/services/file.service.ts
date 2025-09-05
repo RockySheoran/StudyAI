@@ -15,8 +15,8 @@ export const uploadFile = async (file: Express.Multer.File, userId?: string) => 
     // Save to database
     const newFile = new File({
       originalName: file.originalname,
-      cloudinaryId: result?.public_id,
-      cloudinaryUrl: result?.secure_url,
+      cloudinaryId: result.public_id,
+      cloudinaryUrl: result.secure_url,
       size: file.size,
       mimetype: file.mimetype,
       deleteAt,

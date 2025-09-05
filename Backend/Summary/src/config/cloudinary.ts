@@ -16,14 +16,19 @@ export interface CloudinaryUploadResult {
   [key: string]: any;
 }
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
-});
+export const configureCloudinary = () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+};
 
-export const uploadToCloudinary = async (file: Buffer | string, folder = 'pdf_summaries'): Promise<string> => {
+// Initialize cloudinary on module load
+configureCloudinary();
+
+export const uploadToCloudinary = async (file: Buffer | string, folder = 'pdf_summaries'): Promise<CloudinaryUploadResult> => {
   try {
     let uploadOptions: any = {
       folder,
@@ -57,7 +62,7 @@ export const uploadToCloudinary = async (file: Buffer | string, folder = 'pdf_su
       result = await cloudinary.uploader.upload(file, uploadOptions);
     }
     
-    return (result as any).secure_url;
+    return result as CloudinaryUploadResult;
   } catch (error: any) {
     console.error('Error uploading to Cloudinary:', error);
     
