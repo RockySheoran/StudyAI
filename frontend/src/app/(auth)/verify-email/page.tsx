@@ -261,7 +261,7 @@ export default function VerifyEmail() {
               >
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center w-full py-3 px-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 shadow-md"
+                  className="inline-flex cursor-pointer items-center justify-center w-full py-3 px-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 shadow-md"
                 >
                   <FiArrowLeft className="mr-2 h-5 w-5" />
                   Back to Login
@@ -297,7 +297,7 @@ export default function VerifyEmail() {
               >
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-indigo-500/30"
+                  className="inline-flex cursor-pointer items-center justify-center w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-indigo-500/30"
                 >
                   <FiArrowLeft className="mr-2 h-5 w-5" />
                   Back to Sign Up
@@ -315,7 +315,7 @@ export default function VerifyEmail() {
           className="text-center mt-6"
         >
           <p className="text-sm text-gray-500 dark:text-[#6b6b7d]">
-            Need help? <Link href="/support" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact Support</Link>
+            Need help? <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">Contact Support</Link>
           </p>
         </motion.div>
       </div>

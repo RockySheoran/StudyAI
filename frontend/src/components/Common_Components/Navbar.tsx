@@ -302,7 +302,7 @@ const Navbar = ({ isOpen, setIsOpen }: NavbarProps) => {
                       setMobileMenuOpen(false);
                     }
                   }}
-                  className={`flex items-center ${isOpen ? 'justify-start' : 'justify-center'} p-3 rounded-lg transition-colors w-full text-left ${
+                  className={`flex cursor-pointer items-center ${isOpen ? 'justify-start' : 'justify-center'} p-3 rounded-lg transition-colors w-full text-left ${
                     isActive(item.route)
                       ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200"
                       : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"

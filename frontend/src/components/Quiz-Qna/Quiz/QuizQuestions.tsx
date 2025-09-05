@@ -95,7 +95,7 @@ export default function QuizQuestions({
       <div className="flex justify-between">
         <button
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
         >
           Cancel
         </button>
@@ -104,7 +104,7 @@ export default function QuizQuestions({
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors duration-200"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
           >
             Previous
           </button>
@@ -113,15 +113,15 @@ export default function QuizQuestions({
             <button
               onClick={handleNext}
               disabled={!userAnswers[currentQuestionIndex]}
-              className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 transition-colors duration-200"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
             >
               Next
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={Object.keys(userAnswers).length !== quizData.questions.length || loading}
-              className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors duration-200"
+              disabled={loading || Object.keys(userAnswers).length !== quizData.questions.length}
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
             >
               {loading ? 'Submitting...' : 'Submit Quiz'}
             </button>
@@ -135,7 +135,7 @@ export default function QuizQuestions({
           <button
             key={index}
             onClick={() => onQuestionNavigate(index)}
-            className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+            className={`w-3 h-3 rounded-full transition-colors duration-200 cursor-pointer ${
               index === currentQuestionIndex
                 ? 'bg-blue-600 dark:bg-blue-500'
                 : userAnswers[index]

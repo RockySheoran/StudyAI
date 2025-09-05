@@ -79,7 +79,7 @@ export default function QnAQuestions({
       <div className="flex justify-between">
         <button
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 cursor-pointer"
         >
           Cancel
         </button>
@@ -88,7 +88,7 @@ export default function QnAQuestions({
           <button
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition-colors duration-200"
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
           >
             Previous
           </button>
@@ -96,7 +96,7 @@ export default function QnAQuestions({
           {currentQuestionIndex < qnaData.questions.length - 1 ? (
             <button
               onClick={handleNext}
-              className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200"
+              className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-200 cursor-pointer"
             >
               Next
             </button>
@@ -104,7 +104,7 @@ export default function QnAQuestions({
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 transition-colors duration-200"
+              className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
             >
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : 'Submit'}
             </button>
@@ -118,7 +118,7 @@ export default function QnAQuestions({
           <button
             key={index}
             onClick={() => onQuestionNavigate(index)}
-            className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+            className={`w-3 h-3 rounded-full transition-colors duration-200 cursor-pointer ${
               index === currentQuestionIndex
                 ? 'bg-green-600 dark:bg-green-500'
                 : userAnswers[index]

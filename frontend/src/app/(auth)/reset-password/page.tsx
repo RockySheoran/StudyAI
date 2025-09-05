@@ -207,7 +207,7 @@ export default function ResetPassword() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors"
+                      className="absolute cursor-pointer right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-[#2e2e3a] transition-colors"
                       disabled={isLoading}
                     >
                       {showPassword ? (
@@ -291,7 +291,7 @@ export default function ResetPassword() {
                   disabled={isLoading}
                   whileHover={{ scale: isLoading ? 1 : 1.02 }}
                   whileTap={{ scale: isLoading ? 1 : 0.98 }}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
+                  className="w-full py-3 cursor-pointer px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
                 >
                   {isLoading ? (
                     <>

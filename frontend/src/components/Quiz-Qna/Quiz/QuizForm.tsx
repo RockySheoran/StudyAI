@@ -61,7 +61,7 @@ export default function QuizForm({ form, onSubmit, loading, reset }: QuizFormPro
           <button
             type="button"
             onClick={() => reset()}
-            className=" w-full bg-gray-300 cursor-pointer dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
+            className="w-full bg-gray-300 cursor-pointer dark:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
           >
             Reset
           </button>
@@ -70,7 +70,7 @@ export default function QuizForm({ form, onSubmit, loading, reset }: QuizFormPro
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 cursor-pointer dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors duration-200"
+          className="w-full bg-blue-600 cursor-pointer dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
           {loading ? 'Generating Quiz...' : 'Generate Quiz'}
         </button>

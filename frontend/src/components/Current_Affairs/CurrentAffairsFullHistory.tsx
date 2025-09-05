@@ -433,7 +433,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
               </h3>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+                className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 cursor-pointer"
               >
                 <FaFilter />
                 <FaChevronDown
@@ -525,7 +525,7 @@ const CurrentAffairsFullHistory: React.FC = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={clearFilters}
-                      className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200"
+                      className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 cursor-pointer"
                     >
                       <FaTimes />
                       Clear Filters

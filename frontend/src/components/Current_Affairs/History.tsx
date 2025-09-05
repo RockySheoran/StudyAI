@@ -99,7 +99,7 @@ const History: React.FC = () => {
           <div className="flex items-center gap-3">
             <motion.button
               onClick={goBack}
-              className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-700 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
+              className="flex items-center cursor-pointer gap-2 bg-indigo-600 dark:bg-indigo-700 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

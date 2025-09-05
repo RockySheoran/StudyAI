@@ -136,7 +136,7 @@ export default function ForgotPassword() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={loading}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
+                  className="w-full cursor-pointer  py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-lg font-medium text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-indigo-500/30 flex items-center justify-center mt-2"
                 >
                   <FiMail className="mr-2 h-5 w-5" />
                   {loading ? "Sending..." : "Send Reset Link"}
@@ -146,7 +146,7 @@ export default function ForgotPassword() {
               <div className="mt-6 text-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  className="inline-flex cursor-pointer items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
                 >
                   <FiArrowLeft className="mr-1 h-4 w-4" />
                   Remember your password? Sign in

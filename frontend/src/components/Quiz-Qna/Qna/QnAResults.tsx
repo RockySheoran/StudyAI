@@ -24,7 +24,7 @@ export default function QnAResults({ result, onRestart, showRestartButton = true
         </h2>
         <button
           onClick={onRestart}
-          className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+          className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 cursor-pointer"
         >
           Try Another QnA
         </button>
@@ -79,7 +79,7 @@ export default function QnAResults({ result, onRestart, showRestartButton = true
         <div className="text-center">
           <button
             onClick={onRestart}
-            className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200"
+            className="px-6 py-3 bg-green-600 dark:bg-green-700 text-white rounded-md hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 cursor-pointer"
           >
             Try Another QnA
           </button>
