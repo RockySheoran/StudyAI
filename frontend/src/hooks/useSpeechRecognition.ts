@@ -197,6 +197,15 @@ export const useSpeechRecognition = () => {
     setError(null);
     resetTranscript();
 
+    // Request microphone permission explicitly
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (permissionError) {
+      console.error('Microphone permission denied:', permissionError);
+      setError('Microphone access denied. Please allow microphone access in your browser settings.');
+      return;
+    }
+
     try {
       const SpeechRecognition = (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
@@ -246,12 +255,24 @@ export const useSpeechRecognition = () => {
         }
       };
 
-      await new Promise<void>((resolve) => {
+      await new Promise<void>((resolve, reject) => {
         recognition.onstart = () => {
           setIsListening(true);
           resolve();
         };
-        recognition.start();
+        
+        // Add timeout for mobile devices
+        const startTimeout = setTimeout(() => {
+          reject(new Error('Recognition start timeout'));
+        }, 5000);
+        
+        try {
+          recognition.start();
+          clearTimeout(startTimeout);
+        } catch (startError) {
+          clearTimeout(startTimeout);
+          reject(startError);
+        }
       });
     } catch (err) {
       console.error('Error starting recognition:', err);

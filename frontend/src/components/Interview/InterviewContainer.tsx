@@ -191,28 +191,48 @@ export const InterviewContainer = ({
     }
   }, [interview?.messages, manualSpeechEnabled, isSpeaking, speak]);
 
-  // Toggle speech recognition
+  // Toggle speech recognition with enhanced permission handling
   const toggleListening = useCallback(async () => {
     if (isListening) {
       stopListening();
       return;
     }
 
+    // Don't start listening if assistant is speaking
     if (isSpeaking) {
-      toast.error('Please wait until the assistant finishes speaking');
       return;
     }
 
     try {
       clearErrors();
+      
+      // Show user-friendly message while requesting permission
+      if (isMobile) {
+        toast.info('Requesting microphone access...');
+      }
+      
       await startListening();
       setInputText(''); // Clear input when starting to listen
+      
+      if (isMobile) {
+        toast.success('Microphone activated! Start speaking.');
+      }
     } catch (err) {
       console.error('Error starting microphone:', err);
-      setApiError('Microphone access denied. Please allow microphone access.');
-      toast.error('Microphone access denied. Please check your permissions.');
+      
+      // Enhanced error handling for mobile
+      if (err instanceof Error && err.message.includes('denied')) {
+        setApiError('Microphone access denied. Please tap the microphone icon in your browser\'s address bar and allow access.');
+        toast.error('Please allow microphone access in your browser settings.');
+      } else if (err instanceof Error && err.message.includes('timeout')) {
+        setApiError('Microphone setup timed out. Please try again.');
+        toast.error('Microphone setup timed out. Please try again.');
+      } else {
+        setApiError('Microphone access failed. Please check your device settings.');
+        toast.error('Microphone access failed. Please check your permissions.');
+      }
     }
-  }, [isListening, isSpeaking, startListening, stopListening, clearErrors]);
+  }, [isListening, isSpeaking, startListening, stopListening, clearErrors, isMobile]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
