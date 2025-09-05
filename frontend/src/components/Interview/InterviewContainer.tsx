@@ -4,7 +4,7 @@ import { feedback, IInterview } from '@/types/Interview-type';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Mic, MicOff, Volume2, VolumeX, AlertCircle, Minus } from 'lucide-react';
+import { Loader2, Mic, MicOff, Volume2, VolumeX, AlertCircle, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -220,15 +220,33 @@ export const InterviewContainer = ({
     } catch (err) {
       console.error('Error starting microphone:', err);
       
-      // Enhanced error handling for mobile
-      if (err instanceof Error && err.message.includes('denied')) {
-        setApiError('Microphone access denied. Please tap the microphone icon in your browser\'s address bar and allow access.');
-        toast.error('Please allow microphone access in your browser settings.');
-      } else if (err instanceof Error && err.message.includes('timeout')) {
-        setApiError('Microphone setup timed out. Please try again.');
-        toast.error('Microphone setup timed out. Please try again.');
+      // Simplified error handling with better mobile support
+      if (err instanceof Error) {
+        console.log('Error details:', {
+          message: err.message,
+          name: err.name,
+          stack: err.stack
+        });
+        
+        if (err.message.includes('NotAllowedError') || err.message.includes('denied')) {
+          setApiError('🎤 Microphone access denied. Please allow microphone access when prompted.');
+          toast.error('Please allow microphone access when your browser asks.');
+        } else if (err.message.includes('timeout')) {
+          setApiError('⏱️ Microphone setup timed out. Please try again.');
+          toast.error('Microphone setup timed out. Please try again.');
+        } else if (err.message.includes('NotFoundError')) {
+          setApiError('🔍 No microphone found. Please check your device.');
+          toast.error('No microphone detected on your device.');
+        } else if (err.message.includes('NotReadableError')) {
+          setApiError('📱 Microphone is busy. Please close other apps using the microphone.');
+          toast.error('Microphone is being used by another application.');
+        } else {
+          // Show the actual error for debugging
+          setApiError(`🎤 Microphone: ${err.message}`);
+          toast.error(`Microphone error: ${err.message}`);
+        }
       } else {
-        setApiError('Microphone access failed. Please check your device settings.');
+        setApiError('🎤 Microphone access failed. Please check your device settings.');
         toast.error('Microphone access failed. Please check your permissions.');
       }
     }
