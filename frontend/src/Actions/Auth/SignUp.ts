@@ -10,22 +10,26 @@ interface FormState {
     data: any;
 }
 
+/**
+ * Server action to handle user registration/signup
+ * @param prevState - Previous form state for error handling
+ * @param formData - Form data containing name, email, and password
+ * @returns Promise containing signup result or error response
+ */
 export const SignUp_Actions = async (prevState: FormState, formData: FormData): Promise<FormState> => {
     try {
        
-        const data ={
+        const data = {
             name: formData.get("name"),
             email: formData.get("email"),
             password: formData.get("password"),
-           
         }
-        console.log(data)
-        const response = await axios.post(api_Signup_url, data,{
-            headers:{
+        
+        const response = await axios.post(api_Signup_url, data, {
+            headers: {
                 "Content-Type": "application/json",
             }
         });
-        // console.log(response.data);
 
         return {
             errors: {},
@@ -34,8 +38,6 @@ export const SignUp_Actions = async (prevState: FormState, formData: FormData): 
             data: response.data
         };
     } catch (error: any) {
-        // console.error("Signup error:", error.response.data);
-        
         return {
             errors: { general: error.response?.data?.message || "Signup failed" },
             message: error.response?.data?.message || "Signup failed",

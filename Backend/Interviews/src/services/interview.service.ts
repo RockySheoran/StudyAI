@@ -1,7 +1,7 @@
 import { redisClient } from '../config/redis';
 import { IInterview, Interview, IInterviewMessage } from '../models/interview.model';
 import { Resume } from '../models/resume.model';
-import { extractTextFromPdf } from '../utils/file.utils';
+import { extractTextFromFile } from '../utils/file.utils';
 import {  generateInterviewResponse } from './gemini.service';
 
 
@@ -14,14 +14,15 @@ import {  generateInterviewResponse } from './gemini.service';
   ): Promise<IInterview> => {
     let selectedResumeId = null;
     let resumeText = null;
-
+console.log("dfdsfds",resumeId)
     // Handle resume logic
     if (resumeId) {
       // Use provided resume ID
       const resume = await Resume.findById(resumeId);
       if (resume && resume.userId === userId) {
         selectedResumeId = resumeId;
-        resumeText = await extractTextFromPdf(resume.url);
+        resumeText = await extractTextFromFile(resume.url, resume.originalName);
+       
         await redisClient.set(`resume/${resumeId}`, resumeText, { EX: 172800 });
       }
     } else {
@@ -29,13 +30,14 @@ import {  generateInterviewResponse } from './gemini.service';
       // const latestResume = await Resume.findOne({ userId }).sort({ uploadDate: -1 });
       // if (latestResume) {
       //   selectedResumeId = latestResume._id;
-      //   resumeText = await extractTextFromPdf(latestResume.url);
+      //   resumeText = await extractTextFromFile(latestResume.url, latestResume.originalName);
       //   await redisClient.set(`resume/${latestResume._id}`, resumeText, { EX: 172800 });
       // }
     }
 
     // Generate personalized initial message based on interview type and resume
     let initialContent = '';
+   
     
     if (type === 'personal') {
       if (resumeText) {
@@ -104,7 +106,7 @@ import {  generateInterviewResponse } from './gemini.service';
       if (!resumeText) {
         const resume = await Resume.findById(interview.resumeId);
         if (resume) {
-          resumeText = await extractTextFromPdf(resume.url);
+          resumeText = await extractTextFromFile(resume.url, resume.originalName);
           await redisClient.set(`resume/${interview.resumeId}`, resumeText, { EX: 172800 });
         }
       }

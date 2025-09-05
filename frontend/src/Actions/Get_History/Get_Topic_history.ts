@@ -2,9 +2,13 @@
 import { api_topic_history_url } from "@/lib/apiEnd_Point_Call"
 import axios from "axios"
 
+/**
+ * Server action to fetch user's topic history from the backend
+ * @param token - JWT authentication token
+ * @returns Promise containing topic history data or error response
+ */
 export const Get_Topic_history = async ({token}: {token: string}) => {
     try {
-        console.log(api_topic_history_url)
         const res = await axios.get(api_topic_history_url, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -17,8 +21,6 @@ export const Get_Topic_history = async ({token}: {token: string}) => {
             data: res.data
         };
     } catch (error: any) {
-        console.error('Error fetching topic history:', error?.response);
-        
         if (error.response) {
             // Server responded with error status
             return {

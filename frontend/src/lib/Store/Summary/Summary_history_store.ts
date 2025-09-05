@@ -72,7 +72,6 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
           
           // Return cached data if available and not stale, unless force refresh
           if (!forceRefresh && summaries.length > 0) {
-            console.log("Using cached summary data");
             setError(null);
             return;
           }
@@ -81,7 +80,6 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
           setError(null);
 
           try {
-            console.log("Fetching fresh summary data from API");
             const res = await Summary_history_get({ token });
             
             if (res.status === 200) {

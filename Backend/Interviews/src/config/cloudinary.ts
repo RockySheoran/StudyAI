@@ -15,16 +15,29 @@ export const uploadToCloudinary = async (file: Buffer | string, folder: string):
     let uploadOptions: any = {
       folder: `resumes/${folder}`,
       resource_type: 'auto',
+      timeout: 120000, // 2 minutes timeout
+      chunk_size: 6000000, // 6MB chunks for large files
     };
 
     let result;
     if (Buffer.isBuffer(file)) {
       // Upload from buffer (memory storage)
       result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }).end(file);
+        const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload stream error:', error);
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
+        
+        uploadStream.end(file);
+        
+        // Add timeout handling
+        setTimeout(() => {
+          reject(new Error('Upload timeout after 2 minutes'));
+        }, 120000);
       });
     } else {
       // Upload from file path (fallback)
@@ -32,8 +45,16 @@ export const uploadToCloudinary = async (file: Buffer | string, folder: string):
     }
     
     return (result as any).secure_url;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading to Cloudinary:', error);
+    
+    // Provide more specific error messages
+    if ((error as any).message?.includes('timeout') || (error as any).message?.includes('Timeout')) {
+      throw new Error('File upload timed out. Please try with a smaller file or check your internet connection.');
+    } else if ((error as any).http_code === 499) {
+      throw new Error('Upload request timed out. Please try again or use a smaller file.');
+    }
+    
     throw new Error('Failed to upload file to Cloudinary');
   }
 };

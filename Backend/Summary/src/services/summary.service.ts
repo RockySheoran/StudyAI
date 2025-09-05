@@ -3,7 +3,8 @@ import { File } from '../models/file.model';
 import { generateSummary, generateChunkSummary, generateFinalSummary } from '../config/gemini';
 
 import { redisClient } from '../config/redis';
-import { extractTextFromPdf, chunkTextForProcessing } from '../utils/file.utils';
+import { extractTextFromFile, chunkTextForProcessing } from '../utils/file.utils';
+import { childSend } from 'bullmq';
 
 export const createSummaryJob = async (fileId: string, userId?: string) => {
   try {
@@ -50,8 +51,9 @@ export const generateFileSummary = async (fileId: string) => {
       summaryId: summary._id.toString(),
     }));
 
-    // Extract text from PDF
-    const text = await extractTextFromPdf(file.cloudinaryUrl);
+    // Extract text from file (supports PDF, DOCX, DOC)
+    const text = await extractTextFromFile(file.cloudinaryUrl, file.originalName);
+    console.log(text)
     console.log(`Extracted text length: ${text.length} characters`);
 
     let summaryContent: string;
@@ -174,19 +176,44 @@ ${chunk.summary}`
 
     console.log('Summary generation completed successfully');
     return summary;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating summary:', error);
 
-    // Update status to failed if something went wrong
+    // Determine appropriate error message based on error type
+    let errorMessage = "An error occurred while processing your file. Please try again.";
+    let errorType = "processing_error";
+
+    if (error.message?.includes('corrupted') || error.message?.includes('invalid format')) {
+      errorMessage = "The PDF file appears to be corrupted or has an invalid format. Please try uploading a different PDF file.";
+      errorType = "invalid_pdf";
+    } else if (error.message?.includes('password-protected')) {
+      errorMessage = "The PDF file is password-protected. Please upload an unprotected PDF file.";
+      errorType = "password_protected";
+    } else if (error.message?.includes('no extractable text')) {
+      errorMessage = "The PDF file contains no extractable text content. Please ensure the PDF contains readable text.";
+      errorType = "no_text_content";
+    } else if (error.message?.includes('network timeout') || error.message?.includes('download')) {
+      errorMessage = "Failed to download the PDF file. Please check your internet connection and try again.";
+      errorType = "download_error";
+    } else if (error.message?.includes('file not found')) {
+      errorMessage = "The PDF file could not be found. It may have been deleted or moved.";
+      errorType = "file_not_found";
+    }
+
+    // Update status to failed with appropriate error message
     await Summary.findOneAndUpdate(
       { fileId },
-      { status: 'failed' },
+      { 
+        status: 'failed',
+        content: errorMessage
+      },
       { upsert: true }
     );
 
     await redisClient.set(`summary:${fileId}`, JSON.stringify({
       status: 'failed',
-      message:"Might be server side issue, Refesh the history page after some time"
+      error: errorType,
+      message: errorMessage
     }));
 
     throw error;

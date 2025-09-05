@@ -38,6 +38,7 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^0.3.30",
+    "mammoth": "^1.10.0",
     "mongoose": "^8.17.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",

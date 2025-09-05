@@ -33,7 +33,7 @@ export const clearAllStorageData = () => {
       const dbNames = ['user-data', 'app-cache', 'history-data'];
       dbNames.forEach(dbName => {
         const deleteReq = indexedDB.deleteDatabase(dbName);
-        deleteReq.onerror = () => console.warn(`Failed to delete IndexedDB: ${dbName}`);
+        deleteReq.onerror = () => {};
       });
     }
     
@@ -44,10 +44,10 @@ export const clearAllStorageData = () => {
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
     });
     
-    console.log('All storage data cleared successfully');
+    // Storage data cleared successfully
     return true;
   } catch (error) {
-    console.error('Error clearing storage data:', error);
+    // Error clearing storage data
     return false;
   }
 };
@@ -59,10 +59,10 @@ export const clearStoreData = (storeNames: string[]) => {
       localStorage.removeItem(storeName);
       sessionStorage.removeItem(storeName);
     });
-    console.log('Specific store data cleared:', storeNames);
+    // Specific store data cleared
     return true;
   } catch (error) {
-    console.error('Error clearing specific store data:', error);
+    // Error clearing specific store data
     return false;
   }
 };
@@ -75,10 +75,10 @@ export const clearBrowserCache = async () => {
       await Promise.all(
         cacheNames.map(cacheName => caches.delete(cacheName))
       );
-      console.log('Browser cache cleared');
+      // Browser cache cleared
     }
   } catch (error) {
-    console.error('Error clearing browser cache:', error);
+    // Error clearing browser cache
   }
 };
 
@@ -96,10 +96,10 @@ export const performCompleteCleanup = async () => {
       window.gc();
     }
     
-    console.log('Complete cleanup performed successfully');
+    // Complete cleanup performed successfully
     return true;
   } catch (error) {
-    console.error('Error during complete cleanup:', error);
+    // Error during complete cleanup
     return false;
   }
 };

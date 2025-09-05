@@ -5,21 +5,14 @@ import { summaryQueue } from '../services/queue.service';
 import { AuthenticatedRequest } from '../types/custom-types';
 
 
+/**
+ * Handles file upload for document summarization
+ * Validates file type, size, and processes the upload through our queue system
+ */
 export const uploadFileController = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const file = req.file;
-
-    console.log('Summary upload attempt:', {
-      userId,
-      hasFile: !!file,
-      fileDetails: file ? {
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        hasBuffer: !!file.buffer
-      } : null
-    });
 
     if (!file) {
       return res.status(400).json({ 
@@ -35,22 +28,32 @@ export const uploadFileController = async (req: AuthenticatedRequest, res: Respo
       });
     }
 
-    // Additional validation for mobile uploads
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (10MB limit for optimal processing)
+    if (file.size > 10 * 1024 * 1024) {
       return res.status(400).json({ 
         error: 'File too large',
-        message: 'File size must be less than 5MB'
+        message: 'File size must be less than 10MB'
       });
     }
 
-    const uploadedFile : any = await uploadFile(file, userId);
-    console.log(uploadedFile)
+    // Validate file extension for supported document types
+    const allowedExtensions = ['.pdf', '.docx', '.doc'];
+    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
     
-    // Create summary job
-    const summary = await createSummaryJob(uploadedFile._id.toString(), userId);
-    console.log(summary,"djkgdsijhdsfieuo")
+    if (!allowedExtensions.includes(fileExtension)) {
+      return res.status(400).json({ 
+        error: 'Invalid file type',
+        message: `Invalid file extension. Allowed: ${allowedExtensions.join(', ')}`
+      });
+    }
 
-    // Add to processing queue
+    // Upload file to cloud storage
+    const uploadedFile: any = await uploadFile(file, userId);
+    
+    // Create summary processing job
+    const summary = await createSummaryJob(uploadedFile._id.toString(), userId);
+
+    // Queue the document for AI summarization
     await summaryQueue.add('processSummary', {
       fileId: uploadedFile._id.toString(),
     });
@@ -58,7 +61,7 @@ export const uploadFileController = async (req: AuthenticatedRequest, res: Respo
     res.status(201).json({
       message: 'File uploaded successfully',
       fileId: uploadedFile._id,
-        summaryId: summary._id,
+      summaryId: summary._id,
     });
   } catch (error) {
     console.error('File upload error:', error);
@@ -66,11 +69,14 @@ export const uploadFileController = async (req: AuthenticatedRequest, res: Respo
   }
 };
 
+/**
+ * Checks the processing status of a document summary
+ * Returns current status: processing, completed, or failed
+ */
 export const checkSummaryStatus = async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
     const status = await getSummaryStatus(fileId);
-    console.log(status,"statusassdfdgsfdgsrdgdsfgdsfggsfdggf")
 
     if (status.status === 'not_found') {
       return res.json({status: 'failed', error: 'File or summary not found' });

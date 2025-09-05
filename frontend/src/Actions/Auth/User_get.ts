@@ -3,13 +3,16 @@ import { cookies } from 'next/headers';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/options';
 
+/**
+ * Server-side function to retrieve authentication token from NextAuth session or cookies
+ * @returns Promise containing the authentication token or null if not found
+ */
 export const Token_get = async () => {
   try {
     // First try to get token from NextAuth session
     const session = await getServerSession(authOptions);
     
     if (session?.accessToken) {
-      console.log('Token found in NextAuth session');
       return session.accessToken;
     }
     
@@ -18,27 +21,22 @@ export const Token_get = async () => {
     const authToken = cookieStore.get('auth-token')?.value;
     const token = cookieStore.get('token')?.value;
     
-    console.log('Server-side token check:', {
-      hasSessionToken: !!session?.accessToken,
-      hasAuthToken: !!authToken,
-      hasToken: !!token,
-      sessionUser: session?.user?.email || 'No user'
-    });
-    
     // Return NextAuth token, auth-token, or fallback token
     return session?.accessToken || authToken || token;
   } catch (error) {
-    console.error('Error getting token:', error);
     return null;
   }
 }
 
+/**
+ * Server-side function to retrieve current user data from NextAuth session
+ * @returns Promise containing user data object or null if no session exists
+ */
 export const User_get = async () => {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session) {
-      console.log('No active session found');
       return null;
     }
     
@@ -50,7 +48,6 @@ export const User_get = async () => {
       accessToken: session.accessToken
     };
   } catch (error) {
-    console.error('Error getting user:', error);
     return null;
   }
 }

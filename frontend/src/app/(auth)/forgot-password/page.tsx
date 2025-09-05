@@ -17,7 +17,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     // Here you would typically send a reset password email
     setLoading(true);
-    console.log('Reset password requested for:', email);
+    // Reset password requested for email
   
      const res  = await   Forgot_pass_action({email})
      if(res.status == 200){

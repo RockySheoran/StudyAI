@@ -133,12 +133,9 @@ export const useSummaryStore = create<SummaryState>()(
                 }
               },
             });
-            console.log(response.data)
-
             if (response.data) {
               const summaryId = response.data.summaryId;
               const fileId = response.data.fileId;
-              console.log('Upload successful, starting polling for:', summaryId);
               
               set({ 
                 fileId: response.data.fileId,
@@ -168,14 +165,10 @@ export const useSummaryStore = create<SummaryState>()(
                 }
 
                 try {
-                  console.log('Polling for summary status:', fileId);
                   const statusResponse = await axios.get(`${api_file_upload_url}/file/${fileId}/status`, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
-                  console.log(statusResponse,"statusResponse")
-                  
 
-                  console.log('Polling response:', statusResponse.data);
                   const { status: summaryStatus, content ,message ,error } = statusResponse.data;
 
                   if (summaryStatus === 'completed' && content) {
@@ -257,7 +250,6 @@ export const useSummaryStore = create<SummaryState>()(
 
         // Poll summary status
         pollSummaryStatus: async (summaryId, token) => {
-          console.log(summaryId, token)
           const state = get();
           
           // Clear any existing polling interval
@@ -265,7 +257,11 @@ export const useSummaryStore = create<SummaryState>()(
             clearInterval(state.pollingInterval);
           }
 
-          set({ isProcessing: true });
+          set({ isProcessing: true, processingStartTime: Date.now() });
+
+          const api_file_upload_url = process.env.NEXT_PUBLIC_BACKEND_FILE_URL 
+            ? `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api` 
+            : 'http://localhost:5001/api';
 
           const pollingInterval = setInterval(async () => {
             const currentState = get();
@@ -279,17 +275,11 @@ export const useSummaryStore = create<SummaryState>()(
             }
 
             try {
-              const api_file_upload_url = process.env.NEXT_PUBLIC_BACKEND_FILE_URL 
-              ? `${process.env.NEXT_PUBLIC_BACKEND_FILE_URL}/api` 
-              : 'http://localhost:5001/api';
-              
-              console.log(api_file_upload_url)
-              const response = await axios.get(`${api_file_upload_url}/file/${summaryId}/status`, {
+              const statusResponse = await axios.get(`${api_file_upload_url}/file/${currentState.fileId}/status`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
-              console.log(response.data)
 
-              const { status: summaryStatus, content } = response.data;
+              const { status: summaryStatus, content, message, error } = statusResponse.data;
 
               if (summaryStatus === 'completed' && content) {
                 const processingTime = currentState.processingStartTime 
@@ -328,7 +318,7 @@ export const useSummaryStore = create<SummaryState>()(
 
                 set({ 
                   status: 'failed',
-                  error: 'Summary generation failed',
+                  error: message || 'Summary generation failed',
                   isProcessing: false,
                   processingStartTime: null,
                   pollingInterval: null

@@ -4,6 +4,7 @@ export interface IResume extends Document {
   userId: string;
   url: string;
   publicId: string;
+  originalName: string;
   uploadDate: Date;
 }
 
@@ -11,6 +12,7 @@ const resumeSchema = new mongoose.Schema<IResume>({
   userId: { type: String, required: true },
   url: { type: String, required: true },
   publicId: { type: String, required: true },
+  originalName: { type: String },
   uploadDate: { type: Date, default: Date.now },
 });
 

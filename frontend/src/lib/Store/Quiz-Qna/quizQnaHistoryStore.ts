@@ -126,7 +126,7 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
             return;
           }
           
-          // console.log(refresh)
+          // Checking refresh parameter
           if(get().allHistory?.length > 0 && !refresh){
             return;
           }
@@ -136,37 +136,34 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
               Quiz_history_get({ token }),
               Qna_history_get({ token })
             ]);
-            console.log(quizResponse)
-            console.log(qnaResponse)
 
             const combinedHistory: HistoryItem[] = [];
 
-            // Process Quiz history
-            if (quizResponse.status === 200 && quizResponse.data) {
-              const quizItems: QuizHistoryItem[] = quizResponse?.data.data?.map((item: any): QuizHistoryItem => ({
-                id: item._id || item.id,
-                type: 'quiz',
-                topic:item.topic,
-                educationLevel: item.educationLevel,
-                timestamp: new Date(item.createdAt ),
-                result: item.result
+            // Process quiz history
+            if (quizResponse?.data && Array.isArray(quizResponse.data)) {
+              const quizItems: QuizHistoryItem[] = quizResponse.data.map((quiz: any) => ({
+                ...quiz,
+                type: 'quiz' as const,
+                createdAt: quiz.createdAt || quiz.date,
+                percentage: quiz.percentage || 0,
+                totalQuestions: quiz.totalQuestions || 0,
+                correctAnswers: quiz.correctAnswers || 0
               }));
               combinedHistory.push(...quizItems);
             }
 
             // Process QnA history
-            if (qnaResponse.status === 200 && qnaResponse.data) {
-              const qnaItems: QnAHistoryItem[] = qnaResponse?.data?.data?.map((item: any): QnAHistoryItem => ({
-                id: item._id || item.id,
-                type: 'qna',
-                educationLevel: item.educationLevel,
-                topic: item.topic,
-                timestamp: new Date(item.createdAt),
-                result: item.result 
+            if (qnaResponse?.data && Array.isArray(qnaResponse.data)) {
+              const qnaItems: QnAHistoryItem[] = qnaResponse.data.map((qna: any) => ({
+                ...qna,
+                type: 'qna' as const,
+                createdAt: qna.createdAt || qna.date,
+                percentage: qna.percentage || 0,
+                totalQuestions: qna.totalQuestions || 0,
+                correctAnswers: qna.correctAnswers || 0
               }));
               combinedHistory.push(...qnaItems);
             }
-console.log(combinedHistory)
             // Update the store with fetched data
             set({ allHistory: combinedHistory });
 

@@ -72,7 +72,6 @@ export const useInterviewHistoryStore = create<InterviewHistoryState>()(
           
           // Return cached data if available and not stale, unless force refresh
           if (!forceRefresh && interviews.length > 0) {
-            console.log("Using cached interview data");
             setError(null);
             return;
           }
@@ -81,7 +80,6 @@ export const useInterviewHistoryStore = create<InterviewHistoryState>()(
           setError(null);
 
           try {
-            console.log("Fetching fresh interview data from API");
             const res = await Interview_history_get({ token });
             
             if (res.status === 200) {

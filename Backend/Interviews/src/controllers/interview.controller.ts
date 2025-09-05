@@ -12,6 +12,7 @@ export const startInterview = async (req: AuthenticatedRequest, res: Response): 
   try {
     const { type, resumeId } = req.body;
     const userId = req.user?.id;
+    console.log(type,resumeId)
 
     if (!type || (type !== 'personal' && type !== 'technical')) {
       return res.status(400).json({ error: 'Invalid interview type' });
@@ -85,8 +86,9 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
   try {
     const { id } = req.params;
     const interview: any = await Interview.findById(id);
-    if(interview.feedback){
-      return res.status(200).json(interview.feedback)
+    console.log(interview.feedback.rating)
+    if(interview.feedback.rating > 0){
+      return res.status(200).json({feedback:interview.feedback})
     }
 
     if (!interview) {

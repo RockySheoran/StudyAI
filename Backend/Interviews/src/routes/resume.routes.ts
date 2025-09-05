@@ -7,32 +7,45 @@ import multer from 'multer';
 const upload = multer({ 
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // Increased to 10MB for mobile compatibility
+    fileSize: 10 * 1024 * 1024, // 10MB for Google Drive compatibility
+    fieldSize: 10 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    console.log('File received:', {
+    console.log('Resume upload - File received:', {
       originalname: file.originalname,
       mimetype: file.mimetype,
       size: file.size
     });
     
-    // More flexible MIME type checking for mobile compatibility
+    // Enhanced validation for Google Drive files
     const allowedMimeTypes = [
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/octet-stream', // Google Drive sometimes sends this
-      'text/plain' // Fallback for some mobile browsers
+      'application/octet-stream', // Google Drive files
+      'text/plain', // Fallback for some mobile browsers
+      'application/x-pdf', // Alternative PDF MIME type
+      'application/vnd.ms-word' // Alternative DOC MIME type
     ];
     
     const allowedExtensions = ['.pdf', '.doc', '.docx'];
     const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
     
-    if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+    // Priority check: extension first (more reliable for Google Drive), then MIME type
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+    const isValidMimeType = allowedMimeTypes.includes(file.mimetype);
+    
+    if (isValidExtension || isValidMimeType) {
+      console.log('Resume upload - File accepted:', { extension: fileExtension, mimetype: file.mimetype });
       cb(null, true);
     } else {
-      console.log('File rejected:', file.mimetype, fileExtension);
-      cb(new Error(`Invalid file type. Allowed: PDF, DOC, DOCX. Received: ${file.mimetype}`));
+      console.log('Resume upload - File rejected:', { 
+        extension: fileExtension, 
+        mimetype: file.mimetype,
+        allowedExtensions,
+        allowedMimeTypes 
+      });
+      cb(new Error(`Invalid file type. Allowed: PDF, DOC, DOCX. Received: ${file.mimetype} with extension ${fileExtension}`));
     }
   }
 });
@@ -45,7 +58,7 @@ const handleMulterError = (err: any, req: any, res: any, next: any) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         error: 'File too large',
-        message: 'File size must be less than 5MB',
+        message: 'File size must be less than 10MB',
         code: 'FILE_TOO_LARGE'
       });
     }

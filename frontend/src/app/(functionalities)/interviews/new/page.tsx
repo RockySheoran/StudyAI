@@ -46,6 +46,7 @@ export default function NewInterviewPage() {
       if (resumeFile && !skipResume) {
         try {
           const resumeResponse: any = await uploadResume(resumeFile);
+          console.log(resumeResponse)
           resumeId = resumeResponse?._id;
           toast.success('Resume uploaded successfully');
         } catch (error:any) {

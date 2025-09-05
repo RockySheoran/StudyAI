@@ -99,8 +99,12 @@ export const InterviewContainer = ({
     try {
       //get feedback
       const response = await FeedbackService(id);
+      console.log(response)
       setFeedback(response.feedback);
-      setShowFeedbackModal(true);
+      if(response.feedback){
+
+        setShowFeedbackModal(true);
+      }
     } catch (err) {
       console.error('Error getting feedback:', err);
       toast.error('Failed to get feedback. Please try again.');
@@ -162,7 +166,7 @@ export const InterviewContainer = ({
         activeMessageIndex !== currentMessageIndex &&
         !spokenMessageIds.has(messageId)) {
       
-      console.log('🎤 Speaking new assistant message:', messageId);
+      // Speaking new assistant message
       setActiveMessageIndex(currentMessageIndex);
       setSpokenMessageIds(prev => new Set(prev).add(messageId));
       
@@ -287,13 +291,13 @@ export const InterviewContainer = ({
               <h3 className="font-medium text-lg mb-3">Overall Rating</h3>
               <div className="flex items-center">
                 <div className="text-3xl font-bold mr-4">
-                  {feedback.rating.toFixed(1)}/5.0
+                  {feedback?.rating?.toFixed(1)}/5.0
                 </div>
                 <div className="flex-1">
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                     <div 
                       className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${(feedback.rating / 5) * 100}%` }}
+                      style={{ width: `${(feedback?.rating / 5) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -307,7 +311,7 @@ export const InterviewContainer = ({
                   Your Strengths
                 </h3>
                 <div className="space-y-2">
-                  {feedback.strengths.map((item, index) => 
+                  {feedback?.strengths?.map((item, index) => 
                     renderFeedbackItem('strengths', item, index)
                   )}
                 </div>
@@ -321,7 +325,7 @@ export const InterviewContainer = ({
                   Areas for Improvement
                 </h3>
                 <div className="space-y-2">
-                  {feedback.suggestions.map((item, index) => 
+                  {feedback?.suggestions?.map((item, index) => 
                     renderFeedbackItem('suggestions', item, index)
                   )}
                 </div>

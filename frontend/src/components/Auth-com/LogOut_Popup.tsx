@@ -32,7 +32,7 @@ const LogoutButton = () => {
     try {
       // First, call your backend logout
       const res = await Logout_Action({ token: token!});
-      console.log("Backend logout res:", res);
+      // Backend logout completed
       
       // Clear all storage data
       await performCompleteCleanup();

@@ -28,7 +28,7 @@ export const Dashboard_base_file = () => {
         const urlToken = urlParams.get('token');
         
         if (urlToken) {
-          console.log('Found token in URL parameters');
+          // Found token in URL parameters
           setToken(urlToken);
           
           // Clean up URL by removing token parameter

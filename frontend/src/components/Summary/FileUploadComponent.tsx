@@ -55,17 +55,25 @@ const FileUploadComponent: React.FC = () => {
       "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/octet-stream", // Google Drive sometimes sends this
+      "application/octet-stream", // Google Drive files
+      "application/x-pdf", // Alternative PDF MIME type
+      "text/plain" // Fallback for some browsers
     ];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const validExtensions = ['.pdf', '.doc', '.docx'];
+    const maxSize = 10 * 1024 * 1024; // 10MB for Google Drive compatibility
 
-    if (!validTypes.includes(file.type)) {
+    // Check file extension first (more reliable for Google Drive files)
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    const isValidExtension = validExtensions.includes(fileExtension);
+    const isValidType = validTypes.includes(file.type);
+
+    if (!isValidExtension && !isValidType) {
       toast.error("Invalid file type. Please upload a PDF, DOC, or DOCX file.");
       return;
     }
 
     if (file.size > maxSize) {
-      toast.error("File size exceeds 5MB limit.");
+      toast.error("File size exceeds 10MB limit.");
       return;
     }
 
@@ -128,7 +136,7 @@ const FileUploadComponent: React.FC = () => {
                 : "text-gray-500 dark:text-gray-400"
             }`}
           >
-            Supports PDF and Docx files up to 5MB
+            Supports PDF and Docx files up to 10MB
           </p>
 
           <input

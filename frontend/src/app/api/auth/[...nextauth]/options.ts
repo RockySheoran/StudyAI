@@ -85,7 +85,6 @@ export const authOptions: NextAuthOptions = {
           }
 
           const response = await axios.post(api_Login_url, credentials);
-          console.log(response.data)
 
           if (response.status != 200) throw new Error(response?.data?.message);
 

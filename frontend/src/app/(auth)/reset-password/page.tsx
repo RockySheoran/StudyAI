@@ -69,7 +69,6 @@ export default function ResetPassword() {
     
     try {
       const res = await Reset_pass_action({token : token!, password: data.password, email});
-      console.log(res)
       if(res.status == 200){
         toast.success(res.message)
         setIsSuccess(true);

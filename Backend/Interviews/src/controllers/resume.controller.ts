@@ -4,21 +4,14 @@ import { Resume } from '../models/resume.model';
 import { AuthenticatedRequest } from '../types/custom-types';
 
 export class ResumeController {
+  /**
+   * Handles resume upload for interview personalization
+   * Validates file format, uploads to cloud storage, and stores metadata
+   */
   async uploadResume(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id;
       const file = req.file;
-
-      console.log('Resume upload attempt:', {
-        userId,
-        hasFile: !!file,
-        fileDetails: file ? {
-          originalname: file.originalname,
-          mimetype: file.mimetype,
-          size: file.size,
-          hasBuffer: !!file.buffer
-        } : null
-      });
 
       if (!file) {
         return res.status(400).json({ 
@@ -34,7 +27,7 @@ export class ResumeController {
         });
       }
 
-      // Additional validation for mobile uploads
+      // Validate file size for optimal processing
       if (file.size > 10 * 1024 * 1024) {
         return res.status(400).json({ 
           error: 'File too large',
@@ -42,32 +35,50 @@ export class ResumeController {
         });
       }
 
-      // Upload buffer directly to Cloudinary (no local file system needed)
-      const result = await uploadToCloudinary(file.buffer, userId || '');
+      // Validate file extension for supported resume formats
+      const allowedExtensions = ['.pdf', '.doc', '.docx'];
+      const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
       
-      // Extract public ID from Cloudinary URL for deletion purposes
+      if (!allowedExtensions.includes(fileExtension)) {
+        return res.status(400).json({ 
+          error: 'Invalid file type',
+          message: `Invalid file extension. Allowed: ${allowedExtensions.join(', ')}`
+        });
+      }
+
+      // Upload resume to cloud storage
+      const result = await uploadToCloudinary(file.buffer, userId || '');
+      console.log("2222",result)
+      
+      // Generate public ID for future file management
       const urlParts = result.split('/');
       const publicIdWithExtension = urlParts[urlParts.length - 1];
       const publicId = `resumes/${userId}/${publicIdWithExtension.split('.')[0]}`;
 
-      // Delete previous resumes for this user
+      // Replace any existing resume for this user
       await Resume.deleteMany({ userId: userId });
 
       const resume = new Resume({
         userId: userId || '',
         url: result,
         publicId,
+        originalName: file.originalname,
       });
 
       await resume.save();
+      console.log(resume)
 
-      res.status(201).json(resume);
+     return res.status(201).json(resume);
     } catch (error) {
       console.error('Error uploading resume:', error);
       res.status(500).json({ error: 'Failed to upload resume' });
     }
   }
 
+  /**
+   * Deletes user's resume from both database and cloud storage
+   * Ensures complete cleanup of resume data
+   */
   async deleteResume(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id;
@@ -77,7 +88,10 @@ export class ResumeController {
         return res.status(404).json({ error: 'No resume found' });
       }
 
+      // Remove from cloud storage
       await deleteFromCloudinary(resume.publicId);
+      
+      // Remove from database
       await Resume.deleteOne({ _id: resume._id, userId: userId || '' });
 
       res.status(200).json({ message: 'Resume deleted successfully' });
@@ -87,6 +101,10 @@ export class ResumeController {
     }
   }
 
+  /**
+   * Retrieves user's current resume information
+   * Returns resume metadata including download URL
+   */
   async getResume(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id;

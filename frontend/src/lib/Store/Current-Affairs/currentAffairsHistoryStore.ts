@@ -62,7 +62,7 @@ export const useCurrentAffairsHistoryStore = create<CurrentAffairsHistoryState>(
         },
 
         refreshHistory: async (token,refresh=false) => {
-          console.log(token,refresh)
+          // Refreshing current affairs history
           if (!token) {
             return;
           }
