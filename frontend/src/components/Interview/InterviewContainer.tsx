@@ -213,13 +213,13 @@ export const InterviewContainer = ({
       
       // Show user-friendly message while requesting permission
       if (isMobile) {
-        toast.info('Requesting microphone access...');
+        // toast.info('Requesting microphone access...');
       }
       
       await startListening();
       
       if (isMobile) {
-        toast.success('Microphone activated! Start speaking.');
+        // toast.success('Microphone activated! Start speaking.');
       }
     } catch (err) {
       console.error('Error starting microphone:', err);
@@ -442,18 +442,6 @@ export const InterviewContainer = ({
                 </div>
               ) : isSpeaking ? <VolumeX className="h-3 w-3 sm:h-4 sm:w-4" /> : <Volume2 className="h-3 w-3 sm:h-4 sm:w-4" />}
             </button>
-            {showMsgBox && !manualSpeechEnabled && (
-              <button 
-                onClick={enableContinuousSpeech}
-                className="p-1.5 sm:p-2 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
-                aria-label="Enable continuous speech"
-                title="Enable auto-speech for new responses"
-              >
-                <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                </svg>
-              </button>
-            )}
           </div>
         </div>
         
@@ -812,10 +800,10 @@ export const InterviewContainer = ({
                   ) : 
                   "💬 Type your response or use voice input..."
                 }
-                className="w-full p-3 sm:p-4 pr-16 sm:pr-24 min-h-[80px] max-h-[140px] resize-none border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200 bg-white dark:bg-gray-800 text-sm sm:text-base"
+                className="w-full p-2  sm:p-4 pr-8 sm:pr-24 min-h-[75px] sm:min-h-[80px] max-h-[120px] sm:max-h-[140px] resize-none border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200 bg-white dark:bg-gray-800 text-sm sm:text-base"
                 disabled={isSubmitting || isSpeaking || isLoading}
               />
-              <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 flex flex-row items-center gap-1 sm:gap-2">
+              <div className="absolute right-1 sm:right-3 bottom-2 sm:bottom-3 flex flex-row items-center gap-1 sm:gap-2">
                 {/* Speech Quality Indicator */}
                 {isListening && (
                   <motion.div 
@@ -851,7 +839,9 @@ export const InterviewContainer = ({
                     <span>{Math.round(speechProgress)}%</span>
                   </motion.div>
                 )}
-                
+                <div className="flex flex-col sm:flex-row gap-2 items-center  ">
+
+               
                 {/* Reset Button */}
                 {inputText.trim() && (
                   <motion.button
@@ -859,11 +849,11 @@ export const InterviewContainer = ({
                     onClick={resetTextArea}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-1.5 sm:p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200 shadow-md"
+                    className="p-1 sm:p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200 shadow-sm"
                     title="Clear text"
                     disabled={isSubmitting || isSpeaking}
                   >
-                    <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </motion.button>
@@ -875,7 +865,7 @@ export const InterviewContainer = ({
                   whileHover={{ scale: isMobile ? 1.02 : 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "p-2 sm:p-3 rounded-full transition-all duration-200 shadow-lg relative overflow-hidden",
+                    "p-1.5 sm:p-2.5 rounded-full transition-all duration-200 shadow-md relative overflow-hidden",
                     isListening 
                       ? (isMobile ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-red-100 text-red-600 hover:bg-red-200')
                       : 'bg-green-100 text-green-600 hover:bg-green-200'
@@ -918,10 +908,11 @@ export const InterviewContainer = ({
                         />
                       </div>
                     ) : (
-                      <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     )}
                   </div>
                 </motion.button>
+                </div>
               </div>
             </div>
 
