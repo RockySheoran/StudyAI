@@ -52,6 +52,13 @@ const upload = multer({
 
 // Error handling middleware for multer
 const handleMulterError = (err: any, req: any, res: any, next: any) => {
+  console.error('Multer error occurred:', {
+    error: err,
+    code: err.code,
+    message: err.message,
+    stack: err.stack
+  });
+  
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
@@ -67,19 +74,33 @@ const handleMulterError = (err: any, req: any, res: any, next: any) => {
         code: 'INVALID_FIELD'
       });
     }
+    if (err.code === 'LIMIT_FIELD_VALUE') {
+      return res.status(400).json({
+        error: 'Field value too large',
+        message: 'Request field value is too large',
+        code: 'FIELD_TOO_LARGE'
+      });
+    }
   }
-  if (err.message.includes('Invalid file type')) {
+  if (err.message && err.message.includes('Invalid file type')) {
     return res.status(400).json({
       error: 'Invalid file type',
       message: err.message,
       code: 'INVALID_FILE_TYPE'
     });
   }
-  next(err);
+  
+  // Log unexpected errors
+  console.error('Unexpected multer error:', err);
+  return res.status(500).json({
+    error: 'File processing error',
+    message: 'An error occurred while processing your file',
+    code: 'PROCESSING_ERROR'
+  });
 };
 
-// File routes
-router.post('/upload', upload.single('file'), handleMulterError, middleware, uploadFileController);
+// File routes - middleware order is important
+router.post('/upload', middleware, upload.single('file'), handleMulterError, uploadFileController);
 router.get('/file/:fileId/status', checkSummaryStatus);
 
 // Summary routes

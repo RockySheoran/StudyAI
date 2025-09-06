@@ -23,8 +23,19 @@ export const createApp = () => {
  }))
   app.use(helmet());
   app.use(morgan('dev'));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Global error handler
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error('Global error handler:', err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+      });
+    }
+  });
 
   // Routes
   app.use('/api', apiRoutes);
