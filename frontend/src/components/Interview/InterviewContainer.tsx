@@ -47,6 +47,7 @@ export const InterviewContainer = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
+  const [baseText, setBaseText] = useState(''); // Text before speech recognition started
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -141,6 +142,7 @@ export const InterviewContainer = ({
     try {
       await onSendMessage(messageToSend);
       setInputText('');
+      setBaseText('');
       resetTranscript();
     } catch (err) {
       console.error('Error sending message:', err);
@@ -191,7 +193,7 @@ export const InterviewContainer = ({
     }
   }, [interview?.messages, manualSpeechEnabled, isSpeaking, speak]);
 
-  // Toggle speech recognition with enhanced permission handling
+  // Toggle speech recognition - now preserves existing text
   const toggleListening = useCallback(async () => {
     if (isListening) {
       stopListening();
@@ -206,13 +208,15 @@ export const InterviewContainer = ({
     try {
       clearErrors();
       
+      // Store current text as base text before starting speech recognition
+      setBaseText(inputText);
+      
       // Show user-friendly message while requesting permission
       if (isMobile) {
         toast.info('Requesting microphone access...');
       }
       
       await startListening();
-      setInputText(''); // Clear input when starting to listen
       
       if (isMobile) {
         toast.success('Microphone activated! Start speaking.');
@@ -252,6 +256,14 @@ export const InterviewContainer = ({
     }
   }, [isListening, isSpeaking, startListening, stopListening, clearErrors, isMobile]);
 
+  // Reset textarea content
+  const resetTextArea = useCallback(() => {
+    setInputText('');
+    setBaseText('');
+    resetTranscript();
+    toast.info('🗑️ Text cleared');
+  }, [resetTranscript]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -262,10 +274,13 @@ export const InterviewContainer = ({
   // Display text from speech recognition while listening with mobile optimization
   useEffect(() => {
     if (isListening && speechText) {
-      // On mobile, we already have debounced and cleaned text from the hook
-      setInputText(speechText);
+      // Combine base text (before speech started) with current clean speech text
+      const combinedText = baseText.trim() 
+        ? `${baseText.trim()} ${speechText}` 
+        : speechText;
+      setInputText(combinedText);
     }
-  }, [speechText, isListening]);
+  }, [speechText, isListening, baseText]);
 
   // Toggle speech for the assistant
   const toggleAssistantSpeech = useCallback(() => {
@@ -797,10 +812,10 @@ export const InterviewContainer = ({
                   ) : 
                   "💬 Type your response or use voice input..."
                 }
-                className="w-full p-4 pr-14 min-h-[80px] max-h-[140px] resize-none border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200 bg-white dark:bg-gray-800 text-base"
+                className="w-full p-3 sm:p-4 pr-16 sm:pr-24 min-h-[80px] max-h-[140px] resize-none border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 transition-all duration-200 bg-white dark:bg-gray-800 text-sm sm:text-base"
                 disabled={isSubmitting || isSpeaking || isLoading}
               />
-              <div className="absolute right-3 bottom-3 flex flex-col items-end gap-2">
+              <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 flex flex-row items-center gap-1 sm:gap-2">
                 {/* Speech Quality Indicator */}
                 {isListening && (
                   <motion.div 
@@ -837,15 +852,32 @@ export const InterviewContainer = ({
                   </motion.div>
                 )}
                 
+                {/* Reset Button */}
+                {inputText.trim() && (
+                  <motion.button
+                    type="button"
+                    onClick={resetTextArea}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-1.5 sm:p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-all duration-200 shadow-md"
+                    title="Clear text"
+                    disabled={isSubmitting || isSpeaking}
+                  >
+                    <svg className="h-3 w-3 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </motion.button>
+                )}
+                
                 <motion.button
                   type="button"
                   onClick={toggleListening}
                   whileHover={{ scale: isMobile ? 1.02 : 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "p-3 rounded-full transition-all duration-200 shadow-lg relative overflow-hidden",
+                    "p-2 sm:p-3 rounded-full transition-all duration-200 shadow-lg relative overflow-hidden",
                     isListening 
-                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                      ? (isMobile ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-red-100 text-red-600 hover:bg-red-200')
                       : 'bg-green-100 text-green-600 hover:bg-green-200'
                   )}
                   title={isListening ? 'Stop listening' : 'Start voice input'}
@@ -854,7 +886,12 @@ export const InterviewContainer = ({
                   {/* Animated background for listening state */}
                   {isListening && (
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-red-400 to-red-600"
+                      className={cn(
+                        "absolute inset-0",
+                        isMobile 
+                          ? "bg-gradient-to-r from-blue-400 to-blue-600" 
+                          : "bg-gradient-to-r from-red-400 to-red-600"
+                      )}
                       animate={{
                         opacity: [0.5, 1, 0.5],
                       }}
@@ -881,7 +918,7 @@ export const InterviewContainer = ({
                         />
                       </div>
                     ) : (
-                      <Mic className="h-5 w-5" />
+                      <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </div>
                 </motion.button>
