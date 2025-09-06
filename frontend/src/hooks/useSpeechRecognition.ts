@@ -301,43 +301,61 @@ export const useSpeechRecognition = () => {
         };
         
         recognition.onaudioend = () => {
-          console.log('Audio recording ended on mobile - no auto-restart');
-          // Don't auto-restart on mobile when audio ends naturally
+          console.log('Audio recording ended on mobile - will restart if still listening');
+          // Restart if we're still supposed to be listening
+          if (isListeningRef.current && recognitionRef.current) {
+            setTimeout(() => {
+              try {
+                if (isListeningRef.current && recognitionRef.current) {
+                  console.log('Mobile: Restarting after audio end');
+                  recognitionRef.current.start();
+                }
+              } catch (err) {
+                console.error('Mobile: Error restarting after audio end:', err);
+              }
+            }, 100);
+          }
         };
       }
       
       recognition.onresult = handleResult;
       recognition.onerror = handleError;
       
-      // Handle recognition end - only restart on desktop for continuous recording
+      // Handle recognition end - restart automatically for both mobile and desktop
       recognition.onend = () => {
         console.log('Recognition ended, isListening:', isListeningRef.current, 'isMobile:', isMobileDevice.current);
         
-        // Only auto-restart on desktop, not on mobile
-        if (isListeningRef.current && !isMobileDevice.current) {
+        // Auto-restart for both mobile and desktop if still listening
+        if (isListeningRef.current) {
           try {
+            const restartDelay = isMobileDevice.current ? 100 : 100;
             setTimeout(() => {
               if (isListeningRef.current && recognitionRef.current) {
-                console.log('Desktop: Restarting recognition for continuous recording...');
+                console.log(`${isMobileDevice.current ? 'Mobile' : 'Desktop'}: Restarting recognition for continuous recording...`);
                 try {
                   recognition.start();
                 } catch (startErr) {
                   console.error('Error in recognition.start():', startErr);
-                  setIsListening(false);
-                  isListeningRef.current = false;
+                  // Try again with a longer delay
+                  setTimeout(() => {
+                    if (isListeningRef.current && recognitionRef.current) {
+                      try {
+                        recognition.start();
+                      } catch (retryErr) {
+                        console.error('Retry failed:', retryErr);
+                        setIsListening(false);
+                        isListeningRef.current = false;
+                      }
+                    }
+                  }, 200);
                 }
               }
-            }, 100);
+            }, restartDelay);
           } catch (err) {
             console.error('Error in onend handler:', err);
             setIsListening(false);
             isListeningRef.current = false;
           }
-        } else if (isMobileDevice.current) {
-          // On mobile, when recognition ends naturally, stop listening
-          console.log('Mobile: Recognition ended naturally, stopping listening');
-          setIsListening(false);
-          isListeningRef.current = false;
         }
       };
 
