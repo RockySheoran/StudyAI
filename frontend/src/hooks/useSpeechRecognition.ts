@@ -99,7 +99,6 @@ export const useSpeechRecognition = () => {
   const isMobileDevice = useRef(isMobile());
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastFinalResultRef = useRef(''); // Track the last final result to avoid duplicates
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null); // Auto-stop timer for mobile
   const isListeningRef = useRef(isListening);
 
   // Keep ref in sync with state
@@ -123,10 +122,6 @@ export const useSpeechRecognition = () => {
       clearTimeout(processingTimerRef.current);
       processingTimerRef.current = null;
     }
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
   }, []);
 
   const updateText = useCallback((newText: string) => {
@@ -138,10 +133,6 @@ export const useSpeechRecognition = () => {
     
     try {
       // Clear all timers when manually stopping
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
-      }
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
         debounceTimerRef.current = null;
@@ -168,19 +159,6 @@ export const useSpeechRecognition = () => {
     
     console.log('Speech result received:', event.results);
     setIsProcessing(true);
-    
-    // Reset silence timer when we get speech input
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-    }
-    
-    // Set auto-stop timer for mobile (10 seconds of silence)
-    if (isMobileDevice.current && isListeningRef.current) {
-      silenceTimerRef.current = setTimeout(() => {
-        console.log('Auto-stopping due to silence on mobile');
-        stopListening();
-      }, 10000);
-    }
     
     if (processingTimerRef.current) {
       clearTimeout(processingTimerRef.current);
@@ -252,7 +230,7 @@ export const useSpeechRecognition = () => {
         setText(fullText);
       }
     }
-  }, [stopListening]);
+  }, []);
 
   const handleError = useCallback((event: any) => {
     console.error('Recognition error:', event.error, 'Details:', event);
@@ -428,9 +406,6 @@ export const useSpeechRecognition = () => {
       }
       if (processingTimerRef.current) {
         clearTimeout(processingTimerRef.current);
-      }
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
