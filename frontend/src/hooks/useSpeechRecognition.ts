@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Mobile detection utility
 const isMobile = () => {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-         (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+  return typeof window !== 'undefined' && (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform))
+  );
 };
 
 // Enhanced mobile text cleaning utility
@@ -109,14 +111,22 @@ export const useSpeechRecognition = () => {
   const [confidence, setConfidence] = useState(0);
   const [speechQuality, setSpeechQuality] = useState<'high' | 'medium' | 'low'>('low');
   const [isProcessing, setIsProcessing] = useState(false);
+  
   const recognitionRef = useRef<any>(null);
   const finalTranscriptRef = useRef(''); 
   const lastProcessedTextRef = useRef(''); 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMobileDevice = useRef(isMobile());
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastFinalResultRef = useRef(''); // Track the last final result to avoid duplicates
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null); // Auto-stop timer for mobile
+  const lastFinalResultRef = useRef('');
+  const isListeningRef = useRef(isListening);
+  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recognitionActiveRef = useRef(false);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
 
   const resetTranscript = useCallback(() => {
     setText('');
@@ -126,18 +136,14 @@ export const useSpeechRecognition = () => {
     setConfidence(0);
     setSpeechQuality('low');
     setIsProcessing(false);
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-    if (processingTimerRef.current) {
-      clearTimeout(processingTimerRef.current);
-      processingTimerRef.current = null;
-    }
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
+    
+    // Clear all timers
+    [debounceTimerRef, processingTimerRef, restartTimeoutRef].forEach(timerRef => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    });
   }, []);
 
   const updateText = useCallback((newText: string) => {
@@ -145,9 +151,15 @@ export const useSpeechRecognition = () => {
   }, []);
 
   const handleResult = useCallback((event: any) => {
+    if (!isListeningRef.current) {
+      console.log('Received result but not listening anymore, ignoring');
+      return;
+    }
+    
     console.log('Speech result received:', event.results);
     setIsProcessing(true);
     
+    // Clear previous processing timer
     if (processingTimerRef.current) {
       clearTimeout(processingTimerRef.current);
     }
@@ -174,209 +186,200 @@ export const useSpeechRecognition = () => {
       }
     }
 
-    // Process final transcript with mobile-specific cleaning
+    // Process final transcript
     if (finalTranscript) {
-      const cleanedFinal = isMobileDevice.current ? cleanTextForMobile(finalTranscript) : cleanText(finalTranscript);
+      const cleanedFinal = isMobileDevice.current ? 
+        cleanTextForMobile(finalTranscript) : 
+        finalTranscript.trim();
+      
       console.log('Final transcript after cleaning:', cleanedFinal);
       
       // Avoid processing the same final result multiple times
       if (cleanedFinal && cleanedFinal !== lastFinalResultRef.current) {
         lastFinalResultRef.current = cleanedFinal;
-        // For mobile, replace rather than append to prevent repetition
+        
         if (isMobileDevice.current) {
+          // For mobile, replace rather than append
           finalTranscriptRef.current = cleanedFinal;
           setText(cleanedFinal);
         } else {
+          // For desktop, append to previous text
           finalTranscriptRef.current += cleanedFinal + ' ';
-          const fullText = cleanText(finalTranscriptRef.current);
-          setText(fullText);
+          setText(finalTranscriptRef.current.trim());
         }
+        
         lastProcessedTextRef.current = cleanedFinal;
-        console.log('Updated text with final result:', cleanedFinal);
       }
     } 
-    // Handle interim results differently for mobile
+    // Handle interim results
     else if (interimTranscript) {
-      const cleanedInterim = isMobileDevice.current ? cleanTextForMobile(interimTranscript) : cleanText(interimTranscript);
-      console.log('Interim transcript after cleaning:', cleanedInterim);
+      const cleanedInterim = isMobileDevice.current ? 
+        cleanTextForMobile(interimTranscript) : 
+        interimTranscript;
       
       // For mobile, use debouncing to prevent excessive updates
       if (isMobileDevice.current) {
         if (debounceTimerRef.current) {
           clearTimeout(debounceTimerRef.current);
         }
+        
         debounceTimerRef.current = setTimeout(() => {
-          if (cleanedInterim && !finalTranscriptRef.current.includes(cleanedInterim)) {
-            setText(cleanedInterim);
+          if (cleanedInterim && isListeningRef.current) {
+            // Show interim results alongside final results on mobile
+            const displayText = finalTranscriptRef.current ? 
+              `${finalTranscriptRef.current} ${cleanedInterim}` : 
+              cleanedInterim;
+            setText(displayText);
           }
-        }, 150); // 150ms debounce for mobile
+        }, 200);
       } else {
-        const fullText = cleanText(finalTranscriptRef.current + ' ' + cleanedInterim);
-        setText(fullText);
+        // Desktop - show interim alongside final
+        const displayText = finalTranscriptRef.current ? 
+          `${finalTranscriptRef.current} ${cleanedInterim}` : 
+          cleanedInterim;
+        setText(displayText);
       }
     }
-  }, [isListening]);
+  }, []);
 
   const handleError = useCallback((event: any) => {
     console.error('Recognition error:', event.error, 'Details:', event);
+    
+    // Clear all timers on error
+    [debounceTimerRef, processingTimerRef, restartTimeoutRef].forEach(timerRef => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    });
+    
     let errorMessage = 'Microphone error';
     
     switch (event.error) {
       case 'not-allowed':
       case 'permission-denied':
-        errorMessage = 'NotAllowedError: Microphone access denied';
+        errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
         break;
       case 'no-speech':
-        // Ignore no-speech errors for continuous recording
         console.log('No speech detected - continuing recording...');
         return; // Ignore no-speech errors to keep recording
-        break;
       case 'aborted':
-        console.log('Recognition aborted by user');
-        return; // Ignore aborted errors (user stopped)
+        console.log('Recognition aborted');
+        return;
       case 'audio-capture':
-        errorMessage = 'NotFoundError: Microphone not available';
+        errorMessage = 'Microphone not available. Please check your device.';
         break;
       case 'network':
         errorMessage = 'Network error. Please check your connection.';
         break;
       default:
-        errorMessage = `${event.error}: Recognition failed`;
+        errorMessage = `Recognition error: ${event.error}`;
     }
     
-    console.error('Setting error:', errorMessage);
     setError(errorMessage);
     setIsListening(false);
+    isListeningRef.current = false;
+    recognitionActiveRef.current = false;
+  }, []);
+
+  const restartRecognition = useCallback(() => {
+    if (!isListeningRef.current || !recognitionRef.current) return;
+    
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+    }
+    
+    restartTimeoutRef.current = setTimeout(() => {
+      if (isListeningRef.current && recognitionRef.current) {
+        try {
+          console.log('Restarting recognition for continuous listening...');
+          recognitionRef.current.start();
+          recognitionActiveRef.current = true;
+        } catch (err) {
+          console.error('Error restarting recognition:', err);
+          // Try again after a longer delay
+          restartTimeoutRef.current = setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                recognitionActiveRef.current = true;
+              } catch (retryErr) {
+                console.error('Retry failed:', retryErr);
+              }
+            }
+          }, 1000);
+        }
+      }
+    }, 100);
   }, []);
 
   const startListening = useCallback(async () => {
-    if (isListening) {
-      // If already listening, reset the transcript (clear previous text)
+    if (isListeningRef.current) {
+      console.log('Already listening, resetting transcript');
       resetTranscript();
       return;
     }
     
-    if (!('webkitSpeechRecognition' in window)) {
-      setError('Speech recognition not supported');
+    if (typeof window === 'undefined' || !('webkitSpeechRecognition' in window)) {
+      setError('Speech recognition not supported in this browser');
       return;
     }
 
     setError(null);
     resetTranscript();
+    setIsListening(true);
+    isListeningRef.current = true;
 
-    console.log('Starting speech recognition for mobile/desktop...');
+    console.log(`Starting continuous speech recognition for ${isMobileDevice.current ? 'mobile' : 'desktop'}...`);
 
     try {
       const SpeechRecognition = (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       const recognition = recognitionRef.current;
       
-      // Continuous recording settings for both mobile and desktop
-      recognition.continuous = true; // Always continuous for uninterrupted recording
+      // Continuous recording settings
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = isMobileDevice.current ? 1 : 3;
       recognition.lang = 'en-US';
       
-      // Mobile-specific settings for persistent recording
-      if (isMobileDevice.current) {
-        // Force continuous mode on mobile
-        recognition.continuous = true;
-        
-        recognition.onaudiostart = () => {
-          console.log('Audio recording started on mobile - continuous mode active');
-        };
-        
-        recognition.onaudioend = () => {
-          console.log('Audio recording ended on mobile - will restart if still listening');
-          // Immediately restart if we're still supposed to be listening
-          if (isListening && recognitionRef.current) {
-            setTimeout(() => {
-              try {
-                if (isListening && recognitionRef.current) {
-                  console.log('Mobile: Restarting after audio end');
-                  recognitionRef.current.start();
-                }
-              } catch (err) {
-                console.error('Mobile: Error restarting after audio end:', err);
-              }
-            }, 50); // Shorter delay for mobile
-          }
-        };
-        
-        recognition.onsoundstart = () => {
-          console.log('Mobile: Sound detected');
-        };
-        
-        recognition.onsoundend = () => {
-          console.log('Mobile: Sound ended - but continuing to listen');
-        };
-        
-        recognition.onspeechstart = () => {
-          console.log('Mobile: Speech started');
-        };
-        
-        recognition.onspeechend = () => {
-          console.log('Mobile: Speech ended - but continuing to listen');
-        };
-      }
-      
       recognition.onresult = handleResult;
       recognition.onerror = handleError;
       
-      // Continuous recording - restart automatically unless manually stopped
+      // Handle automatic restarts for continuous listening
       recognition.onend = () => {
-        console.log('Recognition ended, isListening:', isListening, 'isMobile:', isMobileDevice.current);
+        console.log('Recognition session ended, restarting for continuous listening...');
+        recognitionActiveRef.current = false;
         
-        if (isListening) {
-          try {
-            // Aggressive restart for mobile to ensure continuous recording
-            const restartDelay = isMobileDevice.current ? 50 : 100;
-            setTimeout(() => {
-              if (isListening && recognitionRef.current) {
-                console.log(`${isMobileDevice.current ? 'Mobile' : 'Desktop'}: Restarting recognition for continuous recording...`);
-                try {
-                  recognition.start();
-                } catch (startErr) {
-                  console.error('Error in recognition.start():', startErr);
-                  // Try again with a longer delay
-                  setTimeout(() => {
-                    if (isListening && recognitionRef.current) {
-                      try {
-                        recognition.start();
-                      } catch (retryErr) {
-                        console.error('Retry failed:', retryErr);
-                        setIsListening(false);
-                      }
-                    }
-                  }, 200);
-                }
-              }
-            }, restartDelay);
-          } catch (err) {
-            console.error('Error in onend handler:', err);
-            setIsListening(false);
-          }
+        if (isListeningRef.current) {
+          restartRecognition();
         }
       };
 
+      recognition.onspeechstart = () => {
+        console.log('Speech detected');
+      };
+
+      recognition.onspeechend = () => {
+        console.log('Speech ended, but continuing to listen...');
+      };
+
+      // Start recognition
       await new Promise<void>((resolve, reject) => {
+        const startTimeout = setTimeout(() => {
+          reject(new Error('Recognition start timeout'));
+        }, 10000);
+        
         recognition.onstart = () => {
-          console.log('Recognition started successfully');
-          setIsListening(true);
+          clearTimeout(startTimeout);
+          console.log('Continuous recognition started successfully');
+          recognitionActiveRef.current = true;
           resolve();
         };
         
-        const startTimeout = setTimeout(() => {
-          console.error('Recognition start timeout');
-          reject(new Error('timeout'));
-        }, isMobileDevice.current ? 10000 : 8000); // Longer timeout for mobile to handle slower initialization
-        
         try {
-          console.log('Attempting to start recognition...');
           recognition.start();
-          clearTimeout(startTimeout);
         } catch (startError) {
-          console.error('Start error:', startError);
           clearTimeout(startTimeout);
           reject(startError);
         }
@@ -385,64 +388,70 @@ export const useSpeechRecognition = () => {
       console.error('Error starting recognition:', err);
       
       let errorMessage = 'Failed to access microphone';
-      if (err.message === 'timeout') {
-        errorMessage = 'timeout: Microphone setup timed out';
+      if (err.message === 'Recognition start timeout') {
+        errorMessage = 'Microphone setup timed out. Please try again.';
       } else if (err.name === 'NotAllowedError') {
-        errorMessage = 'NotAllowedError: Microphone access denied';
+        errorMessage = 'Microphone access denied. Please allow microphone access.';
       } else {
-        errorMessage = `${err.name || 'UnknownError'}: ${err.message || 'Failed to start recognition'}`;
+        errorMessage = `Microphone error: ${err.message || 'Unknown error'}`;
       }
       
       setError(errorMessage);
       setIsListening(false);
+      isListeningRef.current = false;
+      recognitionActiveRef.current = false;
       throw new Error(errorMessage);
     }
-  }, [isListening, handleResult, handleError, resetTranscript]);
+  }, [handleResult, handleError, resetTranscript, restartRecognition]);
 
   const stopListening = useCallback(() => {
-    if (!isListening || !recognitionRef.current) return;
+    if (!isListeningRef.current) return;
     
-    try {
-      // Clear all timers when manually stopping
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
+    console.log('Manually stopping continuous recognition...');
+    
+    // Clear all timers
+    [debounceTimerRef, processingTimerRef, restartTimeoutRef].forEach(timerRef => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
+    });
+    
+    // Stop recognition if active
+    if (recognitionRef.current && recognitionActiveRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (err) {
+        console.error('Error stopping recognition:', err);
       }
-      if (processingTimerRef.current) {
-        clearTimeout(processingTimerRef.current);
-        processingTimerRef.current = null;
-      }
-      
-      recognitionRef.current.stop();
-      setIsListening(false);
-      console.log('Speech recognition manually stopped by user');
-    } catch (err) {
-      console.error('Error stopping recognition:', err);
     }
-  }, [isListening]);
+    
+    setIsListening(false);
+    isListeningRef.current = false;
+    recognitionActiveRef.current = false;
+  }, []);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      if (processingTimerRef.current) {
-        clearTimeout(processingTimerRef.current);
-      }
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      // Clear all timers
+      [debounceTimerRef, processingTimerRef, restartTimeoutRef].forEach(timerRef => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+      });
+      
+      // Stop recognition if active
+      if (recognitionRef.current && recognitionActiveRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (err) {
+          console.error('Error stopping recognition on unmount:', err);
+        }
       }
     };
   }, []);
 
-  // Clear error function
   const clearError = useCallback(() => {
     setError(null);
   }, []);
