@@ -186,7 +186,7 @@ export const useSpeechRecognition = () => {
       }
     }
 
-    // Process final transcript - ALWAYS APPEND TO EXISTING TEXT
+    // Process final transcript
     if (finalTranscript) {
       const cleanedFinal = isMobileDevice.current ? 
         cleanTextForMobile(finalTranscript) : 
@@ -198,18 +198,14 @@ export const useSpeechRecognition = () => {
       if (cleanedFinal && cleanedFinal !== lastFinalResultRef.current) {
         lastFinalResultRef.current = cleanedFinal;
         
-        // CRITICAL CHANGE: Always append to existing text instead of replacing
-        // For both mobile and desktop, append to previous text
-        const newText = finalTranscriptRef.current ? 
-          `${finalTranscriptRef.current} ${cleanedFinal}` : 
-          cleanedFinal;
+        // Always append to previous text for both mobile and desktop
+        finalTranscriptRef.current += cleanedFinal + ' ';
+        setText(finalTranscriptRef.current.trim());
         
-        finalTranscriptRef.current = newText;
-        setText(newText);
         lastProcessedTextRef.current = cleanedFinal;
       }
     } 
-    // Handle interim results - show them alongside the accumulated final text
+    // Handle interim results
     else if (interimTranscript) {
       const cleanedInterim = isMobileDevice.current ? 
         cleanTextForMobile(interimTranscript) : 
@@ -223,7 +219,7 @@ export const useSpeechRecognition = () => {
         
         debounceTimerRef.current = setTimeout(() => {
           if (cleanedInterim && isListeningRef.current) {
-            // Show interim results alongside accumulated final results
+            // Show interim results alongside final results on mobile
             const displayText = finalTranscriptRef.current ? 
               `${finalTranscriptRef.current} ${cleanedInterim}` : 
               cleanedInterim;
@@ -231,7 +227,7 @@ export const useSpeechRecognition = () => {
           }
         }, 200);
       } else {
-        // Desktop - show interim alongside accumulated final text
+        // Desktop - show interim alongside final
         const displayText = finalTranscriptRef.current ? 
           `${finalTranscriptRef.current} ${cleanedInterim}` : 
           cleanedInterim;
