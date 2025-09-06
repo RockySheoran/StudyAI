@@ -190,7 +190,7 @@ export const useSpeechRecognition = () => {
     if (finalTranscript) {
       const cleanedFinal = isMobileDevice.current ? 
         cleanTextForMobile(finalTranscript) : 
-        finalTranscript.trim();
+        cleanText(finalTranscript);
       
       console.log('Final transcript after cleaning:', cleanedFinal);
       
@@ -209,7 +209,7 @@ export const useSpeechRecognition = () => {
     else if (interimTranscript) {
       const cleanedInterim = isMobileDevice.current ? 
         cleanTextForMobile(interimTranscript) : 
-        interimTranscript;
+        cleanText(interimTranscript);
       
       // For mobile, use debouncing to prevent excessive updates
       if (isMobileDevice.current) {
