@@ -277,13 +277,46 @@ export const useSpeechRecognition = () => {
       recognition.maxAlternatives = isMobileDevice.current ? 1 : 3;
       recognition.lang = 'en-US';
       
+      // Mobile-specific settings for persistent recording
       if (isMobileDevice.current) {
+        // Force continuous mode on mobile
+        recognition.continuous = true;
+        
         recognition.onaudiostart = () => {
-          console.log('Audio recording started on mobile');
+          console.log('Audio recording started on mobile - continuous mode active');
         };
         
         recognition.onaudioend = () => {
-          console.log('Audio recording ended on mobile');
+          console.log('Audio recording ended on mobile - will restart if still listening');
+          // Immediately restart if we're still supposed to be listening
+          if (isListening && recognitionRef.current) {
+            setTimeout(() => {
+              try {
+                if (isListening && recognitionRef.current) {
+                  console.log('Mobile: Restarting after audio end');
+                  recognitionRef.current.start();
+                }
+              } catch (err) {
+                console.error('Mobile: Error restarting after audio end:', err);
+              }
+            }, 50); // Shorter delay for mobile
+          }
+        };
+        
+        recognition.onsoundstart = () => {
+          console.log('Mobile: Sound detected');
+        };
+        
+        recognition.onsoundend = () => {
+          console.log('Mobile: Sound ended - but continuing to listen');
+        };
+        
+        recognition.onspeechstart = () => {
+          console.log('Mobile: Speech started');
+        };
+        
+        recognition.onspeechend = () => {
+          console.log('Mobile: Speech ended - but continuing to listen');
         };
       }
       
@@ -292,19 +325,35 @@ export const useSpeechRecognition = () => {
       
       // Continuous recording - restart automatically unless manually stopped
       recognition.onend = () => {
-        console.log('Recognition ended, isListening:', isListening);
+        console.log('Recognition ended, isListening:', isListening, 'isMobile:', isMobileDevice.current);
         
         if (isListening) {
           try {
-            // Always restart for continuous recording on both mobile and desktop
+            // Aggressive restart for mobile to ensure continuous recording
+            const restartDelay = isMobileDevice.current ? 50 : 100;
             setTimeout(() => {
               if (isListening && recognitionRef.current) {
-                console.log('Restarting recognition for continuous recording...');
-                recognition.start();
+                console.log(`${isMobileDevice.current ? 'Mobile' : 'Desktop'}: Restarting recognition for continuous recording...`);
+                try {
+                  recognition.start();
+                } catch (startErr) {
+                  console.error('Error in recognition.start():', startErr);
+                  // Try again with a longer delay
+                  setTimeout(() => {
+                    if (isListening && recognitionRef.current) {
+                      try {
+                        recognition.start();
+                      } catch (retryErr) {
+                        console.error('Retry failed:', retryErr);
+                        setIsListening(false);
+                      }
+                    }
+                  }, 200);
+                }
               }
-            }, 100);
+            }, restartDelay);
           } catch (err) {
-            console.error('Error restarting recognition:', err);
+            console.error('Error in onend handler:', err);
             setIsListening(false);
           }
         }
@@ -320,7 +369,7 @@ export const useSpeechRecognition = () => {
         const startTimeout = setTimeout(() => {
           console.error('Recognition start timeout');
           reject(new Error('timeout'));
-        }, isMobileDevice.current ? 5000 : 8000); // Shorter timeout for mobile
+        }, isMobileDevice.current ? 10000 : 8000); // Longer timeout for mobile to handle slower initialization
         
         try {
           console.log('Attempting to start recognition...');
