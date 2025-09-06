@@ -99,6 +99,7 @@ export const useSpeechRecognition = () => {
   const isMobileDevice = useRef(isMobile());
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastFinalResultRef = useRef(''); // Track the last final result to avoid duplicates
+  const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null); // Watchdog to ensure mic stays on
   const isListeningRef = useRef(isListening);
 
   // Keep ref in sync with state
@@ -121,6 +122,10 @@ export const useSpeechRecognition = () => {
     if (processingTimerRef.current) {
       clearTimeout(processingTimerRef.current);
       processingTimerRef.current = null;
+    }
+    if (watchdogTimerRef.current) {
+      clearTimeout(watchdogTimerRef.current);
+      watchdogTimerRef.current = null;
     }
   }, []);
 
@@ -234,34 +239,78 @@ export const useSpeechRecognition = () => {
 
   const handleError = useCallback((event: any) => {
     console.error('Recognition error:', event.error, 'Details:', event);
-    let errorMessage = 'Microphone error';
     
     switch (event.error) {
       case 'not-allowed':
       case 'permission-denied':
-        errorMessage = 'NotAllowedError: Microphone access denied';
+        setError('NotAllowedError: Microphone access denied');
+        setIsListening(false);
+        isListeningRef.current = false;
         break;
       case 'no-speech':
-        // Ignore no-speech errors for continuous recording
-        console.log('No speech detected - continuing recording...');
-        return; // Ignore no-speech errors to keep recording
+        // Ignore no-speech errors and restart immediately
+        console.log('No speech detected - restarting immediately...');
+        if (isListeningRef.current && recognitionRef.current) {
+          setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                console.log('Restarted after no-speech error');
+              } catch (err) {
+                console.error('Failed to restart after no-speech:', err);
+              }
+            }
+          }, 50);
+        }
+        return;
       case 'aborted':
-        console.log('Recognition aborted by user');
-        return; // Ignore aborted errors (user stopped)
+        console.log('Recognition aborted - restarting if still listening...');
+        if (isListeningRef.current && recognitionRef.current) {
+          setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                console.log('Restarted after abort');
+              } catch (err) {
+                console.error('Failed to restart after abort:', err);
+              }
+            }
+          }, 100);
+        }
+        return;
       case 'audio-capture':
-        errorMessage = 'NotFoundError: Microphone not available';
+        setError('NotFoundError: Microphone not available');
+        setIsListening(false);
+        isListeningRef.current = false;
         break;
       case 'network':
-        errorMessage = 'Network error. Please check your connection.';
+        setError('Network error. Please check your connection.');
+        setIsListening(false);
+        isListeningRef.current = false;
         break;
       default:
-        errorMessage = `${event.error}: Recognition failed`;
+        // For any other error, try to restart if still listening
+        console.log(`Unknown error ${event.error} - attempting restart...`);
+        if (isListeningRef.current && recognitionRef.current) {
+          setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current) {
+              try {
+                recognitionRef.current.start();
+                console.log('Restarted after unknown error');
+              } catch (err) {
+                console.error('Failed to restart after unknown error:', err);
+                setError(`${event.error}: Recognition failed`);
+                setIsListening(false);
+                isListeningRef.current = false;
+              }
+            }
+          }, 100);
+        } else {
+          setError(`${event.error}: Recognition failed`);
+          setIsListening(false);
+          isListeningRef.current = false;
+        }
     }
-    
-    console.error('Setting error:', errorMessage);
-    setError(errorMessage);
-    setIsListening(false);
-    isListeningRef.current = false;
   }, []);
 
   const startListening = useCallback(async () => {
@@ -288,11 +337,23 @@ export const useSpeechRecognition = () => {
       recognitionRef.current = new SpeechRecognition();
       const recognition = recognitionRef.current;
       
-      // Continuous recording settings for both mobile and desktop
+      // Aggressive continuous recording settings for both mobile and desktop
       recognition.continuous = true; // Always continuous for uninterrupted recording
       recognition.interimResults = true;
       recognition.maxAlternatives = isMobileDevice.current ? 1 : 3;
       recognition.lang = 'en-US';
+      
+      // Additional settings to prevent automatic stopping
+      if (isMobileDevice.current) {
+        // Mobile-specific aggressive settings
+        recognition.serviceURI = recognition.serviceURI || '';
+        // Force continuous mode more aggressively on mobile
+        Object.defineProperty(recognition, 'continuous', {
+          value: true,
+          writable: false,
+          configurable: false
+        });
+      }
       
       // Mobile-specific settings - no auto-restart on audio end
       if (isMobileDevice.current) {
@@ -362,6 +423,27 @@ export const useSpeechRecognition = () => {
       await new Promise<void>((resolve, reject) => {
         recognition.onstart = () => {
           console.log('Recognition started successfully');
+          // Start watchdog timer to ensure mic stays active
+          if (watchdogTimerRef.current) {
+            clearTimeout(watchdogTimerRef.current);
+          }
+          watchdogTimerRef.current = setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current) {
+              console.log('Watchdog: Ensuring recognition is still active...');
+              try {
+                // Check if recognition is still active, if not restart
+                recognitionRef.current.stop();
+                setTimeout(() => {
+                  if (isListeningRef.current && recognitionRef.current) {
+                    recognitionRef.current.start();
+                    console.log('Watchdog: Restarted recognition');
+                  }
+                }, 100);
+              } catch (err) {
+                console.error('Watchdog restart failed:', err);
+              }
+            }
+          }, 5000); // Check every 5 seconds
           resolve();
         };
         
@@ -406,6 +488,9 @@ export const useSpeechRecognition = () => {
       }
       if (processingTimerRef.current) {
         clearTimeout(processingTimerRef.current);
+      }
+      if (watchdogTimerRef.current) {
+        clearTimeout(watchdogTimerRef.current);
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
