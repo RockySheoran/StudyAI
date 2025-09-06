@@ -133,6 +133,33 @@ export const useSpeechRecognition = () => {
     setText(newText);
   }, []);
 
+  const stopListening = useCallback(() => {
+    if (!isListeningRef.current || !recognitionRef.current) return;
+    
+    try {
+      // Clear all timers when manually stopping
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      if (processingTimerRef.current) {
+        clearTimeout(processingTimerRef.current);
+        processingTimerRef.current = null;
+      }
+      
+      recognitionRef.current.stop();
+      setIsListening(false);
+      isListeningRef.current = false;
+      console.log('Speech recognition manually stopped by user');
+    } catch (err) {
+      console.error('Error stopping recognition:', err);
+    }
+  }, []);
+
   const handleResult = useCallback((event: any) => {
     if (!isListeningRef.current) {
       console.log('Received result but not listening anymore, ignoring');
@@ -152,7 +179,7 @@ export const useSpeechRecognition = () => {
       silenceTimerRef.current = setTimeout(() => {
         console.log('Auto-stopping due to silence on mobile');
         stopListening();
-      }, 30000);
+      }, 10000);
     }
     
     if (processingTimerRef.current) {
@@ -225,7 +252,7 @@ export const useSpeechRecognition = () => {
         setText(fullText);
       }
     }
-  }, []);
+  }, [stopListening]);
 
   const handleError = useCallback((event: any) => {
     console.error('Recognition error:', event.error, 'Details:', event);
@@ -393,33 +420,6 @@ export const useSpeechRecognition = () => {
       throw new Error(errorMessage);
     }
   }, [handleResult, handleError, resetTranscript]);
-
-  const stopListening = useCallback(() => {
-    if (!isListeningRef.current || !recognitionRef.current) return;
-    
-    try {
-      // Clear all timers when manually stopping
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-        silenceTimerRef.current = null;
-      }
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-        debounceTimerRef.current = null;
-      }
-      if (processingTimerRef.current) {
-        clearTimeout(processingTimerRef.current);
-        processingTimerRef.current = null;
-      }
-      
-      recognitionRef.current.stop();
-      setIsListening(false);
-      isListeningRef.current = false;
-      console.log('Speech recognition manually stopped by user');
-    } catch (err) {
-      console.error('Error stopping recognition:', err);
-    }
-  }, []);
 
   useEffect(() => {
     return () => {
