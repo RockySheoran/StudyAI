@@ -6,7 +6,7 @@ const isMobile = () => {
          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
 };
 
-// Enhanced mobile text cleaning utility - FIXED VERSION
+// Enhanced mobile text cleaning utility
 const cleanTextForMobile = (text: string): string => {
   if (!text) return '';
   
@@ -101,6 +101,7 @@ export const useSpeechRecognition = () => {
   const lastFinalResultRef = useRef(''); // Track the last final result to avoid duplicates
   const watchdogTimerRef = useRef<NodeJS.Timeout | null>(null); // Watchdog to ensure mic stays on
   const isListeningRef = useRef(isListening);
+  const restartAttemptsRef = useRef(0); // Track restart attempts to prevent infinite loops
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -115,6 +116,8 @@ export const useSpeechRecognition = () => {
     setConfidence(0);
     setSpeechQuality('low');
     setIsProcessing(false);
+    restartAttemptsRef.current = 0;
+    
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
@@ -146,10 +149,15 @@ export const useSpeechRecognition = () => {
         clearTimeout(processingTimerRef.current);
         processingTimerRef.current = null;
       }
+      if (watchdogTimerRef.current) {
+        clearTimeout(watchdogTimerRef.current);
+        watchdogTimerRef.current = null;
+      }
       
       recognitionRef.current.stop();
       setIsListening(false);
       isListeningRef.current = false;
+      restartAttemptsRef.current = 0;
       console.log('Speech recognition manually stopped by user');
     } catch (err) {
       console.error('Error stopping recognition:', err);
@@ -200,10 +208,11 @@ export const useSpeechRecognition = () => {
       if (cleanedFinal && cleanedFinal !== lastFinalResultRef.current) {
         lastFinalResultRef.current = cleanedFinal;
         
-        // For mobile, use the original logic that doesn't cause echoing
+        // For mobile, append to previous text instead of replacing
         if (isMobileDevice.current) {
-          finalTranscriptRef.current = cleanedFinal;
-          setText(cleanedFinal);
+          finalTranscriptRef.current += cleanedFinal + ' ';
+          const fullText = cleanText(finalTranscriptRef.current);
+          setText(fullText);
         } else {
           // For desktop, append to previous text
           finalTranscriptRef.current += cleanedFinal + ' ';
@@ -214,26 +223,14 @@ export const useSpeechRecognition = () => {
         console.log('Updated text with final result:', cleanedFinal);
       }
     } 
-    // Handle interim results differently for mobile - FIXED to prevent echoing
+    // Handle interim results
     else if (interimTranscript) {
       const cleanedInterim = isMobileDevice.current ? cleanTextForMobile(interimTranscript) : cleanText(interimTranscript);
       console.log('Interim transcript after cleaning:', cleanedInterim);
       
-      // For mobile, use the original logic that prevents echoing
-      if (isMobileDevice.current) {
-        if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current);
-        }
-        debounceTimerRef.current = setTimeout(() => {
-          // Only update if the interim text is meaningfully different
-          if (cleanedInterim && !finalTranscriptRef.current.includes(cleanedInterim)) {
-            setText(cleanedInterim);
-          }
-        }, 150); // 150ms debounce for mobile
-      } else {
-        const fullText = cleanText(finalTranscriptRef.current + ' ' + cleanedInterim);
-        setText(fullText);
-      }
+      // For both mobile and desktop, show interim results along with final results
+      const fullText = cleanText(finalTranscriptRef.current + ' ' + cleanedInterim);
+      setText(fullText);
     }
   }, []);
 
@@ -329,6 +326,7 @@ export const useSpeechRecognition = () => {
     resetTranscript();
     setIsListening(true);
     isListeningRef.current = true;
+    restartAttemptsRef.current = 0;
 
     console.log('Starting speech recognition for mobile/desktop...');
 
@@ -355,10 +353,11 @@ export const useSpeechRecognition = () => {
         });
       }
       
-      // Mobile-specific settings - no auto-restart on audio end
+      // Mobile-specific settings
       if (isMobileDevice.current) {
         recognition.onaudiostart = () => {
           console.log('Audio recording started on mobile');
+          restartAttemptsRef.current = 0; // Reset restart attempts on successful audio start
         };
         
         recognition.onaudioend = () => {
@@ -388,6 +387,16 @@ export const useSpeechRecognition = () => {
         
         // Auto-restart for both mobile and desktop if still listening
         if (isListeningRef.current) {
+          // Prevent infinite restart loops
+          restartAttemptsRef.current++;
+          if (restartAttemptsRef.current > 10) {
+            console.error('Too many restart attempts, stopping recognition');
+            setIsListening(false);
+            isListeningRef.current = false;
+            setError('Too many restart attempts. Please try again.');
+            return;
+          }
+          
           try {
             const restartDelay = isMobileDevice.current ? 100 : 100;
             setTimeout(() => {
@@ -423,6 +432,8 @@ export const useSpeechRecognition = () => {
       await new Promise<void>((resolve, reject) => {
         recognition.onstart = () => {
           console.log('Recognition started successfully');
+          restartAttemptsRef.current = 0; // Reset restart attempts on successful start
+          
           // Start watchdog timer to ensure mic stays active
           if (watchdogTimerRef.current) {
             clearTimeout(watchdogTimerRef.current);
@@ -493,7 +504,11 @@ export const useSpeechRecognition = () => {
         clearTimeout(watchdogTimerRef.current);
       }
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (err) {
+          console.error('Error stopping recognition during cleanup:', err);
+        }
       }
     };
   }, []);
