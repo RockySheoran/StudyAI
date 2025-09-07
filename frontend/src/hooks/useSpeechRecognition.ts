@@ -452,8 +452,6 @@ export const useSpeechRecognition = () => {
     setError(null);
   }, []);
 
-  
-
   return {
     text,
     isListening,
