@@ -6,27 +6,36 @@ const isMobile = () => {
          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
 };
 
-// Enhanced mobile text cleaning utility
+// Enhanced mobile text cleaning utility with better deduplication
 const cleanTextForMobile = (text: string): string => {
   if (!text) return '';
   
-  // More conservative cleaning - only remove obvious repetitions
-  let cleanedText = text.trim();
+  let cleanedText = text.trim().toLowerCase();
   
   // Split into words for processing
   const words = cleanedText.split(/\s+/);
   const finalWords: string[] = [];
   
-  // Simple deduplication - only remove consecutive duplicates
+  // Advanced deduplication - remove consecutive duplicates and patterns
   for (let i = 0; i < words.length; i++) {
     const currentWord = words[i];
-    const prevWord = i > 0 ? words[i - 1] : '';
-    const nextWord = i < words.length - 1 ? words[i + 1] : '';
+    const prevWord = finalWords.length > 0 ? finalWords[finalWords.length - 1] : '';
     
-    // Only add if not the same as previous or next word (consecutive duplicates)
-    if (currentWord !== prevWord && currentWord !== nextWord) {
-      finalWords.push(currentWord);
+    // Skip if same as previous word (consecutive duplicate)
+    if (currentWord === prevWord) {
+      continue;
     }
+    
+    // Check for repetitive patterns (e.g., "my name my name")
+    if (finalWords.length >= 2) {
+      const prev2Word = finalWords[finalWords.length - 2];
+      if (currentWord === prev2Word && prevWord === words[i - 1]) {
+        // Skip this word as it's part of a repetitive pattern
+        continue;
+      }
+    }
+    
+    finalWords.push(currentWord);
   }
   
   const result = finalWords.join(' ')
@@ -49,23 +58,34 @@ const cleanText = (text: string): string => {
   // Split into words and remove excessive repetition
   const words = cleanedText.split(/\s+/);
   const cleanedWords: string[] = [];
-  let consecutiveCount = 1;
   
   for (let i = 0; i < words.length; i++) {
     const currentWord = words[i];
-    const prevWord = i > 0 ? words[i - 1] : '';
-    const nextWord = i < words.length - 1 ? words[i + 1] : '';
+    const prevWord = cleanedWords.length > 0 ? cleanedWords[cleanedWords.length - 1] : '';
     
+    // Skip consecutive duplicates
     if (currentWord === prevWord) {
-      consecutiveCount++;
-      // Allow max 1 consecutive identical words to prevent repetition
-      if (consecutiveCount <= 1) {
-        cleanedWords.push(words[i]);
-      }
-    } else if (currentWord !== nextWord) {
-      consecutiveCount = 1;
-      cleanedWords.push(words[i]);
+      continue;
     }
+    
+    // Check for alternating patterns (A B A B)
+    if (cleanedWords.length >= 2) {
+      const prev2Word = cleanedWords[cleanedWords.length - 2];
+      if (currentWord === prev2Word) {
+        // Skip this word as it's likely a repetitive pattern
+        continue;
+      }
+    }
+    
+    // Check for longer repetitive sequences
+    if (cleanedWords.length >= 3) {
+      const prev3Word = cleanedWords[cleanedWords.length - 3];
+      if (currentWord === prev3Word) {
+        continue;
+      }
+    }
+    
+    cleanedWords.push(currentWord);
   }
   
   // Capitalize first letter and restore proper sentence structure
@@ -216,22 +236,35 @@ export const useSpeechRecognition = () => {
       const cleanedFinal = isMobileDevice.current ? cleanTextForMobile(finalTranscript) : cleanText(finalTranscript);
       console.log('Final transcript after cleaning:', cleanedFinal);
       
-      // Avoid processing the same final result multiple times
-      if (cleanedFinal && cleanedFinal !== lastFinalResultRef.current) {
+      // Avoid processing the same final result multiple times and empty results
+      if (cleanedFinal && cleanedFinal.trim() && cleanedFinal !== lastFinalResultRef.current) {
         lastFinalResultRef.current = cleanedFinal;
         
-        // Append to previous text for both mobile and desktop
-        finalTranscriptRef.current += cleanedFinal + ' ';
-        const fullText = cleanText(finalTranscriptRef.current);
-        setText(fullText);
+        // For mobile, be more careful about appending to avoid duplication
+        if (isMobileDevice.current) {
+          // Check if this text is already contained in the current transcript
+          const currentText = finalTranscriptRef.current.toLowerCase();
+          const newText = cleanedFinal.toLowerCase();
+          
+          if (!currentText.includes(newText)) {
+            finalTranscriptRef.current += cleanedFinal + ' ';
+            const fullText = cleanTextForMobile(finalTranscriptRef.current);
+            setText(fullText);
+          }
+        } else {
+          // Desktop behavior - append normally
+          finalTranscriptRef.current += cleanedFinal + ' ';
+          const fullText = cleanText(finalTranscriptRef.current);
+          setText(fullText);
+        }
         
         lastProcessedTextRef.current = cleanedFinal;
         console.log('Updated text with final result:', cleanedFinal);
       }
     } 
-    // Handle interim results
-    else if (interimTranscript) {
-      const cleanedInterim = isMobileDevice.current ? cleanTextForMobile(interimTranscript) : cleanText(interimTranscript);
+    // Handle interim results (only for desktop to reduce mobile echo)
+    else if (interimTranscript && !isMobileDevice.current) {
+      const cleanedInterim = cleanText(interimTranscript);
       console.log('Interim transcript after cleaning:', cleanedInterim);
       
       // Show interim results along with final results
@@ -273,14 +306,36 @@ export const useSpeechRecognition = () => {
         }
         return;
       case 'audio-capture':
-        setError('NotFoundError: Microphone not available');
-        setIsListening(false);
-        isListeningRef.current = false;
+        console.log('Audio capture error - attempting restart...');
+        // Try to restart after audio capture error
+        setTimeout(() => {
+          if (isListeningRef.current && recognitionRef.current && !isStoppingRef.current) {
+            try {
+              recognitionRef.current.start();
+              console.log('Restarted after audio capture error');
+            } catch (err) {
+              setError('NotFoundError: Microphone not available');
+              setIsListening(false);
+              isListeningRef.current = false;
+            }
+          }
+        }, 1000);
         break;
       case 'network':
-        setError('Network error. Please check your connection.');
-        setIsListening(false);
-        isListeningRef.current = false;
+        console.log('Network error - attempting restart...');
+        // Try to restart after network error
+        setTimeout(() => {
+          if (isListeningRef.current && recognitionRef.current && !isStoppingRef.current) {
+            try {
+              recognitionRef.current.start();
+              console.log('Restarted after network error');
+            } catch (err) {
+              setError('Network error. Please check your connection.');
+              setIsListening(false);
+              isListeningRef.current = false;
+            }
+          }
+        }, 2000);
         break;
       default:
         // For any other error, try to restart if still listening
@@ -300,9 +355,18 @@ export const useSpeechRecognition = () => {
             }
           }, 100);
         } else {
-          setError(`${event.error}: Recognition failed`);
-          setIsListening(false);
-          isListeningRef.current = false;
+          // Don't stop on unknown errors - log and continue
+          console.log(`Unknown error ${event.error} - will keep trying to restart`);
+          setTimeout(() => {
+            if (isListeningRef.current && recognitionRef.current && !isStoppingRef.current) {
+              try {
+                recognitionRef.current.start();
+                console.log('Restarted after unknown error');
+              } catch (err) {
+                console.error('Failed to restart after unknown error, will try again:', err);
+              }
+            }
+          }, 1000);
         }
     }
   }, []);
@@ -342,7 +406,7 @@ export const useSpeechRecognition = () => {
       recognition.onresult = handleResult;
       recognition.onerror = handleError;
       
-      // Handle recognition end - restart automatically
+      // Handle recognition end - restart automatically (especially important for mobile)
       recognition.onend = () => {
         console.log('Recognition ended, isListening:', isListeningRef.current, 'isStopping:', isStoppingRef.current);
         
@@ -352,30 +416,49 @@ export const useSpeechRecognition = () => {
           return;
         }
         
-        // Auto-restart if still listening
+        // Auto-restart if still listening (continuous mode for mobile)
         if (isListeningRef.current) {
           restartAttemptsRef.current++;
           
-          // Prevent infinite restart loops
-          if (restartAttemptsRef.current > 5) {
-            console.error('Too many restart attempts, stopping recognition');
-            setIsListening(false);
-            isListeningRef.current = false;
-            setError('Speech recognition stopped due to too many restarts');
-            return;
+          // No restart limits - keep listening indefinitely until manually stopped
+          // Reset restart counter periodically to prevent overflow
+          if (restartAttemptsRef.current > 100) {
+            restartAttemptsRef.current = 0;
+            console.log('Reset restart counter to prevent overflow');
           }
           
           try {
+            // Shorter delay for mobile to ensure seamless listening
+            const restartDelay = isMobileDevice.current ? 50 : 100;
+            
             setTimeout(() => {
               if (isListeningRef.current && recognitionRef.current && !isStoppingRef.current) {
-                console.log('Restarting recognition for continuous recording...');
+                console.log('Restarting recognition for continuous recording... (attempt', restartAttemptsRef.current, ')');
                 try {
                   recognition.start();
+                  // Reset restart counter on successful start for both mobile and desktop
+                  restartAttemptsRef.current = Math.max(0, restartAttemptsRef.current - 1);
+                  console.log('Successfully restarted recognition, counter:', restartAttemptsRef.current);
                 } catch (startErr) {
                   console.error('Error in recognition.start():', startErr);
+                  // Continue trying to restart regardless of errors
+                  // Only increment counter slightly to track attempts but never stop
+                  restartAttemptsRef.current++;
+                  
+                  // Try again after a slightly longer delay if start fails
+                  setTimeout(() => {
+                    if (isListeningRef.current && recognitionRef.current && !isStoppingRef.current) {
+                      try {
+                        recognition.start();
+                        console.log('Retry successful after start error');
+                      } catch (retryErr) {
+                        console.error('Retry failed, will try again on next cycle:', retryErr);
+                      }
+                    }
+                  }, 500);
                 }
               }
-            }, 100);
+            }, restartDelay);
           } catch (err) {
             console.error('Error in onend handler:', err);
           }
