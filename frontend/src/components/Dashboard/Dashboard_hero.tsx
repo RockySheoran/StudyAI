@@ -2,6 +2,7 @@
 import { useUserStore } from "@/lib/Store/userStore";
 import { motion } from "framer-motion";
 import { FaUser, FaRobot } from "react-icons/fa";
+import RefreshHistoryButton from "./RefreshHistoryButton";
 
 export const Dashboard_hero = () => {
   const { name, email, avatar } = useUserStore();
@@ -87,6 +88,22 @@ export const Dashboard_hero = () => {
               <p className="text-sm md:text-base text-indigo-700 dark:text-indigo-300 italic font-medium">
                 "Explore the whole new way of studying through StudyAI."
               </p>
+            </motion.div>
+            
+            {/* Refresh History Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.1 }}
+              className="mt-6 flex justify-center md:justify-start"
+            >
+              <RefreshHistoryButton
+                onRefresh={() => {
+                  // Force page reload to refresh all components
+                  window.location.reload();
+                }}
+                className=""
+              />
             </motion.div>
           </motion.div>
         </motion.div>
