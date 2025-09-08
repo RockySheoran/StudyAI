@@ -4,7 +4,7 @@ import { feedback, IInterview } from '@/types/Interview-type';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Mic, MicOff, Volume2, VolumeX, AlertCircle, Minus, Plus } from 'lucide-react';
+import { Loader2, Mic, MicOff, Volume2, VolumeX, AlertCircle, Minus, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import AudioRecorder from '@/components/Common_Components/AudioRecorder';
 import router from 'next/navigation';
 
 interface InterviewContainerProps {
@@ -74,6 +75,9 @@ export const InterviewContainer = ({
     resetTranscript,
     clearError: clearSpeechError,
     isMobile,
+    showMobileFallback,
+    mobileErrorCount,
+    setShowMobileFallback,
   } = useSpeechRecognition();
   
   // Speech synthesis hook
@@ -349,6 +353,90 @@ export const InterviewContainer = ({
 
   return (
     <div className="flex flex-col h-full bg-transparent">
+      {/* Mobile Fallback Modal */}
+      <Dialog open={showMobileFallback} onOpenChange={setShowMobileFallback}>
+        <DialogContent className="max-w-md mx-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg font-semibold text-center flex-1">
+                🎤 Mobile Microphone Issues Detected
+              </DialogTitle>
+              <button
+                onClick={() => setShowMobileFallback(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <p className="font-medium mb-2">We've detected issues with your mobile microphone:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Repetitive text capture</li>
+                    <li>Poor audio quality</li>
+                    <li>Connection instability</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">💡 Recommended Solutions:</h3>
+              <div className="text-sm text-blue-700 dark:text-blue-300 space-y-2">
+                <div className="flex items-start space-x-2">
+                  <span className="font-bold">1.</span>
+                  <span><strong>Use a laptop/desktop</strong> for the best experience</span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <span className="font-bold">2.</span>
+                  <span><strong>Try the audio recorder</strong> below as an alternative</span>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <span className="font-bold">3.</span>
+                  <span><strong>Type your responses</strong> manually if needed</span>
+                </div>
+              </div>
+            </div>
+
+            <AudioRecorder
+              onTranscriptReady={(transcript) => {
+                setInputText(transcript);
+                setShowMobileFallback(false);
+                toast.success('Audio converted to text successfully!');
+              }}
+              onError={(error) => {
+                toast.error(error);
+              }}
+              className="mt-4"
+            />
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowMobileFallback(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Continue Anyway
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowMobileFallback(false);
+                  toast.info('You can always type your responses manually.');
+                }}
+                className="flex-1"
+              >
+                Got It
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Feedback Modal */}
       <Dialog open={showFeedbackModal} onOpenChange={setShowFeedbackModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
