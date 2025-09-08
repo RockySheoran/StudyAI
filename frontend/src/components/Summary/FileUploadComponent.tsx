@@ -136,7 +136,7 @@ const FileUploadComponent: React.FC = () => {
                 : "text-gray-500 dark:text-gray-400"
             }`}
           >
-            Supports PDF and Docx files up to 10MB
+            Supports PDF and Docx files up to 10MB (Google Drive not supported)
           </p>
 
           <input

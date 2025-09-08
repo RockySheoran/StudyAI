@@ -83,7 +83,7 @@ export const RefreshHistoryButton: React.FC<RefreshHistoryButtonProps> = ({
         <Button
           onClick={handleRefresh}
           disabled={isRefreshing || !token}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isRefreshing ? (
             <>

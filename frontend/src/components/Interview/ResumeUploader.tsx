@@ -156,7 +156,7 @@ export function ResumeUpload({ onUpload, onSkip, onBack, isLoading }: ResumeUplo
               )}
             </Button>
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2 sm:mt-3">
-              PDF, DOC, or DOCX (max 10MB)
+              PDF, DOC, or DOCX (max 10MB) (Google Drive not supported)
             </p>
           </div>
 
