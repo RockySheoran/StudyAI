@@ -304,6 +304,7 @@ export const useSpeechRecognition = () => {
             }
           }, 100);
         }
+        
         return;
       case 'audio-capture':
         console.log('Audio capture error - attempting restart...');
