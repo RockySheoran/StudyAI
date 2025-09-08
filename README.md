@@ -3,7 +3,7 @@
 
 <div align="center">
 
-![AI Personal Tutor Logo](./frontend/public/Logo.jpg)
+<img src="./frontend/public/Logo.jpg" alt="AI Personal Tutor Logo" width="200" height="200">
 
 **🚀 An intelligent learning companion that revolutionizes education through AI-powered personalized tutoring**
 
@@ -401,14 +401,14 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. **📋 Check Issues**: Browse [existing issues](https://github.com/RockySheoran/ai-personal-tutor/issues) for solutions
+1. **📋 Check Issues**: Browse [existing issues](https://github.com/RockySheoran/StudyAI/issues) for solutions
 2. **🐛 Report Bugs**: Create detailed bug reports with steps to reproduce
 3. **💡 Feature Requests**: Suggest new features or improvements
 4. **💬 Discussions**: Join community discussions for help and collaboration
 
 ### 🤝 **Get Help**
 - **Email**: [rockysheoran72@gmail.com](mailto:rockysheoran72@gmail.com)
-- **LinkedIn**: [Connect with Rocky](https://linkedin.com/in/rocky-sheoran)
+- **LinkedIn**: [Connect with Rocky](https://www.linkedin.com/in/rocky-77a984267)
 - **GitHub**: [@RockySheoran](https://github.com/RockySheoran)
 
 ---
@@ -419,10 +419,10 @@ If you encounter any issues or have questions:
 
 *Empowering education through artificial intelligence*
 
-[![⭐ Star this repo](https://img.shields.io/badge/⭐_Star_this_repo-FFD700?style=for-the-badge&logo=github)](https://github.com/RockySheoran/ai-personal-tutor)
-[![🐛 Report Bug](https://img.shields.io/badge/🐛_Report_Bug-FF6B6B?style=for-the-badge&logo=github)](https://github.com/RockySheoran/ai-personal-tutor/issues)
-[![✨ Request Feature](https://img.shields.io/badge/✨_Request_Feature-4ECDC4?style=for-the-badge&logo=github)](https://github.com/RockySheoran/ai-personal-tutor/issues)
+[![⭐ Star this repo](https://img.shields.io/badge/⭐_Star_this_repo-FFD700?style=for-the-badge&logo=github)](https://github.com/RockySheoran/StudyAI)
+[![🐛 Report Bug](https://img.shields.io/badge/🐛_Report_Bug-FF6B6B?style=for-the-badge&logo=github)](https://github.com/RockySheoran/StudyAI/issues)
+[![✨ Request Feature](https://img.shields.io/badge/✨_Request_Feature-4ECDC4?style=for-the-badge&logo=github)](https://github.com/RockySheoran/StudyAI/issues)
 
-**🚀 [Try StudyAI Now](https://your-demo-link.com) | 📖 [Documentation](https://github.com/RockySheoran/ai-personal-tutor/wiki) | 🎯 [Roadmap](https://github.com/RockySheoran/ai-personal-tutor/projects)**
+**🚀 [Try StudyAI Now](https://study-ai-assist.vercel.app) | 📖 [Documentation](https://github.com/RockySheoran/StudyAI/wiki) | 🎯 [Roadmap](https://github.com/RockySheoran/StudyAI/projects)**
 
 </div>
