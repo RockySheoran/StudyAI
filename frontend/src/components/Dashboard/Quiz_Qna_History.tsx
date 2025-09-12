@@ -134,7 +134,7 @@ export const Quiz_Qna_History = () => {
                                             <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                                 <span className="flex items-center gap-1">
                                                     <Clock className="w-4 h-4" />
-                                                    {formatDate(item.timestamp)}
+                                                    {formatDate(item.createdAt)}
                                                 </span>
                                                 <span>{item.educationLevel}</span>
                                             </div>
@@ -196,7 +196,7 @@ export const Quiz_Qna_History = () => {
                                             <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                                 <span className="flex items-center gap-1">
                                                     <Clock className="w-4 h-4" />
-                                                    {formatDate(item.timestamp)}
+                                                    {formatDate(item.createdAt)}
                                                 </span>
                                                 <span>{item.educationLevel}</span>
                                             </div>

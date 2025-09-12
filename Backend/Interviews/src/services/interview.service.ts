@@ -114,14 +114,14 @@ console.log("dfdsfds",resumeId)
 
     // Determine if interview should end based on message count
     const messageCount = interview.messages.filter(msg => msg.role === 'user').length;
-    const shouldEnd = messageCount >= (interview.type === 'technical' ? 8 : 6);
+    // const shouldEnd = messageCount >= (interview.type === 'technical' ? 8 : 6);
 
     // Get AI response
     const { response, feedback } = await generateInterviewResponse(
       interview.type,
       interview.messages,
       resumeText || 'No resume provided',
-      shouldEnd
+      false
     );
 
     // Add AI response to conversation
@@ -134,7 +134,7 @@ console.log("dfdsfds",resumeId)
     interview.messages.push(aiMessage);
 
     // If feedback is present or should end, mark interview as complete
-    if (feedback || shouldEnd) {
+    if (feedback) {
       interview.feedback = feedback || 'Interview completed successfully';
       interview.completedAt = new Date();
       interview.status = 'completed';
@@ -144,7 +144,7 @@ console.log("dfdsfds",resumeId)
 
     return {
       interview,
-      isComplete: !!(feedback || shouldEnd),
+      isComplete: !!(feedback),
     };
   }
 

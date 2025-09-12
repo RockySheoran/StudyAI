@@ -134,7 +134,7 @@ export const QuizQnaFullHistory = () => {
       // Date range filter
       if (
         filters.dateRange !== "all" &&
-        !isWithinDateRange(item.timestamp, filters.dateRange)
+        !isWithinDateRange(item.createdAt, filters.dateRange)
       ) {
         return false;
       }
@@ -152,7 +152,7 @@ export const QuizQnaFullHistory = () => {
     })
     .sort(
       (a: HistoryItem, b: HistoryItem) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
   const handleHistoryItemClick = (item: HistoryItem) => {
@@ -596,15 +596,15 @@ export const QuizQnaFullHistory = () => {
                           <Calendar className="w-3 h-3 flex-shrink-0" />
                           <span
                             className="hidden sm:inline"
-                            title={formatDate(item.timestamp)}
+                            title={formatDate(item.createdAt)}
                           >
-                            {formatDate(item.timestamp)}
+                            {formatDate(item.createdAt)}
                           </span>
                           <span
                             className="sm:hidden"
-                            title={formatDate(item.timestamp)}
+                            title={formatDate(item.createdAt)}
                           >
-                            {formatShortDate(item.timestamp)}
+                            {formatShortDate(item.createdAt)}
                           </span>
                         </div>
                       </div>

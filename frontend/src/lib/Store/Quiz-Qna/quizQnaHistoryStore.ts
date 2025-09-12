@@ -27,7 +27,7 @@ export interface QuizHistoryItem {
   type: 'quiz';
   educationLevel: string;
  topic:string;
-  timestamp: Date;
+ createdAt: Date;
   result?: IQuizResult; // Full quiz result for detailed view
 }
 export interface IQnAResult {
@@ -47,7 +47,7 @@ export interface QnAHistoryItem {
   type: 'qna';
   educationLevel: string;
   topic: string;
-  timestamp: Date;
+  createdAt: Date;
   result?: IQnAAllResult ; // Full QnA result for detailed view
 }
 
@@ -101,7 +101,7 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
         getLatestHistory: (count = 3) => {
           const { allHistory } = get();
           return allHistory
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, count);
         },
 
@@ -109,7 +109,7 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
           const { allHistory } = get();
           return allHistory
             .filter((item): item is QuizHistoryItem => item.type === 'quiz')
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, count);
         },
 
@@ -117,7 +117,7 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
           const { allHistory } = get();
           return allHistory
             .filter((item): item is QnAHistoryItem => item.type === 'qna')
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, count);
         },
 
@@ -136,25 +136,28 @@ export const useQuizQnAHistoryStore = create<QuizQnAHistoryState>()(
               Quiz_history_get({ token }),
               Qna_history_get({ token })
             ]);
+            console.log("quizResponse",quizResponse)
+            console.log("qnaResponse",qnaResponse)
 
             const combinedHistory: HistoryItem[] = [];
 
             // Process quiz history
-            if (quizResponse?.data && Array.isArray(quizResponse.data)) {
-              const quizItems: QuizHistoryItem[] = quizResponse.data.map((quiz: any) => ({
+            if (quizResponse?.data?.data && Array.isArray(quizResponse.data.data)) {
+              const quizItems: QuizHistoryItem[] = quizResponse.data.data.map((quiz: any) => ({
                 ...quiz,
                 type: 'quiz' as const,
-                createdAt: quiz.createdAt || quiz.date,
+                timestamp: new Date(quiz.createdAt || quiz.date || quiz.timestamp),
                 percentage: quiz.percentage || 0,
                 totalQuestions: quiz.totalQuestions || 0,
                 correctAnswers: quiz.correctAnswers || 0
               }));
+              console.log("quizItems",quizItems)
               combinedHistory.push(...quizItems);
             }
 
             // Process QnA history
-            if (qnaResponse?.data && Array.isArray(qnaResponse.data)) {
-              const qnaItems: QnAHistoryItem[] = qnaResponse.data.map((qna: any) => ({
+            if (qnaResponse?.data?.data && Array.isArray(qnaResponse.data.data)) {
+              const qnaItems: QnAHistoryItem[] = qnaResponse.data.data.map((qna: any) => ({
                 ...qna,
                 type: 'qna' as const,
                 createdAt: qna.createdAt || qna.date,

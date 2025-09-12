@@ -100,7 +100,7 @@ export const Dashboard_hero = () => {
               <RefreshHistoryButton
                 onRefresh={() => {
                   // Force page reload to refresh all components
-                  window.location.reload();
+                  // window.location.reload();
                 }}
                 className=""
               />
