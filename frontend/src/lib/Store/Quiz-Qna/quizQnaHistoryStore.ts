@@ -23,7 +23,7 @@ interface IQuizResult {
 
 
 export interface QuizHistoryItem {
-  id: string;
+  _id: string;
   type: 'quiz';
   educationLevel: string;
  topic:string;
@@ -43,7 +43,7 @@ interface IQnAAllResult {
   evaluations: IQnAResult[];
 }
 export interface QnAHistoryItem {
-  id: string;
+  _id: string;
   type: 'qna';
   educationLevel: string;
   topic: string;

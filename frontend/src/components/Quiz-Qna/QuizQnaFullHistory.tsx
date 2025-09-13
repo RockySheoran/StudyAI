@@ -157,7 +157,7 @@ export const QuizQnaFullHistory = () => {
 
   const handleHistoryItemClick = (item: HistoryItem) => {
     setSelectedHistoryItem(item);
-    router.push(`/quiz_qna/history/${item.id}`);
+    router.push(`/quiz_qna/history/${item._id}`);
   };
 
   const clearFilters = () => {
@@ -508,7 +508,7 @@ export const QuizQnaFullHistory = () => {
 
                 return (
                   <div
-                    key={item.id}
+                    key={item._id}
                     onClick={() => handleHistoryItemClick(item)}
                     className="group cursor-pointer transition-all duration-200 hover:transform hover:scale-[1.02]"
                   >

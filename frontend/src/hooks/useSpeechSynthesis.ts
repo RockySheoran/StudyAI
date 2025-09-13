@@ -236,20 +236,27 @@ export const useSpeechSynthesis = () => {
 
       // Progress tracking
       let startTime: number;
+      let lastBoundaryProgress = 0;
       const textLength = text.length;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
         setError(null);
         startTime = Date.now();
+        lastBoundaryProgress = 0;
         
-        // Simulate progress for better UX
+        // Fallback progress simulation only if no boundary events occur
         progressIntervalRef.current = setInterval(() => {
           const elapsed = Date.now() - startTime;
-          const estimatedDuration = (textLength / rate) * 100; // Rough estimation
-          const progressPercent = Math.min(95, (elapsed / estimatedDuration) * 100);
-          setProgress(progressPercent);
-        }, 100);
+          // More accurate duration estimation: ~150ms per character at rate 1.0
+          const estimatedDuration = (textLength * 150) / rate;
+          let progressPercent = Math.min(90, (elapsed / estimatedDuration) * 100);
+          
+          // Only use fallback if no recent boundary progress
+          if (lastBoundaryProgress === 0 || progressPercent > lastBoundaryProgress) {
+            setProgress(Math.max(lastBoundaryProgress, progressPercent));
+          }
+        }, 200);
       };
       
       utterance.onend = () => {
@@ -277,9 +284,10 @@ export const useSpeechSynthesis = () => {
 
       // Enhanced boundary event for better progress tracking
       utterance.onboundary = (event) => {
-        if (event.name === 'word') {
-          const wordProgress = (event.charIndex / textLength) * 100;
-          setProgress(Math.min(95, wordProgress));
+        if (event.name === 'word' || event.name === 'sentence') {
+          const boundaryProgress = (event.charIndex / textLength) * 100;
+          lastBoundaryProgress = Math.min(95, boundaryProgress);
+          setProgress(lastBoundaryProgress);
         }
       };
 

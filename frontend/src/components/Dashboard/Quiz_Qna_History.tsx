@@ -53,7 +53,8 @@ export const Quiz_Qna_History = () => {
     };
 
     const handleHistoryItemClick = (item: HistoryItem) => {
-        router.push(`/quiz_qna/history/${item.id}`);
+        console.log(item)
+        router.push(`/quiz_qna/history/${item._id}`);
     };
 
     return (
@@ -119,7 +120,7 @@ export const Quiz_Qna_History = () => {
                         ) : (
                             quizHistory.map((item) => (
                                 <div
-                                    key={item.id}
+                                    key={item._id}
                                     onClick={() => handleHistoryItemClick(item)}
                                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${getScoreBgColor((item as QuizHistoryItem).result?.percentage || 0)}`}
                                 >
@@ -177,7 +178,7 @@ export const Quiz_Qna_History = () => {
                         ) : (
                             qnaHistory.map((item) => (
                                 <div
-                                    key={item.id}
+                                    key={item._id}
                                     onClick={() => handleHistoryItemClick(item)}
                                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${getScoreBgColor(
                                         (item as QnAHistoryItem).result?.totalScore && (item as QnAHistoryItem).result?.maxPossibleScore 
