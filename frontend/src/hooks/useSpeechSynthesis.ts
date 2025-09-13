@@ -237,26 +237,38 @@ export const useSpeechSynthesis = () => {
       // Progress tracking
       let startTime: number;
       let lastBoundaryProgress = 0;
+      let boundaryEventReceived = false;
       const textLength = text.length;
+      const words = text.trim().split(/\s+/).length;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
         setError(null);
         startTime = Date.now();
         lastBoundaryProgress = 0;
+        boundaryEventReceived = false;
         
-        // Fallback progress simulation only if no boundary events occur
+        // Enhanced progress simulation with better timing
         progressIntervalRef.current = setInterval(() => {
           const elapsed = Date.now() - startTime;
-          // More accurate duration estimation: ~150ms per character at rate 1.0
-          const estimatedDuration = (textLength * 150) / rate;
-          let progressPercent = Math.min(90, (elapsed / estimatedDuration) * 100);
           
-          // Only use fallback if no recent boundary progress
-          if (lastBoundaryProgress === 0 || progressPercent > lastBoundaryProgress) {
-            setProgress(Math.max(lastBoundaryProgress, progressPercent));
+          // Calculate estimated duration based on words per minute
+          // Average speaking rate: 150-200 words per minute at rate 1.0
+          const wordsPerMinute = 175 * rate;
+          const estimatedDuration = (words / wordsPerMinute) * 60 * 1000; // Convert to milliseconds
+          
+          let progressPercent = Math.min(95, (elapsed / estimatedDuration) * 100);
+          
+          // If boundary events are working, use them as primary source
+          if (boundaryEventReceived && lastBoundaryProgress > 0) {
+            // Use boundary progress but allow slight advancement if time-based is higher
+            const maxProgress = Math.max(lastBoundaryProgress, progressPercent * 0.8);
+            setProgress(Math.min(95, maxProgress));
+          } else {
+            // Use time-based estimation with smoother curve
+            setProgress(Math.min(95, progressPercent));
           }
-        }, 200);
+        }, 150);
       };
       
       utterance.onend = () => {
@@ -285,6 +297,7 @@ export const useSpeechSynthesis = () => {
       // Enhanced boundary event for better progress tracking
       utterance.onboundary = (event) => {
         if (event.name === 'word' || event.name === 'sentence') {
+          boundaryEventReceived = true;
           const boundaryProgress = (event.charIndex / textLength) * 100;
           lastBoundaryProgress = Math.min(95, boundaryProgress);
           setProgress(lastBoundaryProgress);
