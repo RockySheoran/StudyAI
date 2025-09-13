@@ -48,12 +48,12 @@ export default function HistoryDetailPage() {
     if (!params.id) return null;
     
     // First check if we have a selected item from navigation
-    if (selectedHistoryItem && selectedHistoryItem.id === params.id) {
+    if (selectedHistoryItem && selectedHistoryItem._id === params.id) {
       return selectedHistoryItem;
     }
     
     // Find the item in the store
-    return allHistory.find(item => item.id === params.id) || null;
+    return allHistory.find(item => item._id === params.id) || null;
   }, [params.id, selectedHistoryItem, allHistory]);
 
   // Memoize percentage calculation to prevent recalculation on every render
@@ -170,7 +170,7 @@ export default function HistoryDetailPage() {
             </button>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 self-start sm:self-auto">
               <Clock className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{formatDate(historyItem.timestamp)}</span>
+              <span className="truncate">{formatDate(historyItem.createdAt)}</span>
             </div>
           </div>
           
@@ -220,7 +220,7 @@ export default function HistoryDetailPage() {
             <div className="text-center">
               <div className="flex flex-col items-center justify-center text-gray-500 mb-2">
                 <Clock className="w-5 h-5 mb-1" />
-                <span className="text-xs sm:text-sm">{formatDate(historyItem.timestamp).split(',')[0]}</span>
+                <span className="text-xs sm:text-sm">{formatDate(historyItem.createdAt).split(',')[0]}</span>
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Completed On</div>
             </div>
