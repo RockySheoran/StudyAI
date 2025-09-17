@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const quizValidationSchema = z.object({
   educationLevel: z.string().min(1, 'Education level is required'),
   topic: z.string().min(1, 'Topic is required'),
+  numberOfQuestions: z.number().min(1, 'Number of questions is required'),
 });
 
 export const qnaValidationSchema = z.object({

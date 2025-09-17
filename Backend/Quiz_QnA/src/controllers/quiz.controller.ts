@@ -7,10 +7,10 @@ import { AuthenticatedRequest } from '../utils/custom-types';
 class QuizController {
   async generateQuiz(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const { educationLevel, topic } = quizValidationSchema.parse(req.body);
+      const { educationLevel, topic, numberOfQuestions } = quizValidationSchema.parse(req.body);
       const { id } = req.user;
 
-      const quiz = await quizService.generateQuiz(educationLevel, topic, id);
+      const quiz = await quizService.generateQuiz(educationLevel, topic, numberOfQuestions, id);
 
       res.status(StatusCodes.CREATED).json({
         success: true,

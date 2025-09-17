@@ -1,23 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  BookOpen,
-  Brain,
-  Clock,
-  Trophy,
-  Search,
-  Filter,
-  ChevronRight,
-  TrendingUp,
-  Calendar,
-  BarChart3,
-  RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, Search, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/lib/Store/userStore";
 import {
@@ -27,11 +13,17 @@ import {
   QnAHistoryItem,
 } from "@/lib/Store/Quiz-Qna/quizQnaHistoryStore";
 
-interface FilterState {
-  type: "all" | "quiz" | "qna";
-  performance: "all" | "excellent" | "good" | "needs_improvement";
-  dateRange: "all" | "today" | "week" | "month";
-  searchTerm: string;
+// Import components
+import { FilterSection, FilterState } from "./components/FilterSection";
+import { StatsCards } from "./components/StatsCards";
+import { HistoryItem as HistoryItemComponent } from "./components/HistoryItem";
+import { Pagination } from "./components/Pagination";
+import { ItemsPerPageSelector } from "./components/ItemsPerPageSelector";
+
+
+interface PaginationState {
+  currentPage: number;
+  itemsPerPage: number;
 }
 
 export const QuizQnaFullHistory = () => {
@@ -48,6 +40,10 @@ export const QuizQnaFullHistory = () => {
     dateRange: "all",
     searchTerm: "",
   });
+  const [pagination, setPagination] = useState<PaginationState>({
+    currentPage: 1,
+    itemsPerPage: 10,
+  });
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -57,36 +53,6 @@ export const QuizQnaFullHistory = () => {
     loadHistory();
   }, [refreshHistory, token]);
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatShortDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return "text-green-600 dark:text-green-400";
-    if (percentage >= 60) return "text-amber-600 dark:text-amber-400";
-    return "text-blue-600 dark:text-blue-400";
-  };
-
-  const getScoreBgColor = (percentage: number) => {
-    if (percentage >= 80)
-      return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
-    if (percentage >= 60)
-      return "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800";
-    return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
-  };
 
   const getPerformanceCategory = (percentage: number) => {
     if (percentage >= 80) return "excellent";
@@ -154,6 +120,28 @@ export const QuizQnaFullHistory = () => {
       (a: HistoryItem, b: HistoryItem) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+  // Pagination logic
+  const totalItems = filteredHistory.length;
+  const totalPages = Math.ceil(totalItems / pagination.itemsPerPage);
+  const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
+  const endIndex = startIndex + pagination.itemsPerPage;
+  const paginatedHistory = filteredHistory.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  }, [filters]);
+
+  const handlePageChange = (page: number) => {
+    setPagination(prev => ({ ...prev, currentPage: page }));
+    // Scroll to top of history section
+    document.getElementById('history-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (itemsPerPage: number) => {
+    setPagination({ currentPage: 1, itemsPerPage });
+  };
 
   const handleHistoryItemClick = (item: HistoryItem) => {
     setSelectedHistoryItem(item);
@@ -297,335 +285,85 @@ export const QuizQnaFullHistory = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[
-            {
-              icon: Trophy,
-              label: "Total Sessions",
-              value: stats.totalItems,
-              color: "text-yellow-500",
-            },
-            {
-              icon: BookOpen,
-              label: "Quiz Average",
-              value: `${stats.avgQuizScore}%`,
-              color: "text-blue-500",
-              score: stats.avgQuizScore,
-            },
-            {
-              icon: Brain,
-              label: "Q&A Average",
-              value: `${stats.avgQnaScore}%`,
-              color: "text-purple-500",
-              score: stats.avgQnaScore,
-            },
-            {
-              icon: TrendingUp,
-              label: "Overall Average",
-              value: `${stats.overallAvg}%`,
-              color: "text-green-500",
-              score: stats.overallAvg,
-            },
-          ].map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className={`p-2 rounded-lg ${stat.color.replace(
-                    "text",
-                    "bg"
-                  )} bg-opacity-10`}
-                >
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <span className="font-medium text-gray-700 dark:text-gray-300 text-sm truncate">
-                  {stat.label}
-                </span>
-              </div>
-              <div
-                className={`text-2xl font-bold ${
-                  stat.score !== undefined
-                    ? getScoreColor(stat.score)
-                    : "text-gray-900 dark:text-white"
-                }`}
-              >
-                {stat.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        <StatsCards stats={stats} />
 
         {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 w-full sm:w-auto"
-            >
-              <Filter className="w-4 h-4" />
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </button>
-            {(filters.type !== "all" ||
-              filters.performance !== "all" ||
-              filters.dateRange !== "all" ||
-              filters.searchTerm) && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline w-full sm:w-auto text-center"
-              >
-                Clear All Filters
-              </button>
-            )}
-          </div>
-
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="md:col-span-2 lg:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Search
-                </label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Topic or level..."
-                    value={filters.searchTerm}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        searchTerm: e.target.value,
-                      }))
-                    }
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Type
-                </label>
-                <select
-                  value={filters.type}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      type: e.target.value as FilterState["type"],
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="all">All Types</option>
-                  <option value="quiz">Quiz</option>
-                  <option value="qna">Q&A</option>
-                </select>
-              </div>
-
-              {/* Performance Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Performance
-                </label>
-                <select
-                  value={filters.performance}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      performance: e.target.value as FilterState["performance"],
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="all">All Performance</option>
-                  <option value="excellent">Excellent (80%+)</option>
-                  <option value="good">Good (60-79%)</option>
-                  <option value="needs_improvement">
-                    Needs Improvement (&lt;60%)
-                  </option>
-                </select>
-              </div>
-
-              {/* Date Range Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Date Range
-                </label>
-                <select
-                  value={filters.dateRange}
-                  onChange={(e) =>
-                    setFilters((prev) => ({
-                      ...prev,
-                      dateRange: e.target.value as FilterState["dateRange"],
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
+        <FilterSection
+          filters={filters}
+          setFilters={setFilters}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          onClearFilters={clearFilters}
+        />
 
         {/* History List */}
-        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div id="history-section" className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              History{" "}
-              <span className="text-blue-600 dark:text-blue-400">
-                ({filteredHistory.length})
-              </span>
-            </h2>
-            {filteredHistory.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <BarChart3 className="w-4 h-4" />
-                <span>Sorted by most recent</span>
-              </div>
-            )}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                History{" "}
+                <span className="text-blue-600 dark:text-blue-400">
+                  ({totalItems})
+                </span>
+              </h2>
+              {totalItems > 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <BarChart3 className="w-4 h-4" />
+                    <span>Sorted by most recent</span>
+                  </div>
+                  {totalItems > pagination.itemsPerPage && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <ItemsPerPageSelector
+              totalItems={totalItems}
+              itemsPerPage={pagination.itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
           </div>
 
-          {filteredHistory.length > 0 ? (
-            <div className="grid gap-4">
-              {filteredHistory.map((item: HistoryItem) => {
-                const percentage =
-                  item.type === "quiz"
-                    ? (item as QuizHistoryItem).result?.percentage || 0
-                    : (item as QnAHistoryItem).result?.totalScore &&
-                      (item as QnAHistoryItem).result?.maxPossibleScore
-                    ? Math.round(
-                        ((item as QnAHistoryItem).result!.totalScore /
-                          (item as QnAHistoryItem).result!.maxPossibleScore) *
-                          100
-                      )
-                    : 0;
-
-                return (
-                  <div
+          {totalItems > 0 ? (
+            <div className="space-y-6">
+              <div className="grid gap-4">
+                {paginatedHistory.map((item: HistoryItem) => (
+                  <HistoryItemComponent
                     key={item._id}
-                    onClick={() => handleHistoryItemClick(item)}
-                    className="group cursor-pointer transition-all duration-200 hover:transform hover:scale-[1.02]"
-                  >
-                    <div
-                      className={`p-4 rounded-xl border-2 ${getScoreBgColor(
-                        percentage
-                      )} hover:shadow-md transition-shadow duration-200`}
-                    >
-                      {/* Header Section */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3 min-w-0 flex-1 w-[100]">
-                          <div
-                            className={`p-2 rounded-lg ${
-                              item.type === "quiz"
-                                ? "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                : "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
-                            }`}
-                          >
-                            {item.type === "quiz" ? (
-                              <BookOpen className="w-4 h-4" />
-                            ) : (
-                              <Brain className="w-4 h-4" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1  ">
-                            <h3
-                              className="font-semibold text-gray-900 dark:text-white text-lg truncate  mb-1"
-                              title={item.topic}
-                            >
-                              {item.topic}
-                            </h3>
-                            <p
-                              className="text-sm text-gray-600 dark:text-gray-400 truncate"
-                              title={item.educationLevel}
-                            >
-                              {item.educationLevel}
-                            </p>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 flex-shrink-0 mt-2" />
-                      </div>
-
-                      {/* Stats Section */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-4">
-                          {/* Score */}
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`p-1 rounded-md ${getScoreColor(
-                                percentage
-                              ).replace("text", "bg")} bg-opacity-10`}
-                            >
-                              <Trophy className="w-3 h-3" />
-                            </div>
-                            <span
-                              className={`font-bold text-sm ${getScoreColor(
-                                percentage
-                              )}`}
-                            >
-                              {percentage}%
-                            </span>
-                          </div>
-
-                          {/* Results */}
-                          <div className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
-                            {item.type === "quiz"
-                              ? `${
-                                  (item as QuizHistoryItem).result?.score || 0
-                                }/${
-                                  (item as QuizHistoryItem).result
-                                    ?.totalQuestions || 0
-                                } correct`
-                              : `${
-                                  (item as QnAHistoryItem).result?.totalScore ||
-                                  0
-                                }/${
-                                  (item as QnAHistoryItem).result
-                                    ?.maxPossibleScore || 0
-                                } points`}
-                          </div>
-                        </div>
-
-                        {/* Date */}
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Calendar className="w-3 h-3 flex-shrink-0" />
-                          <span
-                            className="hidden sm:inline"
-                            title={formatDate(item.createdAt)}
-                          >
-                            {formatDate(item.createdAt)}
-                          </span>
-                          <span
-                            className="sm:hidden"
-                            title={formatDate(item.createdAt)}
-                          >
-                            {formatShortDate(item.createdAt)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-gray-400" />
+                    item={item}
+                    onClick={handleHistoryItemClick}
+                  />
+                ))}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No Results Found
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                Try adjusting your filters or search terms.
-              </p>
+
+              {/* Pagination Controls */}
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pagination.itemsPerPage}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
             </div>
-          )}
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No Results Found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              Try adjusting your filters or search terms.
+            </p>
+          </div>
+        )}
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
-  async generateQuizQuestions(educationLevel: string, topic: string, numberOfQuestions: number = 20) {
+  async generateQuizQuestions(educationLevel: string, topic: string, numberOfQuestions: number ) {
     const prompt = `
       Generate a quiz with ${numberOfQuestions} questions on the topic of "${topic}" for ${educationLevel} education level.
       The questions should range from easy to hard difficulty.

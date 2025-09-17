@@ -18,6 +18,7 @@ import { useQuizStore } from '@/lib/Store/Quiz-Qna/quizStore';
 const formSchema = z.object({
   educationLevel: z.string().min(1, 'Education level is required'),
   topic: z.string().min(1, 'Topic is required'),
+  numberOfQuestions: z.number().min(5, 'Minimum 5 questions required').max(25, 'Maximum 25 questions allowed'),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -47,7 +48,8 @@ export default function QuizPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       educationLevel: '',
-      topic: ''
+      topic: '',
+      numberOfQuestions: 5,
     }
   });
 
@@ -56,6 +58,7 @@ export default function QuizPage() {
     if (currentStep === 'form' && currentQuiz) {
       form.setValue('educationLevel', currentQuiz.educationLevel);
       form.setValue('topic', currentQuiz.topic);
+      // Note: numberOfQuestions might not be stored in currentQuiz, so we keep the default
     }
   }, [currentStep, currentQuiz, form]);
 

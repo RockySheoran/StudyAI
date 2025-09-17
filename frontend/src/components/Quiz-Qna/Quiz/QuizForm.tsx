@@ -1,13 +1,13 @@
-// frontend/src/app/quiz/components/QuizForm.tsx
+
 import { UseFormReturn } from 'react-hook-form';
 
 interface QuizFormProps {
   form: UseFormReturn<{
     educationLevel: string;
     topic: string;
-
+    numberOfQuestions: number;
   }>;
-  onSubmit: (data: { educationLevel: string; topic: string }) => void;
+  onSubmit: (data: { educationLevel: string; topic: string; numberOfQuestions: number }) => void;
   loading: boolean;
   reset: () => void;
 }
@@ -55,6 +55,27 @@ export default function QuizForm({ form, onSubmit, loading, reset }: QuizFormPro
           />
           {errors.topic && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.topic.message}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="numberOfQuestions" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Number of Questions
+          </label>
+          <select
+            id="numberOfQuestions"
+            {...register('numberOfQuestions', { valueAsNumber: true })}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="">Select Number of Questions</option>
+            <option value={5}>5 Questions</option>
+            <option value={10}>10 Questions</option>
+            <option value={15}>15 Questions</option>
+            <option value={20}>20 Questions</option>
+            <option value={25}>25 Questions</option>
+          </select>
+          {errors.numberOfQuestions && (
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.numberOfQuestions.message}</p>
           )}
         </div>
         <div className="flex gap-3">

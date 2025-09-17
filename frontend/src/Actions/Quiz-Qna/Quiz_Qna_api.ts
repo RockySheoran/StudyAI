@@ -82,7 +82,7 @@ apiClient.interceptors.response.use(
 
 export const api = {
   // Quiz endpoints
-  generateQuiz: async (data: { educationLevel: string; topic: string }) => {
+  generateQuiz: async (data: { educationLevel: string; topic: string , numberOfQuestions: number}) => {
     try {
       const response = await apiClient.post('/quiz/generate', data);
       return response.data;
