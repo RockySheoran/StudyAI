@@ -1,86 +1,174 @@
 import { Request, Response } from 'express';
 import { continueInterviewService, getInterviewHistoryService, startInterviewService } from '../services/interview.service';
 import { AuthenticatedRequest } from '../types/custom-types';
-import { IInterview, Interview } from '../models/interview.model';
-import { IResume, Resume } from '../models/resume.model';
+import { Interview } from '../models/interview.model';
+import { Resume } from '../models/resume.model';
 import { extractTextFromPdf } from '../utils/file.utils';
 import { generateInterviewFeedback } from '../services/gemini.service';
-import { redisClient } from '../config/redis';
+import { RedisCache } from '../utils/redis.utils';
+import { ResponseHandler } from '../utils/response.utils';
+import { Logger } from '../utils/logger.utils';
+
 
 
 export const startInterview = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
+    Logger.request(req, 'Starting new interview');
     const { type, resumeId } = req.body;
     const userId = req.user?.id;
-    console.log(type,resumeId)
-
-    if (!type || (type !== 'personal' && type !== 'technical')) {
-      return res.status(400).json({ error: 'Invalid interview type' });
-    }
 
     if (!userId) {
-      return res.status(401).json({ error: 'User authentication required' });
+      Logger.warn('Unauthorized interview start attempt');
+      return ResponseHandler.unauthorized(res, 'User authentication required');
     }
 
+    // Check for active interviews
+    // const activeInterview = await Interview.findOne({ 
+    //   userId, 
+    //   status: 'active' 
+    // });
+
+    // if (activeInterview) {
+    //   Logger.info('User has active interview', { userId, interviewId: activeInterview._id });
+    //   return ResponseHandler.conflict(res, 'You already have an active interview. Please complete it first.');
+    // }
+
     const interview = await startInterviewService(userId, type, resumeId);
-    res.status(201).json(interview);
-  } catch (error) {
-    console.error('Error starting interview:', error);
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Failed to start interview' 
+    
+    Logger.info('Interview started successfully', { 
+      userId, 
+      interviewId: interview._id, 
+      type 
     });
+
+    return ResponseHandler.created(res, interview, 'Interview started successfully');
+  } catch (error) {
+    Logger.error('Error starting interview', error, { 
+      userId: req.user?.id, 
+      type: req.body.type 
+    });
+    
+    return ResponseHandler.error(res, 
+      error instanceof Error ? error.message : 'Failed to start interview'
+    );
   }
 }
 
-export const fetchInterview = async (req: Request, res: Response): Promise<any> => {
+export const fetchInterview = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
     const { id } = req.params;
-    const findInterview = await Interview.findById(id);
+    const userId = req.user?.id;
 
-    if (!findInterview) {
-      return res.status(404).json({ error: 'Interview not found' })
+    if (!userId) {
+      return ResponseHandler.unauthorized(res);
     }
 
-    res.status(200).json(findInterview)
+    const interview = await Interview.findOne({ _id: id, userId });
+
+    if (!interview) {
+      Logger.warn('Interview not found or access denied', { interviewId: id, userId });
+      return ResponseHandler.notFound(res, 'Interview not found or access denied');
+    }
+
+    Logger.info('Interview fetched successfully', { interviewId: id, userId });
+    return ResponseHandler.success(res, interview);
 
   } catch (error) {
-    console.error('Error fetching interview:', error);
-    res.status(500).json({ error: 'Failed to fetch interview' });
+    Logger.error('Error fetching interview', error, { interviewId: req.params.id });
+    return ResponseHandler.error(res, 'Failed to fetch interview');
   }
 }
 export const continueInterview = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
+    Logger.request(req, 'Continuing interview');
     const { interviewId, message } = req.body;
     const userId = req.user?.id;
 
-    if (!interviewId || !message) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!userId) {
+      return ResponseHandler.unauthorized(res);
     }
 
     const { interview, isComplete } = await continueInterviewService(
       interviewId,
-      userId || '',
+      userId,
       message
     );
 
-    res.status(200).json({ interview, isComplete });
+    Logger.info('Interview continued successfully', { 
+      interviewId, 
+      userId, 
+      isComplete,
+      messageLength: message.length 
+    });
+
+    return ResponseHandler.success(res, { interview, isComplete });
   } catch (error) {
-    console.error('Error continuing interview:', error);
-    res.status(500).json({ error: 'Failed to continue interview' });
+    Logger.error('Error continuing interview', error, { 
+      interviewId: req.body.interviewId, 
+      userId: req.user?.id 
+    });
+    
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        return ResponseHandler.notFound(res, error.message);
+      }
+      if (error.message.includes('completed')) {
+        return ResponseHandler.badRequest(res, error.message);
+      }
+    }
+    
+    return ResponseHandler.error(res, 'Failed to continue interview');
   }
 }
 
 export const getInterviewHistory = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
     const userId = req.user?.id;
-    const interviews = await getInterviewHistoryService(userId!);
-    res.status(200).json(interviews);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    if (!userId) {
+      return ResponseHandler.unauthorized(res);
+    }
+
+    const { interviews, pagination } = await getInterviewHistoryService(userId, page, limit);
+    
+    Logger.info('Interview history fetched', { 
+      userId, 
+      page, 
+      limit, 
+      totalInterviews: interviews.length 
+    });
+
+    return ResponseHandler.success(res, { interviews, pagination });
   } catch (error) {
-    console.error('Error fetching interview history:', error);
-    res.status(500).json({ error: 'Failed to fetch interview history' });
+    Logger.error('Error fetching interview history', error, { userId: req.user?.id });
+    return ResponseHandler.error(res, 'Failed to fetch interview history');
   }
 }
 
+
+export const getCacheStatus = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
+  try {
+    const { resumeId } = req.params;
+    
+    if (!resumeId) {
+      return ResponseHandler.badRequest(res, 'Resume ID is required');
+    }
+
+    const exists = await RedisCache.exists(`resume/${resumeId}`);
+    const ttl = exists ? await RedisCache.getTTL(`resume/${resumeId}`) : -1;
+    
+    return ResponseHandler.success(res, {
+      cached: exists,
+      timeRemaining: ttl > 0 ? `${Math.floor(ttl / 60)} minutes` : 'Not cached',
+      expiresIn: ttl
+    });
+  } catch (error) {
+    Logger.error('Error checking cache status', error);
+    return ResponseHandler.error(res, 'Failed to check cache status');
+  }
+}
 
 export const feedbackController = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -99,15 +187,16 @@ export const feedbackController = async (req: Request, res: Response): Promise<a
     
     // Check if interview has a valid resumeId
     if (interview.resumeId) {
-      resumeText = await redisClient.get(`resume/${interview.resumeId}`) || "";
+      resumeText = await RedisCache.get(`resume/${interview.resumeId}`) || "";
       
       if (!resumeText) {
-        // Get resume text (in a real app, you'd extract text from the resume)
+        // Get resume text from database
         const resume = await Resume.findById(interview.resumeId);
         
         if (resume && resume.url) {
           resumeText = await extractTextFromPdf(resume.url);
-          await redisClient.set(`resume/${interview.resumeId}`, resumeText, { EX: 172800 });
+          // Cache for 1 hour
+          await RedisCache.set(`resume/${interview.resumeId}`, resumeText);
         } else {
           console.warn('Resume not found or has no URL for interview:', id);
           resumeText = 'No resume available';

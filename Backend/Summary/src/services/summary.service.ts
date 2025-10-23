@@ -1,10 +1,49 @@
 import { Summary } from '../models/summary.model';
 import { File } from '../models/file.model';
 import { generateSummary, generateChunkSummary, generateFinalSummary } from '../config/gemini';
-
-import { redisClient } from '../config/redis';
 import { extractTextFromFile, chunkTextForProcessing } from '../utils/file.utils';
-import { childSend } from 'bullmq';
+import { CACHE_SETTINGS } from '../utils/constants';
+import { RedisCache } from '../utils/redis.utils';
+
+// Helper function to set cache with expiry based on status
+const setCacheWithExpiry = async (key: string, data: any, status: string) => {
+  try {
+    let ttl: number;
+    
+    switch (status) {
+      case 'completed':
+        ttl = CACHE_SETTINGS.SUMMARY_COMPLETED_TTL;
+        break;
+      case 'failed':
+        ttl = CACHE_SETTINGS.SUMMARY_FAILED_TTL;
+        break;
+      case 'pending':
+      case 'processing':
+      default:
+        ttl = CACHE_SETTINGS.SUMMARY_PENDING_TTL;
+        break;
+    }
+    
+    // Use the Redis utility for consistent caching
+    await RedisCache.set(key, JSON.stringify(data), ttl);
+    console.log(`Cache set for ${key} with status: ${status}, TTL: ${ttl} seconds`);
+  } catch (error) {
+    console.warn('Failed to set cache:', error);
+  }
+};
+
+// Helper function to clear cache
+const clearCache = async (fileId: string, summaryId?: string) => {
+  try {
+    await RedisCache.delete(`summary:${fileId}`);
+    if (summaryId) {
+      await RedisCache.delete(`summary_detail:${summaryId}`);
+    }
+    console.log(`Cache cleared for fileId: ${fileId}`);
+  } catch (error) {
+    console.warn('Failed to clear cache:', error);
+  }
+};
 
 export const createSummaryJob = async (fileId: string, userId?: string) => {
   try {
@@ -17,11 +56,11 @@ export const createSummaryJob = async (fileId: string, userId?: string) => {
     await summary.save();
     console.log(summary, "summary")
 
-    // Cache the initial state
-    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+    // Cache the initial state with expiry
+    await setCacheWithExpiry(`summary:${fileId}`, {
       status: 'pending',
       summaryId: summary._id.toString(),
-    }));
+    }, 'pending');
 
     return summary;
   } catch (error) {
@@ -45,11 +84,11 @@ export const generateFileSummary = async (fileId: string) => {
     summary.status = 'pending';
     await summary.save();
 
-    // Update cache to show processing status
-    await redisClient.set(`summary:${fileId}`, JSON.stringify({
-      status: 'pending',
+    // Update cache to show processing status with expiry
+    await setCacheWithExpiry(`summary:${fileId}`, {
+      status: 'processing',
       summaryId: summary._id.toString(),
-    }));
+    }, 'processing');
 
     // Extract text from file (supports PDF, DOCX, DOC)
     const text = await extractTextFromFile(file.cloudinaryUrl, file.originalName);
@@ -75,13 +114,13 @@ export const generateFileSummary = async (fileId: string) => {
         summary.content = `File is too large to process. This document would require ${chunks.length} chunks for processing (maximum allowed: 10 chunks). Please upload a smaller document (recommended: under 50 pages).`;
         await summary.save();
 
-        // Update cache with failure message
-        await redisClient.set(`summary:${fileId}`, JSON.stringify({
+        // Update cache with failure message and expiry
+        await setCacheWithExpiry(`summary:${fileId}`, {
           status: 'failed',
           error: 'file_too_large',
           message: `File is too large to process. This document would require ${chunks.length} chunks for processing (maximum allowed: 10 chunks). Please upload a smaller document (recommended: under 50 pages).`,
           summaryId: summary._id.toString(),
-        }));
+        }, 'failed');
 
         return summary;
 
@@ -167,12 +206,13 @@ ${chunk.summary}`
     summary.generatedAt = new Date();
     await summary.save();
 
-    // Update cache
-    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+    // Update cache with completed status and longer expiry
+    await setCacheWithExpiry(`summary:${fileId}`, {
       status: 'completed',
       content: summaryContent,
       summaryId: summary._id.toString(),
-    }));
+      generatedAt: summary.generatedAt
+    }, 'completed');
 
     console.log('Summary generation completed successfully');
     return summary;
@@ -210,11 +250,11 @@ ${chunk.summary}`
       { upsert: true }
     );
 
-    await redisClient.set(`summary:${fileId}`, JSON.stringify({
+    await setCacheWithExpiry(`summary:${fileId}`, {
       status: 'failed',
       error: errorType,
       message: errorMessage
-    }));
+    }, 'failed');
 
     throw error;
   }
@@ -222,30 +262,78 @@ ${chunk.summary}`
 
 export const getSummaryStatus = async (fileId: string) => {
   try {
-    // First check Redis cache
-    const cachedSummary = await redisClient.get(`summary:${fileId}`);
-    console.log(cachedSummary, "cachedSummary111111111111111111111111111111111")
+    // Enhanced validation for fileId parameter
+    if (!fileId || fileId === 'undefined' || fileId === 'null' || fileId.trim() === '') {
+      console.error('Invalid fileId provided:', fileId);
+      return { 
+        status: 'not_found', 
+        error: 'Invalid file ID',
+        message: 'File ID is missing or invalid'
+      };
+    }
+
+    
+    // First check Redis cache with error handling
+    const cachedSummary = await RedisCache.get(`summary:${fileId}`);
+    if (cachedSummary) {
+      console.log('Cache hit for fileId:', fileId);
+    }
+    console.log("a,vmnskdk",cachedSummary)
     if (cachedSummary) {
       return JSON.parse(cachedSummary);
     }
 
-    // Fallback to database
-    const summary = await Summary.findOne({ fileId });
-    console.log(summary, "summary")
+    // Fallback to database with optimized query
+    const summary = await Summary.findOne({ fileId })
+      .select('status content _id generatedAt')
+      .lean();
+      console.log(summary,"jvndkjkf")
+      
+      
     if (!summary) return { status: 'not_found' };
 
     const result = {
       status: summary.status,
       content: summary.content,
       summaryId: summary._id.toString(),
+      generatedAt: summary.generatedAt
     };
 
-    // Cache the result
-    await redisClient.set(`summary:${fileId}`, JSON.stringify(result));
-    console.log(result, "result")
+    // Cache the result with appropriate expiry
+    await setCacheWithExpiry(`summary:${fileId}`, result, summary.status);
+    
     return result;
   } catch (error) {
     console.error('Error getting summary status:', error);
+    throw error;
+  }
+};
+
+// Function to delete summary with cache clearing
+export const deleteSummaryWithCache = async (summaryId: string, userId?: string) => {
+  try {
+    // Find summary first to get fileId
+    const summary = await Summary.findOne({ 
+      _id: summaryId, 
+      ...(userId && { userId }) 
+    });
+    
+    if (!summary) {
+      return { success: false, error: 'Summary not found' };
+    }
+
+    // Delete from database
+    await Promise.all([
+      Summary.findByIdAndDelete(summaryId),
+      File.findByIdAndDelete(summary.fileId)
+    ]);
+
+    // Clear cache
+    await clearCache(summary.fileId.toString(), summaryId);
+
+    return { success: true, deletedId: summaryId };
+  } catch (error) {
+    console.error('Error deleting summary:', error);
     throw error;
   }
 };

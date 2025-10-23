@@ -83,7 +83,7 @@ export const useInterviewHistoryStore = create<InterviewHistoryState>()(
             const res = await Interview_history_get({ token });
             
             if (res.status === 200) {
-              setInterviews(res.data || []);
+              setInterviews(res.data.data.interviews || []);
             } else {
               setError(res.message || "Failed to fetch interview history");
             }

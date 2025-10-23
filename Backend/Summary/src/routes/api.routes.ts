@@ -3,6 +3,7 @@ import { uploadFileController, checkSummaryStatus } from '../controllers/file.co
 import { getSummaryController, getSummaryHistory, deleteSummary } from '../controllers/summary.controller';
 import multer from 'multer';
 import { middleware } from '../Middlewares/auth.middleware';
+import { validateFileId, validateParams } from '../utils/param-validation.middleware';
 
 const router = Router();
 const upload = multer({
@@ -101,12 +102,12 @@ const handleMulterError = (err: any, req: any, res: any, next: any) => {
 
 // File routes - middleware order is important
 router.post('/upload', middleware, upload.single('file'), handleMulterError, uploadFileController);
-router.get('/file/:fileId/status', checkSummaryStatus);
+router.get('/file/:fileId/status', validateFileId, checkSummaryStatus);
 
 // Summary routes
-router.get('/summary/:summaryId', getSummaryController);
+router.get('/summary/:summaryId', validateParams(['summaryId']), getSummaryController);
 router.get("/summary-history", middleware, getSummaryHistory);
-router.delete("/summary/:summaryId", middleware, deleteSummary);
+router.delete("/summary/:summaryId", middleware, validateParams(['summaryId']), deleteSummary);
 
 router.get('/check', (req : Request, res : Response) => {
   res.send('Summary service running with memory storage');

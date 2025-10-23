@@ -22,7 +22,7 @@ export const Interview_history = () => {
   }, [token, fetchInterviews]);
 
   // Get only the latest 2 interviews for dashboard
-  const recentInterviews = interviews.slice(0, 2);
+  const recentInterviews = interviews?.slice(0, 2);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {

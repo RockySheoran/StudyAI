@@ -133,9 +133,12 @@ export const useSummaryStore = create<SummaryState>()(
                 }
               },
             });
+            console.log(response)
             if (response.data) {
-              const summaryId = response.data.summaryId;
-              const fileId = response.data.fileId;
+              const summaryId = response?.data?.data?.summaryId;
+              const fileId = response?.data?.data?.fileId;
+              // console.log(summaryId)
+              // console.log(fileId)
               
               set({ 
                 fileId: response.data.fileId,
@@ -165,11 +168,14 @@ export const useSummaryStore = create<SummaryState>()(
                 }
 
                 try {
+                 
                   const statusResponse = await axios.get(`${api_file_upload_url}/file/${fileId}/status`, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
+                  console.log(statusResponse)
 
-                  const { status: summaryStatus, content ,message ,error } = statusResponse.data;
+                  const { status: summaryStatus, content ,message ,error } = statusResponse.data.data;
+
 
                   if (summaryStatus === 'completed' && content) {
                     const processingTime = pollState.processingStartTime 

@@ -25,7 +25,7 @@ export default function InterviewHistoryPage() {
     fetchInterviews
   } = useInterviewHistoryStore();
   const router = useRouter();
-  
+  console.log(interviews)
   // Modal state
   const [selectedFeedback, setSelectedFeedback] = useState<feedback | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);

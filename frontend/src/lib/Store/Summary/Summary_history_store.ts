@@ -9,7 +9,7 @@ interface SummaryHistoryState {
   error: string | null;
   lastFetched: number | null;
   cacheExpiry: number; // 5 minutes in milliseconds
-  
+
   // Actions
   setSummaries: (summaries: ISummary[]) => void;
   setLoading: (loading: boolean) => void;
@@ -32,13 +32,13 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
         lastFetched: null,
         cacheExpiry: 50 * 60 * 1000, // 5 minutes
 
-        setSummaries: (summaries) => 
+        setSummaries: (summaries) =>
           set({ summaries, lastFetched: Date.now(), error: null }, false, "setSummaries"),
 
-        setLoading: (loading) => 
+        setLoading: (loading) =>
           set({ loading }, false, "setLoading"),
 
-        setError: (error) => 
+        setError: (error) =>
           set({ error, loading: false }, false, "setError"),
 
         addSummary: (summary) =>
@@ -55,7 +55,7 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
 
         updateSummary: (summaryId, updates) =>
           set((state) => ({
-            summaries: state.summaries.map(s => 
+            summaries: state.summaries.map(s =>
               s._id === summaryId ? { ...s, ...updates } : s
             ),
             lastFetched: Date.now()
@@ -69,7 +69,7 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
 
         fetchSummaries: async (token: string, forceRefresh = false) => {
           const { summaries, isDataStale, setLoading, setSummaries, setError } = get();
-          
+
           // Return cached data if available and not stale, unless force refresh
           if (!forceRefresh && summaries.length > 0) {
             setError(null);
@@ -81,9 +81,26 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
 
           try {
             const res = await Summary_history_get({ token });
-            
+
             if (res.status === 200) {
-              setSummaries(res.data || []);
+              // Handle different response formats
+              let summariesData = [];
+              
+              if (res.data?.success && res.data?.data?.summaries) {
+                // New backend format: { success: true, data: { summaries: [...], pagination: {...} } }
+                summariesData = res.data.data.summaries;
+              } else if (res.data?.summaries) {
+                // Direct summaries array: { summaries: [...] }
+                summariesData = res.data.summaries;
+              } else if (Array.isArray(res.data)) {
+                // Direct array: [...]
+                summariesData = res.data;
+              } else {
+                console.warn('Unexpected response format:', res.data);
+                summariesData = [];
+              }
+              
+              setSummaries(summariesData);
             } else {
               setError(res.message || "Failed to fetch summary history");
             }
@@ -96,10 +113,10 @@ export const useSummaryHistoryStore = create<SummaryHistoryState>()(
         },
 
         clearCache: () =>
-          set({ 
-            summaries: [], 
-            lastFetched: null, 
-            error: null 
+          set({
+            summaries: [],
+            lastFetched: null,
+            error: null
           }, false, "clearCache"),
       }),
       {

@@ -1,93 +1,109 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { uploadResume, startInterview } from '@/Actions/Interview/interviewService';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { 
-  Loader2, 
-  Briefcase, 
-  User, 
-  History, 
-  ArrowLeft, 
-  Upload, 
-  FileText, 
-  Sparkles, 
-  Clock, 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  uploadResume,
+  startInterview,
+} from "@/Actions/Interview/interviewService";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Loader2,
+  Briefcase,
+  User,
+  History,
+  ArrowLeft,
+  Upload,
+  FileText,
+  Sparkles,
+  Clock,
   Target,
   CheckCircle,
-  Play
-} from 'lucide-react';
-import { ResumeUpload } from '@/components/Interview/ResumeUploader';
-import { motion } from 'framer-motion';
+  Play,
+} from "lucide-react";
+import { ResumeUpload } from "@/components/Interview/ResumeUploader";
+import { motion } from "framer-motion";
 
 export default function NewInterviewPage() {
   const router = useRouter();
-  const [selectedType, setSelectedType] = useState<'personal' | 'technical'>();
+  const [selectedType, setSelectedType] = useState<"personal" | "technical">();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'type' | 'resume' | 'confirm'>('type');
+  const [step, setStep] = useState<"type" | "resume" | "confirm">("type");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [skipResume, setSkipResume] = useState(false);
 
   const handleStartInterview = async () => {
     if (!selectedType) {
-      toast.error('Please select an interview type');
+      toast.error("Please select an interview type");
       return;
     }
 
     setLoading(true);
-    
+
     try {
       let resumeId: string | null = null;
 
       if (resumeFile && !skipResume) {
         try {
           const resumeResponse: any = await uploadResume(resumeFile);
-          console.log(resumeResponse)
+          console.log(resumeResponse);
           resumeId = resumeResponse?._id;
-          toast.success('Resume uploaded successfully');
-        } catch (error:any) {
-          console.error('Resume upload error:', error);
-          toast.error(error.respone.data.message || 'Failed to upload resume. Starting without resume...');
+          toast.success("Resume uploaded successfully");
+        } catch (error: any) {
+          console.error("Resume upload error:", error);
+          toast.error(
+            error.respone.data.message ||
+              "Failed to upload resume. Starting without resume..."
+          );
         }
       }
 
-      const interviewResponse = await startInterview(selectedType, resumeId || null);
-      toast.success('Interview starting...');
-      router.push(`/interviews/${interviewResponse._id}`);
+      const interviewResponse = await startInterview(
+        selectedType,
+        resumeId || null
+      );
+      console.log(interviewResponse);
+      toast.success("Interview starting...");
+      router.push(`/interviews/${interviewResponse?.data?._id}`);
     } catch (error) {
-      console.error('Interview start error:', error);
-      toast.error('Failed to start interview. Please try again.');
+      console.error("Interview start error:", error);
+      toast.error("Failed to start interview. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTypeSelect = (type: 'personal' | 'technical') => {
+  const handleTypeSelect = (type: "personal" | "technical") => {
     setSelectedType(type);
-    setStep('resume');
+    setStep("resume");
   };
 
   const handleResumeUpload = (file: File) => {
     setResumeFile(file);
     setSkipResume(false);
-    setStep('confirm');
+    setStep("confirm");
   };
 
   const handleSkipResume = () => {
     setResumeFile(null);
     setSkipResume(true);
-    setStep('confirm');
+    setStep("confirm");
   };
 
   const goBack = () => {
-    if (step === 'confirm') {
-      setStep('resume');
-    } else if (step === 'resume') {
-      setStep('type');
+    if (step === "confirm") {
+      setStep("resume");
+    } else if (step === "resume") {
+      setStep("type");
       setSelectedType(undefined);
     }
   };
@@ -111,7 +127,8 @@ export default function NewInterviewPage() {
             AI Interview Practice
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed px-4">
-            Master your interview skills with personalized AI-powered practice sessions designed to boost your confidence
+            Master your interview skills with personalized AI-powered practice
+            sessions designed to boost your confidence
           </p>
         </motion.div>
 
@@ -123,31 +140,54 @@ export default function NewInterviewPage() {
           className="flex justify-center mb-8 sm:mb-10 lg:mb-12 px-4"
         >
           <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto">
-            <div className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
-              step === 'type' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 
-              'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-            }`}>
-              {step !== 'type' ? <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" /> : <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" />}
-              <span className="text-xs sm:text-sm font-medium">Choose Type</span>
+            <div
+              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
+                step === "type"
+                  ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  : "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+              }`}
+            >
+              {step !== "type" ? (
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+              ) : (
+                <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" />
+              )}
+              <span className="text-xs sm:text-sm font-medium">
+                Choose Type
+              </span>
             </div>
             <div className="w-4 sm:w-8 h-0.5 bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-            <div className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
-              step === 'resume' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : 
-              step === 'confirm' ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' :
-              'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-            }`}>
-              {step === 'confirm' ? <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" /> : 
-               step === 'resume' ? <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" /> :
-               <span className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-400 rounded-full" />}
+            <div
+              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
+                step === "resume"
+                  ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  : step === "confirm"
+                  ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              {step === "confirm" ? (
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+              ) : step === "resume" ? (
+                <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" />
+              ) : (
+                <span className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-400 rounded-full" />
+              )}
               <span className="text-xs sm:text-sm font-medium">Resume</span>
             </div>
             <div className="w-4 sm:w-8 h-0.5 bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-            <div className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
-              step === 'confirm' ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' :
-              'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-            }`}>
-              {step === 'confirm' ? <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" /> :
-               <span className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-400 rounded-full" />}
+            <div
+              className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap ${
+                step === "confirm"
+                  ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              {step === "confirm" ? (
+                <span className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-600 rounded-full" />
+              ) : (
+                <span className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-400 rounded-full" />
+              )}
               <span className="text-xs sm:text-sm font-medium">Start</span>
             </div>
           </div>
@@ -155,7 +195,7 @@ export default function NewInterviewPage() {
 
         {/* Main Content */}
         <div className="max-w-6xl mx-auto">
-          {step === 'type' && (
+          {step === "type" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -170,16 +210,16 @@ export default function NewInterviewPage() {
                   Select the type of interview you'd like to practice
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 px-4">
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
                   className={`group cursor-pointer transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 ${
-                    selectedType === 'technical' ? 'ring-2 ring-blue-500' : ''
+                    selectedType === "technical" ? "ring-2 ring-blue-500" : ""
                   }`}
-                  onClick={() => handleTypeSelect('technical')}
+                  onClick={() => handleTypeSelect("technical")}
                 >
                   <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
                     <div className="text-center">
@@ -211,9 +251,9 @@ export default function NewInterviewPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 }}
                   className={`group cursor-pointer transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 ${
-                    selectedType === 'personal' ? 'ring-2 ring-purple-500' : ''
+                    selectedType === "personal" ? "ring-2 ring-purple-500" : ""
                   }`}
-                  onClick={() => handleTypeSelect('personal')}
+                  onClick={() => handleTypeSelect("personal")}
                 >
                   <div className="bg-white dark:bg-gray-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
                     <div className="text-center">
@@ -224,7 +264,8 @@ export default function NewInterviewPage() {
                         Personal Interview
                       </h3>
                       <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
-                        Practice behavioral questions and showcase your soft skills
+                        Practice behavioral questions and showcase your soft
+                        skills
                       </p>
                       {/* <div className="space-y-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex items-center justify-center space-x-2">
@@ -243,7 +284,7 @@ export default function NewInterviewPage() {
             </motion.div>
           )}
 
-          {step === 'resume' && (
+          {step === "resume" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -273,7 +314,7 @@ export default function NewInterviewPage() {
             </motion.div>
           )}
 
-          {step === 'confirm' && (
+          {step === "confirm" && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -295,23 +336,44 @@ export default function NewInterviewPage() {
 
                 <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg sm:rounded-xl">
-                    <span className="font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">Interview Type:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                      Interview Type:
+                    </span>
                     <div className="flex items-center space-x-2">
-                      {selectedType === 'technical' ? (
-                        <><Briefcase className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" /><span className="text-blue-600 font-medium text-sm sm:text-base">Technical</span></>
+                      {selectedType === "technical" ? (
+                        <>
+                          <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                          <span className="text-blue-600 font-medium text-sm sm:text-base">
+                            Technical
+                          </span>
+                        </>
                       ) : (
-                        <><User className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" /><span className="text-purple-600 font-medium text-sm sm:text-base">Personal</span></>
+                        <>
+                          <User className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
+                          <span className="text-purple-600 font-medium text-sm sm:text-base">
+                            Personal
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg sm:rounded-xl">
-                    <span className="font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">Resume:</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-0">
+                      Resume:
+                    </span>
                     <div className="flex items-center space-x-2">
                       {resumeFile ? (
-                        <><Upload className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" /><span className="text-green-600 font-medium text-sm sm:text-base">Uploaded</span></>
+                        <>
+                          <Upload className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                          <span className="text-green-600 font-medium text-sm sm:text-base">
+                            Uploaded
+                          </span>
+                        </>
                       ) : (
-                        <span className="text-gray-500 text-sm sm:text-base">Skipped</span>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                          Skipped
+                        </span>
                       )}
                     </div>
                   </div>
@@ -333,9 +395,15 @@ export default function NewInterviewPage() {
                     disabled={loading}
                   >
                     {loading ? (
-                      <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />Starting...</>
+                      <>
+                        <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
+                        Starting...
+                      </>
                     ) : (
-                      <><Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />Start Interview</>
+                      <>
+                        <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Start Interview
+                      </>
                     )}
                   </Button>
                 </div>
@@ -345,15 +413,15 @@ export default function NewInterviewPage() {
         </div>
 
         {/* View History Button */}
-        {step === 'type' && (
+        {step === "type" && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
             className="text-center mt-12"
           >
-            <Link 
-              href="/interviews/history" 
+            <Link
+              href="/interviews/history"
               className="inline-flex items-center bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg"
             >
               <History className="mr-2 w-5 h-5" />
@@ -370,7 +438,9 @@ export default function NewInterviewPage() {
         >
           <p className="flex items-center justify-center space-x-2">
             <Sparkles className="w-4 h-4" />
-            <span>Powered by Advanced AI • Comprehensive Interview Preparation</span>
+            <span>
+              Powered by Advanced AI • Comprehensive Interview Preparation
+            </span>
           </p>
         </motion.div>
       </div>

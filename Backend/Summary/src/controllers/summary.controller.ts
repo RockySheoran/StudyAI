@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import { Summary } from '../models/summary.model';
 import { File } from '../models/file.model';
 import { AuthenticatedRequest } from '../types/custom-types';
+import { PAGINATION, MESSAGES } from '../utils/constants';
+import { sendSuccess, sendError, sendNotFound } from '../utils/response';
+import { deleteSummaryWithCache } from '../services/summary.service';
 
 /**
  * Retrieves a completed summary by ID
@@ -13,17 +16,17 @@ export const getSummaryController = async (req: Request, res: Response): Promise
     const summary: any = await Summary.findById(summaryId).populate('fileId');
 
     if (!summary) {
-      return res.status(404).json({ error: 'Summary not found' });
+      return sendNotFound(res, 'Summary');
     }
 
     if (summary.status !== 'completed') {
-      return res.status(200).json({
+      return sendSuccess(res, {
         status: summary.status,
-        message: 'Summary is still being processed',
+        message: 'Summary is still being processed'
       });
     }
 
-    res.json({
+    return sendSuccess(res, {
       status: 'completed',
       summary: summary.content,
       file: {
@@ -34,24 +37,47 @@ export const getSummaryController = async (req: Request, res: Response): Promise
     });
   } catch (error) {
     console.error('Get summary error:', error);
-    res.status(500).json({ error: 'Failed to get summary' });
+    return sendError(res, 'Failed to get summary', MESSAGES.INTERNAL_ERROR);
   }
 };
 
 /**
- * Retrieves user's summary history
- * Returns all summaries for the authenticated user, sorted by most recent first
+ * Retrieves user's summary history with pagination
+ * Returns paginated summaries for the authenticated user, sorted by most recent first
  */
 export const getSummaryHistory = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
     const { id } = req.user!;
-    const summaries = await Summary.find({ userId: id })
-      .sort({ generatedAt: -1 });
+    const page = parseInt(req.query.page as string) || PAGINATION.DEFAULT_PAGE;
+    const limit = Math.min(parseInt(req.query.limit as string) || PAGINATION.DEFAULT_LIMIT, PAGINATION.MAX_LIMIT);
+    const skip = (page - 1) * limit;
+
+    // Get summaries and total count
+    const [summaries, totalCount] = await Promise.all([
+      Summary.find({ userId: id })
+        .select('fileId content generatedAt status')
+        .populate('fileId', 'originalName size mimetype uploadDate')
+        .sort({ generatedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Summary.countDocuments({ userId: id })
+    ]);
     
-    res.json(summaries);
+    return sendSuccess(res, {
+      summaries,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit),
+        totalCount,
+        hasNext: page < Math.ceil(totalCount / limit),
+        hasPrev: page > 1,
+        limit
+      }
+    });
   } catch (error) {
     console.error('Get summary history error:', error);
-    res.status(500).json({ error: 'Failed to get summary history' });
+    return sendError(res, 'Failed to get summary history', MESSAGES.INTERNAL_ERROR);
   }
 }
 
@@ -62,19 +88,23 @@ export const getSummaryHistory = async (req: AuthenticatedRequest, res: Response
 export const deleteSummary = async (req: AuthenticatedRequest, res: Response): Promise<any> => {
   try {
     const { summaryId } = req.params;
-    const summary = await Summary.findByIdAndDelete(summaryId);
+    const userId = req.user?.id;
     
-    if (!summary) {
-      return res.status(404).json({ error: 'Summary not found' });
+    // Validate summaryId parameter
+    if (!summaryId) {
+      return sendError(res, 'Missing summary ID', 'Summary ID is required for deletion', 400);
     }
+
+    // Delete summary with cache clearing
+    const result = await deleteSummaryWithCache(summaryId, userId);
     
-    // Clean up associated file record
-    const fileId = summary.fileId;
-    await File.findByIdAndDelete(fileId);
-    
-    res.json({ message: 'Summary deleted successfully' });
+    if (!result.success) {
+      return sendNotFound(res, 'Summary', 'The requested summary could not be found or you do not have permission to delete it');
+    }
+
+    return sendSuccess(res, { deletedId: result.deletedId }, MESSAGES.SUMMARY_DELETED);
   } catch (error) {
     console.error('Delete summary error:', error);
-    res.status(500).json({ error: 'Failed to delete summary' });
+    return sendError(res, 'Failed to delete summary', MESSAGES.INTERNAL_ERROR);
   }
 };

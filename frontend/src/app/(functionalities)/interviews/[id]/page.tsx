@@ -32,7 +32,8 @@ export default function InterviewPage() {
       try {
         setLoading(true);
         const data = await fetchInterview(id);
-        setInterview(data);
+        console.log(data)
+        setInterview(data?.data);
         setError(null);
       } catch (err) {
         console.error('Failed to load interview:', err);
@@ -61,9 +62,10 @@ export default function InterviewPage() {
         interview._id, 
         message,
       );
+      
 
       clearTimeout(timeoutId);
-      setInterview(updatedInterview.interview);
+      setInterview(updatedInterview.data.interview);
       return updatedInterview.interview;
     } catch (err:any) {
       console.error('Error sending message:', err);

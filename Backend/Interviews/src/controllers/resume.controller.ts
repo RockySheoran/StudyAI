@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary';
 import { Resume } from '../models/resume.model';
 import { AuthenticatedRequest } from '../types/custom-types';
+import { RedisCache } from '../utils/redis.utils';
 
 export class ResumeController {
   /**
@@ -56,6 +57,13 @@ export class ResumeController {
       const publicId = `resumes/${userId}/${publicIdWithExtension.split('.')[0]}`;
 
       // Replace any existing resume for this user
+      const existingResumes = await Resume.find({ userId: userId });
+      
+      // Clear cache for existing resumes
+      for (const existingResume of existingResumes) {
+        await RedisCache.delete(`resume/${existingResume._id}`);
+      }
+      
       await Resume.deleteMany({ userId: userId });
 
       const resume = new Resume({
@@ -90,6 +98,9 @@ export class ResumeController {
 
       // Remove from cloud storage
       await deleteFromCloudinary(resume.publicId);
+      
+      // Clear from cache
+      await RedisCache.delete(`resume/${resume._id}`);
       
       // Remove from database
       await Resume.deleteOne({ _id: resume._id, userId: userId || '' });
