@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +21,8 @@ import { FaGithub } from 'react-icons/fa';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { performCompleteCleanup } from '@/lib/utils/storageCleanup';
+import { useUserStore } from '@/lib/Store/userStore';
 
 // Define Zod schema for form validation
 const loginSchema = z.object({
@@ -38,7 +40,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+const { clearUser, clearToken } = useUserStore();
   const {
     register,
     handleSubmit,
@@ -48,6 +50,13 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema)
   });
+  useEffect(()=>{
+    const fun =async ()=> await performCompleteCleanup
+
+    clearUser();
+      clearToken();
+    fun();
+  },[])
 
   // Handle form submission
   const onSubmit = async (data: LoginFormData) => {
